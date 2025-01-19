@@ -12,16 +12,15 @@ import { StatusBar } from "expo-status-bar";
 import CustomButton from "@/components/CustomButton";
 import AppGradient from "@/components/AppGradient";
 import Logo from "@/assets/images/semiLogo.png";
+import { useToast } from "react-native-toast-notifications";
 
-const OTP_LENGTH = 6; // Define how many digits your OTP has
+const OTP_LENGTH = 6; 
 
 const OtpVerification: React.FC = () => {
   const { phoneNumber } = useLocalSearchParams<{ phoneNumber: string }>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  
-  // Create array of refs for each input
+  const toast = useToast()
   const inputRefs = useRef<Array<TextInput | null>>([]);
-  // Create array to store OTP digits
   const [otpValues, setOtpValues] = useState<string[]>(Array(OTP_LENGTH).fill(''));
 
   const handleOtpChange = (text: string, index: number) => {
@@ -29,7 +28,6 @@ const OtpVerification: React.FC = () => {
     newOtpValues[index] = text;
     setOtpValues(newOtpValues);
 
-    // If input is not empty and not last box, move to next input
     if (text && index < OTP_LENGTH - 1) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -37,7 +35,6 @@ const OtpVerification: React.FC = () => {
 
   const handleBackspace = (index: number) => {
     if (!otpValues[index] && index > 0) {
-      // If current input is empty and not first box, move to previous input
       inputRefs.current[index - 1]?.focus();
       const newOtpValues = [...otpValues];
       newOtpValues[index - 1] = '';
@@ -48,7 +45,10 @@ const OtpVerification: React.FC = () => {
   const handleSubmit = async (): Promise<void> => {
     const otp = otpValues.join('');
     if (otp.length !== OTP_LENGTH) {
-      Alert.alert("Error", "Please enter the complete OTP.");
+        toast.show("حاول دخل الرمز كامل", {
+            type: "danger", 
+            placement: "top", 
+          });
       return;
     }
 
@@ -66,13 +66,23 @@ const OtpVerification: React.FC = () => {
       const result = await response.json();
 
       if (response.ok) {
-        Alert.alert("Success", "OTP verified successfully!");
+        toast.show(`تم أتحقق بنجاح`, {
+            type: "success", 
+            placement: "top", 
+          });
         router.push("/");
       } else {
-        Alert.alert("Error", result.message || "OTP verification failed.");
+        toast.show(`${result.message}`, {
+            type: "success", 
+            placement: "top", 
+          });
+        
       }
     } catch (error) {
-      Alert.alert("Error", "Something went wrong. Please try again later.");
+        toast.show("وقع مشكل ، حول من بعد", {
+            type: "danger", 
+            placement: "top", 
+          });
     } finally {
       setIsLoading(false);
     }

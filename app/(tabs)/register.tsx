@@ -14,6 +14,7 @@ import { StatusBar } from "expo-status-bar";
 import AppGradient from "@/components/AppGradient";
 import CustomButton from "@/components/CustomButton";
 import Logo from "@/assets/images/semiLogo.png";
+import { useToast } from "react-native-toast-notifications";
 
 type RoleType = "client" | "company" | "";
 
@@ -23,6 +24,7 @@ const Register: React.FC = () => {
   const [password, setPassword] = useState<string>("");
   const [role, setRole] = useState<RoleType>("");
   const [isPasswordVisible, setPasswordVisible] = useState<boolean>(false);
+  const toast = useToast();
 
 
   const handlePhoneChange = (text: string): void => {
@@ -39,7 +41,10 @@ const Register: React.FC = () => {
 
   const handleSubmit = async (): Promise<void> => {
     if (!username || !phoneNumber || !password || !role) {
-      Alert.alert("Error", "Please fill in all fields.");
+        toast.show("حول تعمر كل المعلومات المطلوبة!", {
+            type: "danger", 
+            placement: "top", 
+          });
       return;
     }
 
@@ -62,15 +67,29 @@ const Register: React.FC = () => {
       const result = await response.json();
 
       if (response.ok) {
-        router.push({
-          pathname: "/OtpVerification",
-          params: { phoneNumber }
-        });
+        toast.show(`غادي نرسلو ليك رمز تحقق على  ${phoneNumber}`, {
+            type: "green", 
+            placement: "top", 
+          });
+        setTimeout(() => {
+            router.push({
+                pathname: "/OtpVerification",
+                params: { phoneNumber }
+              });
+        }, 3000);
+        console.log(`otp has been sent to ${phoneNumber}`);
       } else {
-        Alert.alert("Error", result.message || "Failed to register.");
+        toast.show(`${result.message}`, {
+            type: "danger", 
+            placement: "top", 
+          });
       }
     } catch (error) {
-      Alert.alert("Error", "Something went wrong. Please try again later.");
+        toast.show("وقع مشكل ، حول من بعد", {
+            type: "danger", 
+            placement: "top", 
+          });
+      
     }
   };
   return (
