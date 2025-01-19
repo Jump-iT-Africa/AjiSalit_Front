@@ -1,16 +1,16 @@
 {
     "expo": {
-        "name": "my-app",
-        "slug": "my-app",
+        "name": "Aji Salit",
+        "slug": "Aji Salit",
         "version": "1.0.0",
         "orientation": "portrait",
-        "icon": "./assets/icon.png",
-        "scheme": "simplemeditation",
-        "userInterfaceStyle": "light",
+        "icon": "./assets/images/logo.png",
+        "scheme": "Aji Salit",
+        "userInterfaceStyle": "black",
         "splash": {
-            "image": "./assets/simpleMeditationLogo.png",
+            "image": "./assets/images/logo.png",
             "resizeMode": "contain",
-            "backgroundColor": "#ffffff"
+            "backgroundColor": "#170738"
         },
         "assetBundlePatterns": ["**/*"],
         "ios": {
@@ -18,12 +18,9 @@
         },
         "android": {
             "adaptiveIcon": {
-                "foregroundImage": "./assets/adaptive-icon.png",
+                "foregroundImage": "./assets/images/logo.png",
                 "backgroundColor": "#ffffff"
             }
-        },
-        "web": {
-            "favicon": "./assets/favicon.png"
         },
         "plugins": ["expo-router", "expo-font"]
     }
