@@ -3,8 +3,8 @@ import React from 'react'
 
 const Login = () => {
   return (
-    <View>
-      <Text>Login</Text>
+    <View className='flex-1 items-center justify-center'>
+      <Text>this is the login page</Text>
     </View>
   )
 }

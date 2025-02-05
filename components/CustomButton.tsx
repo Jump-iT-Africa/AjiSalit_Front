@@ -13,10 +13,10 @@ const CustomButton = ({onPress, title, textStyles = "", containerStyles =""}:Cus
   return (
     <TouchableOpacity 
         activeOpacity={0.7} 
-        className={`bg-white rounded-xl min-h-[62px] justify-center items-center ${containerStyles} `}
+        className={`bg-[#F52525] rounded-full min-h-[62px] justify-center items-center text-white ${containerStyles} `}
         onPress={onPress}
         >
-        <Text className={`font-semibold text-lg ${textStyles}`}>{title}</Text>
+        <Text className={`font-semibold text-lg text-white ${textStyles}`}>{title}</Text>
     </TouchableOpacity>
   )
 }

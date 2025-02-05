@@ -10,9 +10,15 @@ module.exports = {
     theme: {
       extend: {
         fontFamily: {
-          rmono: ['Roboto-Mono', 'sans-serif'],
+          tajawal: ['Tajawal'],
+          tajawalregular:['TajawalRegular'],
           direction: ['rtl', 'ltr']
-        }
+        },
+        lineHeight: {
+          tighter: "1.1",
+          looser: "1.8",
+          extraLoose: "3",
+        },
       },
     },
     plugins: [],

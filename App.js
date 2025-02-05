@@ -1,27 +1,22 @@
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import "react-native-gesture-handler";
 import { ToastProvider } from "react-native-toast-notifications";
+import { useFonts } from "expo-font";
+import AppLoading from "expo-app-loading";
+import { Text } from "react-native";
+import { FontProvider } from '@/components/FontProvider';
+
+
 
 export default function App() {
   return (
-    <View style={styles.container}>
+    
+    <FontProvider>
+      <View style={styles.container}>
         <StatusBar style="light" />
-    </View>
+        <Text style={styles.tajawalText}>أجي راه سليت</Text>
+      </View>
+    </FontProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  text: {
-    fontSize: 18,
-    textAlign: "right",
-    color: "#333",
-    marginBottom: 10,
-  },
-});

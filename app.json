@@ -9,10 +9,13 @@
         "userInterfaceStyle": "black",
         "splash": {
             "image": "./assets/images/logo.png",
-            "resizeMode": "contain",
-            "backgroundColor": "#170738"
+            "resizeMode": "cover",
+            "backgroundColor": "#fff"
         },
-        "assetBundlePatterns": ["**/*"],
+        "assetBundlePatterns": [
+            "**/*",
+        "assets/fonts/*"
+    ],
         "ios": {
             "supportsTablet": true
         },
@@ -22,6 +25,7 @@
                 "backgroundColor": "#ffffff"
             }
         },
-        "plugins": ["expo-router", "expo-font"]
+        "plugins": ["expo-router", "expo-font"],
+        "newArchEnabled": true
     }
 }

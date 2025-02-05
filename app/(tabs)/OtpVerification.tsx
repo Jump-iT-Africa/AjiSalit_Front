@@ -1,136 +1,128 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
-  Alert,
   ImageBackground,
+  SafeAreaView,
+  TouchableOpacity,
 } from "react-native";
-import { useLocalSearchParams, router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import CustomButton from "@/components/CustomButton";
-import AppGradient from "@/components/AppGradient";
-import Logo from "@/assets/images/semiLogo.png";
+import { Feather } from "@expo/vector-icons";
 import { useToast } from "react-native-toast-notifications";
-
-const OTP_LENGTH = 6; 
+import RegisterBackImage from "@/assets/images/home.jpg";
+import AppGradient from "../../components/AppGradient";
+import TooltipComponent from "@/components/TooltipComponent";
+import HeaderWithBack from "@/components/HeaderWithToolTipAndback";
 
 const OtpVerification: React.FC = () => {
-  const { phoneNumber } = useLocalSearchParams<{ phoneNumber: string }>();
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const toast = useToast()
-  const inputRefs = useRef<Array<TextInput | null>>([]);
-  const [otpValues, setOtpValues] = useState<string[]>(Array(OTP_LENGTH).fill(''));
+  const [tooltipVisible, setTooltipVisible] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [timer, setTimer] = useState(6);
+  const [otpText, setOtpText] = useState('تقدر تطلب كود جديد بعد ');
+  const toast = useToast();
 
-  const handleOtpChange = (text: string, index: number) => {
-    const newOtpValues = [...otpValues];
-    newOtpValues[index] = text;
-    setOtpValues(newOtpValues);
 
-    if (text && index < OTP_LENGTH - 1) {
-      inputRefs.current[index + 1]?.focus();
+  const {phoneNumber} = useLocalSearchParams()
+  useEffect(() => {
+    if (timer > 0) {
+      const countdown = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(countdown);
     }
-  };
+  }, [timer]);
 
-  const handleBackspace = (index: number) => {
-    if (!otpValues[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-      const newOtpValues = [...otpValues];
-      newOtpValues[index - 1] = '';
-      setOtpValues(newOtpValues);
-    }
-  };
-
-  const handleSubmit = async (): Promise<void> => {
-    const otp = otpValues.join('');
-    if (otp.length !== OTP_LENGTH) {
-        toast.show("حاول دخل الرمز كامل", {
-            type: "danger", 
-            placement: "top", 
-          });
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const response = await fetch("http://localhost:3000/user/verify", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ otp, phoneNumber }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        toast.show(`تم أتحقق بنجاح`, {
-            type: "success", 
-            placement: "top", 
-          });
-        router.push("/");
-      } else {
-        toast.show(`${result.message}`, {
-            type: "success", 
-            placement: "top", 
-          });
-        
+  useEffect(()=>{
+      if(timer === 0)
+      {
+        setOtpText('طلب كود جديد')
       }
-    } catch (error) {
-        toast.show("وقع مشكل ، حول من بعد", {
-            type: "danger", 
-            placement: "top", 
-          });
-    } finally {
-      setIsLoading(false);
+    },[timer])
+
+  const handleResendCode = () => {
+    if (timer === 0) {
+      setTimer(59);
+      toast.show("تم ارسال الكود بنجاح✅", { type: "success" });
     }
   };
+
+  useEffect(()=>{
+    try{
+      if(otp.length == 6)
+        {
+          //hna dir login dyal verification dyal app
+          toast.show("تم التوتيق بنجاح ✅", { type: "success" });
+          setTimeout(() => {
+            router.push('/CreatePIN')
+          }, 2000);
+        }
+    }catch(err)
+    {
+      console.log(err);
+      throw err;
+    }
+  }, [otp])
 
   return (
     <View className="flex-1">
-      <AppGradient colors={["#170738", "#170738", "#7c12b4"]}>
-      <View className="items-center mb-[-100px] mt-40">
-            <ImageBackground
-              source={Logo}
-              resizeMode="cover"
-              className="w-[150px] h-[80px]"
-            />
-          </View>
-        <View className="flex-1 justify-center items-center px-4 py-6">
-          <Text className="text-2xl text-white mb-8">أدخل رمز ألتحقق</Text>
-          <Text className="text-white mb-4">تم إرسال الرمز إلى {phoneNumber}</Text>
+      <ImageBackground
+        source={RegisterBackImage}
+        resizeMode="cover"
+        className="flex-1"
+      >
+        <AppGradient colors={["rgba(0,0,0,0.4)", "rgba(0,0,0,0.0)"]}>
+          <SafeAreaView className="flex-1">
+            {/* Header */}
+            <HeaderWithBack 
+                    tooltipVisible={tooltipVisible} 
+                    setTooltipVisible={setTooltipVisible} 
+                    content="فهاد الصفحة غادي تزيد الرقم الي وصلك عبر رسالة نصية✉️"
+                  /> 
 
-          <View className="flex-row justify-between w-full px-4 mb-8">
-            {Array(OTP_LENGTH).fill(0).map((_, index) => (
-              <TextInput
-                key={index}
-                ref={(ref) => inputRefs.current[index] = ref}
-                className="bg-white w-12 h-12 rounded-lg text-center text-xl mx-1"
-                maxLength={1}
-                keyboardType="numeric"
-                value={otpValues[index]}
-                onChangeText={(text) => handleOtpChange(text, index)}
-                onKeyPress={({ nativeEvent }) => {
-                  if (nativeEvent.key === 'Backspace') {
-                    handleBackspace(index);
-                  }
-                }}
-              />
-            ))}
-          </View>
+            <View className="flex-1 items-center mt-0 justify-center -pt-44">
+              <Text className="text-white text-xl mb-4 pt-1 font-tajawal">
+                أدخل رمز التأكيد الذي أُرسل إلى
+              </Text>
+              <Text className="text-white text-lg mb-6 -mt-3 font-tajawal">
+                {phoneNumber}
+              </Text>
 
-          <CustomButton
-            title={isLoading ? "جاري التحقق..." : "تحقق"}
-            onPress={handleSubmit}
-            disabled={isLoading}
-            containerStyles={`px-20`}
-          />
-
-          <StatusBar style="light" />
-        </View>
-      </AppGradient>
+              <View className="w-[90%]">
+                <TextInput
+                  value={otp}
+                  onChangeText={(text) => setOtp(text.slice(0, 6))}
+                  keyboardType="phone-pad"
+                  maxLength={6}
+                  className="opacity-0 absolute w-full h-10 z-10"
+                  autoFocus
+                />
+                {/* Timer */}
+                <TouchableOpacity
+                  onPress={handleResendCode}
+                  disabled={timer > 0}
+                >
+                  <Text className="text-white/70 text-center mt-[-20]  mb-2 font-tajawal">
+                   {otpText} {timer == 0 ? '' : timer < 10 ? `00:0${timer}` : `00:${timer}`}
+                  </Text>
+                </TouchableOpacity>
+                {/* OTP Display */}
+                <View className="flex-row justify-center items-center bg-[#ffffff5f] rounded-full px-2 py-4">
+                  {[...Array(6)].map((_, index) => (
+                    <View key={index} className="w-8 mx-1 items-center">
+                      <Text className="text-white text-xl font-medium">
+                        {otp[index] || "-"}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            </View>
+          </SafeAreaView>
+        </AppGradient>
+      </ImageBackground>
+      <StatusBar style="light" />
     </View>
   );
 };
