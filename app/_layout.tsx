@@ -11,7 +11,7 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [isAppFirstLaunched, setIsAppFirstLaunched] = useState<boolean | null>(null);
-  const [isReady, setIsReady] = useState(false);  // ✅ Track if layout is ready
+  const [isReady, setIsReady] = useState(false); 
   const router = useRouter();
   
   const [fontsLoaded] = useFonts({
@@ -35,7 +35,7 @@ export default function RootLayout() {
         console.log('Error checking first launch:', error);
         setIsAppFirstLaunched(false);
       } finally {
-        setIsReady(true);  // ✅ Mark layout as ready after initialization
+        setIsReady(true); 
       }
     };
 
