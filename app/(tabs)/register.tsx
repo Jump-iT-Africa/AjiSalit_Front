@@ -36,15 +36,13 @@ const Register: React.FC = () => {
 
     if (cleaned.length > 4) {
       let remainder = cleaned.slice(4);
-      if (!remainder.startsWith('0')) {
-        remainder = '0' + remainder;
-      }
       cleaned = cleaned.slice(0, 4) + ' ' + remainder;
       cleaned = cleaned.slice(0, 15);
     }
 
     return cleaned;
   };
+ 
 
   const isValidMoroccanNumber = (number: string) => {
     const cleaned = number.replace(/\s/g, '');
@@ -53,9 +51,7 @@ const Register: React.FC = () => {
       return { isValid: false, message: "رقم الهاتف خاصو يبدا ب +212 و يكون فيه 10 أرقام" };
     }
 
-    if (cleaned.charAt(4) !== '0') {
-      return { isValid: false, message: "رقم الهاتف خاصو يبدا ب +212 0" };
-    }
+   
 
     const prefix = cleaned.slice(4, 6);
     const validPrefixes = ['06', '07', '05'];
@@ -80,7 +76,7 @@ const Register: React.FC = () => {
 
     router.push({
       pathname: "OtpVerification",
-      params: { phoneNumber: phoneNumber.replace(/\s/g, '') } // Remove spaces before sending
+      params: { phoneNumber: phoneNumber.replace(/\s/g, '') } 
     });
   };
 

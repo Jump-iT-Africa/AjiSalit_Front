@@ -1,31 +1,35 @@
 {
-    "expo": {
-        "name": "Aji Salit",
-        "slug": "Aji Salit",
-        "version": "1.0.0",
-        "orientation": "portrait",
-        "icon": "./assets/images/logo.png",
-        "scheme": "Aji Salit",
-        "userInterfaceStyle": "black",
-        "splash": {
-            "image": "./assets/images/logo.png",
-            "resizeMode": "cover",
-            "backgroundColor": "#fff"
-        },
-        "assetBundlePatterns": [
-            "**/*",
-        "assets/fonts/*"
+  "expo": {
+    "name": "Aji Salit",
+    "slug": "Aji Salit",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/logo.png",
+    "scheme": "Aji Salit",
+    "userInterfaceStyle": "black",
+    "splash": {
+      "image": "./assets/images/logo.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#fff"
+    },
+    "assetBundlePatterns": [
+      "**/*",
+      "assets/fonts/*"
     ],
-        "ios": {
-            "supportsTablet": true
-        },
-        "android": {
-            "adaptiveIcon": {
-                "foregroundImage": "./assets/images/logo.png",
-                "backgroundColor": "#ffffff"
-            }
-        },
-        "plugins": ["expo-router", "expo-font"],
-        "newArchEnabled": true
-    }
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/logo.png",
+        "backgroundColor": "#ffffff"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-secure-store"
+    ],
+    "newArchEnabled": true
+  }
 }

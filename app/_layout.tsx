@@ -57,7 +57,7 @@ export default function RootLayout() {
   }, [fontsLoaded]);
 
   if (!fontsLoaded || isAppFirstLaunched === null || !isReady) {
-    return null; // ✅ Ensure RootLayout is mounted before rendering
+    return null; 
   }
 
   return (
