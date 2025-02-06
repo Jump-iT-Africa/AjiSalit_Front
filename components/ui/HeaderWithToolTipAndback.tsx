@@ -7,19 +7,21 @@ import TooltipComponent from './TooltipComponent';
 interface HeaderWithBackProps {
   tooltipVisible: boolean;
   setTooltipVisible: (visible: boolean) => void;
-  content: string
+  content: string,
+  onPress: ()=>void
 }
 
 const HeaderWithBack: React.FC<HeaderWithBackProps> = ({ 
   tooltipVisible, 
   setTooltipVisible ,
-  content
+  content,
+  onPress
 }) => {
   const router = useRouter();
 
   return (
     <View className="flex-row justify-between mx-5 mt-4">
-      <TouchableOpacity onPress={() => router.back()}>
+      <TouchableOpacity onPress={onPress}>
         <View className="bg-[#461e04b3] rounded-full w-8 h-8 flex justify-center items-center">
           <Feather name="chevron-left" size={22} color="white" />
         </View>

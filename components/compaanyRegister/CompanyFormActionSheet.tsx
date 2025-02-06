@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput } from 'react-native';
-import CustomButton from './CustomButton';
-import Color from '@/constants/Colors';
-import Divider from "@/components/Devider"; 
+import { View, TextInput, Text, Animated } from "react-native";
+import CustomButton from "../ui/CustomButton";
+import Divider from "../ui/Devider";
+import { useState } from "react";
+import Color from "@/constants/Colors";
 
-export default function PersonalInfoScreen(accountType: any) {
-    console.log(accountType);
 
+export default function CompanyFormActionSheet({ goToNextStep }: { goToNextStep: () => void }) {
     const [name, setName] = useState('');
     const [referralCode, setReferralCode] = useState('');
     const [errors, setErrors] = useState({ name: '' });
@@ -24,20 +23,20 @@ export default function PersonalInfoScreen(accountType: any) {
         return valid;
     };
 
-    const handleCreateAccount = () => {
+    const handleNext = () => {
         if (validateInputs()) {
-            //code hna back dir account creation
-            console.log('Creating account with:', { name, referralCode });
+            goToNextStep();
         }
     };
 
     return (
-        <View className="flex p-4">
+        <Animated.View className="flex p-4">
             <Text className="text-center text-[#F52525] text-xl font-bold mb-6 font-tajawal">
                 أدخل معلوماتك الشخصية
             </Text>
-            <Divider />
 
+            <Divider />
+            
             <View className="mb-4 mt-4">
                 <Text className="text-right text-gray-700 mb-2 font-tajawal" style={{ color: Color.green }}>
                     الاسم و اللقب: <Text className="text-red-500">*</Text>
@@ -54,10 +53,10 @@ export default function PersonalInfoScreen(accountType: any) {
 
             <View className="mt-4 mb-6">
                 <Text className="text-right text-gray-700 mb-2 font-tajawal" style={{ color: Color.green }}>
-                    كود الإحالة (اختياري):
+                    العنوان و المدينة (الموقع):
                 </Text>
                 <TextInput
-                    placeholder="أدخل كود الإحالة (إذا كان متوفر)"
+                    placeholder="أدخل العنوان، المدينة"
                     placeholderTextColor="#888"
                     value={referralCode}
                     onChangeText={setReferralCode}
@@ -68,12 +67,12 @@ export default function PersonalInfoScreen(accountType: any) {
 
             <View className="mt-6">
                 <CustomButton
-                    title="إنشاء حساب جديد"
-                    onPress={handleCreateAccount}
+                    title="التالي"
+                    onPress={handleNext}
                     containerStyles="p-3 bg-[#2e752f] rounded-full"
                     textStyles="text-white text-center font-tajawal text-[15px]"
                 />
             </View>
-        </View>
+        </Animated.View>
     );
 }
