@@ -10,7 +10,7 @@ import {
   Dimensions
 } from 'react-native';
 import { router } from 'expo-router';
-import Slide from "@/components/OnboardingSlider";
+import Slide from "@/components/ui/OnboardingSlider";
 import Colors from '@/constants/Colors';
 
 const {width, height} = Dimensions.get('window');

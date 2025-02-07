@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Image, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
-import AppGradient from '@/components/AppGradient';
+import AppGradient from '@/components/ui/AppGradient';
 import Color from '@/constants/Colors';
-import HeaderWithBack from '@/components/HeaderWithToolTipAndback';
+import HeaderWithBack from '@/components/ui/HeaderWithToolTipAndback';
 import Whitelogo from "@/assets/images/whiteLogo.png";
 import { useToast } from 'react-native-toast-notifications';
 
@@ -73,10 +73,12 @@ export default function CreatePIN() {
     <AppGradient colors={[Color.red, Color.red]} className="flex-1">
       <TouchableOpacity onPress={handleBack}>
         <HeaderWithBack
+        onPress={() => router.replace('(tabs)')}
           tooltipVisible={tooltipVisible}
           setTooltipVisible={setTooltipVisible}
           content="فهد الصفحة زيد الكود ديال التطبيق"
         />
+
       </TouchableOpacity>
       <View className="flex-1 justify-start items-center mt-[30%]">
         <Image

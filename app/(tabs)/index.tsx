@@ -3,8 +3,8 @@ import HeroImage from "@/assets/images/home.jpg";
 import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
-import AppGradient from "@/components/AppGradient";
-import CustomButton from "@/components/CustomButton";
+import AppGradient from "@/components/ui/AppGradient";
+import CustomButton from "@/components/ui/CustomButton";
 import { Linking } from 'react-native';
 
 const App = () => {
@@ -21,7 +21,7 @@ const App = () => {
             <View>
               <CustomButton
                 onPress={() => router.push("register")}
-                title="باغي تسجل" textStyles="font-tajawal text-[14rem] "
+                title="باغي تسجل" textStyles="font-tajawal text-[14] "
               />
               <Text className="text-white text-center mt-3  font-tajawal font-[700]" 
               onPress={()=>router.push('login')}>
