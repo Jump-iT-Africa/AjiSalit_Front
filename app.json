@@ -6,10 +6,10 @@
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
     "scheme": "Aji Salit",
-    "userInterfaceStyle": "black",
+    "userInterfaceStyle": "white",
     "splash": {
       "image": "./assets/images/logo.png",
-      "resizeMode": "cover",
+      "resizeMode": "contain",
       "backgroundColor": "#fff"
     },
     "assetBundlePatterns": [
@@ -17,7 +17,7 @@
       "assets/fonts/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": false
     },
     "android": {
       "adaptiveIcon": {
@@ -27,8 +27,7 @@
     },
     "plugins": [
       "expo-router",
-      "expo-font",
-      "expo-secure-store"
+      "expo-font"
     ],
     "newArchEnabled": true
   }

@@ -42,12 +42,16 @@ const styles = StyleSheet.create({
     width: width,
     height: '100%',
     backgroundColor: Colors.primary,
+    flex:1,
+    alignItems:'center',
+
   },
   imageWrapper: {
     paddingHorizontal: 0,
     marginTop: 20,
     height: '80%',
     width: '85%',
+    
     marginHorizontal: 'auto',
   },
   shadowContainer: {

@@ -7,7 +7,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from "expo-router";
 import { View } from 'react-native';
 
-SplashScreen.preventAutoHideAsync();
+
+SplashScreen.preventAutoHideAsync()
+  .catch(console.warn);
 
 export default function RootLayout() {
   const [isAppFirstLaunched, setIsAppFirstLaunched] = useState<boolean | null>(null);
