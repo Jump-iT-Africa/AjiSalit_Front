@@ -1,17 +1,20 @@
-import { View, Text } from 'react-native'
-import React from 'react'
-import { Stack } from 'expo-router'
-import Colors from "@/constants/Colors"
+import { Tabs } from "expo-router";
+import Colors from "@/constants/Colors";
 
-const TabsLayout = () => {
+export default function TabsLayout() {
   return (
-    <Stack
+    <Tabs
       screenOptions={{
         headerShown: false,
+        tabBarActiveTintColor: Colors.primary,
       }}
     >
-    </Stack>
-  )
+      <Tabs.Screen 
+        name="index"
+        options={{
+          tabBarLabel: 'Home',
+        }}
+      />
+    </Tabs>
+  );
 }
-
-export default TabsLayout

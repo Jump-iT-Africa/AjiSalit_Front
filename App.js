@@ -10,6 +10,10 @@ import ActionSheet from "react-native-actions-sheet";
 import 'react-native-gesture-handler';
 
 import { registerSheet } from "react-native-actions-sheet";
+
+
+
+
 registerSheet("main", ActionSheet);
 
 AppRegistry.registerComponent('main', () => App);

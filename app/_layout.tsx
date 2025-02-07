@@ -5,26 +5,27 @@ import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from "expo-router";
+import { View } from 'react-native';
 
-// Keep splash screen visible while loading
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const [isAppFirstLaunched, setIsAppFirstLaunched] = useState<boolean | null>(null);
-  const [isReady, setIsReady] = useState(false);  // ✅ Track if layout is ready
+  const [isReady, setIsReady] = useState(false);
   const router = useRouter();
-  
+
   const [fontsLoaded] = useFonts({
     'Tajawal': require('../assets/fonts/Tajawal.ttf'),
     'TajawalRegular': require('../assets/fonts/TajawalRegular.ttf'),
   });
+
 
   AsyncStorage.clear();
   useEffect(() => {
     const initializeApp = async () => {
       try {
         const appData = await AsyncStorage.getItem('isAppFirstLaunched');
-
+        
         if (appData === null) {
           setIsAppFirstLaunched(true);
           await AsyncStorage.setItem('isAppFirstLaunched', 'false');
@@ -35,46 +36,49 @@ export default function RootLayout() {
         console.log('Error checking first launch:', error);
         setIsAppFirstLaunched(false);
       } finally {
-        setIsReady(true); 
+        setIsReady(true);
       }
     };
 
-    if (fontsLoaded) {
-      initializeApp();
-    }
-  }, [fontsLoaded]);
+    initializeApp();
+  }, []); 
+
+
+
 
   useEffect(() => {
-    if (isReady && isAppFirstLaunched !== null) {
-      router.replace(isAppFirstLaunched ? '/onboarding' : '/(tabs)');
-    }
-  }, [isReady, isAppFirstLaunched, router]);
+    const prepare = async () => {
+      if (isReady && isAppFirstLaunched !== null && fontsLoaded) {
+        try {
+          await SplashScreen.hideAsync();
+          router.replace(isAppFirstLaunched ? '/onboarding' : '/(tabs)');
+        } catch (error) {
+          console.warn('Error hiding splash screen:', error);
+        }
+      }
+    };
 
-  const onLayoutRootView = useCallback(async () => {
-    if (fontsLoaded) {
-      await SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded]);
+    prepare();
+  }, [isReady, isAppFirstLaunched, fontsLoaded, router]);
 
   if (!fontsLoaded || isAppFirstLaunched === null || !isReady) {
-    return null; 
+    return <View style={{ flex: 1 }} />;
   }
 
   return (
     <ToastProvider
-      placement="top"
-      duration={4000}
-      animationType="slide-in"
-      successColor="green"
-      dangerColor="red"
-      warningColor="orange"
-      normalColor="gray"
-    >
-      <Stack>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
-    </ToastProvider>
+    placement="top"
+    duration={4000}
+    animationType="slide-in"
+    successColor="green"
+    dangerColor="red"
+    warningColor="orange"
+    normalColor="gray"
+  >
+    <Stack>
+      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    </Stack>
+  </ToastProvider>
   );
 }

@@ -2,9 +2,9 @@ import { useLocalSearchParams } from "expo-router";
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Image, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
-import AppGradient from '@/components/AppGradient';
+import AppGradient from '@/components/ui/AppGradient';
 import Color from '@/constants/Colors';
-import HeaderWithBack from '@/components/HeaderWithToolTipAndback';
+import HeaderWithBack from '@/components/ui/HeaderWithToolTipAndback';
 import Whitelogo from "@/assets/images/whiteLogo.png";
 import { useToast } from 'react-native-toast-notifications';
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -82,6 +82,7 @@ export default function ConfirmPIN() {
         <AppGradient colors={[Color.red, Color.red]} className="flex-1">
             <TouchableOpacity onPress={handleBack}>
                 <HeaderWithBack
+                    onPress={() => router.replace('(tabs)')}
                     tooltipVisible={tooltipVisible}
                     setTooltipVisible={setTooltipVisible}
                     content="فهاد صفحة غادي تأكد الكود ديالك"
