@@ -21,7 +21,7 @@ const App = () => {
             <View>
               <CustomButton
                 onPress={() => router.push("register")}
-                title="باغي تسجل" textStyles="font-tajawal text-[14rem] "
+                title="باغي تسجل" textStyles="font-tajawal text-[14] "
               />
               <Text className="text-white text-center mt-3  font-tajawal font-[700]" 
               onPress={()=>router.push('login')}>
