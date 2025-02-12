@@ -1,15 +1,14 @@
-
 version: 2.1
 
 executors:
-  docker-executor:
+  docker-executor:  # Correct executor name
     docker:
       - image: node:20.14.0-alpine
     working_directory: ~/app
 
 jobs:
   build:
-    executor: node-expo
+    executor: docker-executor  # Use the correct executor name here
     steps:
       - checkout  # Get the latest code from GitHub
       - run:
@@ -33,3 +32,9 @@ jobs:
       - store_artifacts:
           path: /home/circleci/app/build  # Change this path if needed
           destination: apk-files
+
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build
