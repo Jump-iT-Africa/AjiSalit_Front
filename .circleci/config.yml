@@ -8,17 +8,16 @@ executors:
 
 jobs:
   build:
-    executor: docker-executor
+    executor: node-expo
     steps:
-      - checkout
-
+      - checkout  # Get the latest code from GitHub
       - run:
           name: Install Dependencies
-          command: npm ci
+          command: npm install
 
       - run:
-          name: Clean npm cache (Fix for "could not determine executable to run")
-          command: npm cache clean --force && rm -rf node_modules package-lock.json && npm install
+          name: Run Tests
+          command: npm test  # Change if you use another test command
 
       - run:
           name: Install Expo CLI
@@ -43,21 +42,8 @@ jobs:
           name: Build APK
           command: |
             npx expo prebuild
-            EAS_BUILD_TIMEOUT=1800 npx eas build --platform android --profile preview --non-interactive
+            npx eas build --platform android --profile preview --non-interactive 
 
       - store_artifacts:
-          path: /home/circleci/app/build
+          path: /home/circleci/app/build  # Change this path if needed
           destination: apk-files
-
-workflows:
-  version: 2
-  build:
-    jobs:
-      - build:
-          filters:
-            branches:
-              only:
-                - main        
-            # pull_requests:
-            #   only:
-            #     - main         
