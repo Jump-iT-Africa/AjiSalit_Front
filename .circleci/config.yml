@@ -17,7 +17,7 @@ jobs:
 
       - run:
           name: Run Tests
-          command: npx test  # Change if you use another test command
+          command: npm i test &  npx test  # Change if you use another test command
 
       - run:
           name: Install Expo CLI
