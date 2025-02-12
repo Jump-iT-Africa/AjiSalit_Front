@@ -1,14 +1,14 @@
 version: 2.1
 
 executors:
-  docker-executor:
+  docker-executor:  # Correct executor name
     docker:
       - image: node:20.14.0-alpine
     working_directory: ~/app
 
 jobs:
   build:
-    executor: node-expo
+    executor: docker-executor  # Use the correct executor name here
     steps:
       - checkout  # Get the latest code from GitHub
       - run:
