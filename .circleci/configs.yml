@@ -1,16 +1,17 @@
 version: 2.1
 
 executors:
-  docker-executor:  # Correct executor name
+  docker-executor:
     docker:
       - image: node:20.14.0-alpine
     working_directory: ~/app
 
 jobs:
   build:
-    executor: docker-executor  # Use the correct executor name here
+    executor: docker-executor
     steps:
-      - checkout  # Get the latest code from GitHub
+      - checkout
+
       - run:
           name: Install Dependencies
           command: npm install
@@ -42,8 +43,8 @@ jobs:
           name: Build APK
           command: |
             npx expo prebuild
-            npx eas build --platform android --profile preview --non-interactive 
+            npx eas build --platform android --profile preview --non-interactive
 
       - store_artifacts:
-          path: /home/circleci/app/build  # Change this path if needed
+          path: /home/circleci/app/build
           destination: apk-files
