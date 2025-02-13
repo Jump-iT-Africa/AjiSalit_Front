@@ -44,7 +44,7 @@ jobs:
           name: Build APK
           command: |
             npx expo prebuild
-            EAS_BUILD_TIMEOUT=1800 npx eas build --platform android --profile preview --non-interactive
+            EAS_BUILD_TIMEOUT=2200 npx eas build --platform android --profile preview --non-interactive
 
       - store_artifacts:
           path: /home/circleci/app/build
