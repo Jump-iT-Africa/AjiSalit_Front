@@ -1,36 +1,48 @@
 version: 2.1
 
 executors:
-  docker-executor:  # Correct executor name
+  docker-executor:
     docker:
       - image: node:20.14.0-alpine
     working_directory: ~/app
 
 jobs:
   build:
-    executor: docker-executor  # Use the correct executor name here
+    executor: docker-executor
     steps:
-      - checkout  # Get the latest code from GitHub
+      - checkout
+
       - run:
           name: Install Dependencies
           command: npm install
 
       - run:
-          name: Run Tests
-          command: npx jest --passWithNoTests  # Change if you use another test command
+          name: Clean npm cache (Fix for "could not determine executable to run")
+          command: npm cache clean --force && rm -rf node_modules package-lock.json && npm install
 
       - run:
           name: Install Expo CLI
           command: npm install -g expo-cli
 
       - run:
-          name: Build APK 
+          name: Install EAS CLI
+          command: npm install -g eas-cli
+
+      - run:
+          name: Install Missing Expo Dependencies
+          command: npm install expo-system-ui
+
+      - run:
+          name: Install Missing Expo Dependencies
+          command: npx jest --passWithNoTests
+      - run:
+          name: Build APK
           command: |
             npx expo prebuild
-            npx eas build --platform android --profile preview --non-interactive 
+            npx eas build --platform android --profile preview --non-interactive
 
       - store_artifacts:
-          path: /home/circleci/app/build  # Change this path if needed
+          path: /home/circleci/app/build
           destination: apk-files
 
 workflows:
