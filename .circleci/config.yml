@@ -33,9 +33,9 @@ jobs:
           command: npm install expo-system-ui
 
       - run:
-          name: Install Missing Expo Dependencies
+          name: Running Tests
           command: npx jest --passWithNoTests
-          
+
       - run:
           name: Install Git (Fix for "git command not found")
           command: apk add --no-cache git
@@ -44,7 +44,7 @@ jobs:
           name: Build APK
           command: |
             npx expo prebuild
-            npx eas build --platform android --profile preview --non-interactive
+            EAS_BUILD_TIMEOUT=1800 npx eas build --platform android --profile preview --non-interactive
 
       - store_artifacts:
           path: /home/circleci/app/build
