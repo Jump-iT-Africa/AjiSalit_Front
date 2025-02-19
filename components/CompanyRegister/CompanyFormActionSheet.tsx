@@ -271,7 +271,7 @@ export default function CombinedCompanyForm() {
                             onPress={() => {
                                 setIsSheetVisible(false);
                                 actionSheetRef.current?.hide();
-                                router.replace('(HomeCompany)/Home')
+                                router.replace('(home)')
                             }} 
                             title="انتقل للصفحة الرئيسية"
                             textStyles="text-sm font-tajawal px-2 py-0 text-[#2e752f]"  

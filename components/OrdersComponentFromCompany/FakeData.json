@@ -1,0 +1,50 @@
+{
+    "orders": [
+      {
+        "orderCode": "ABC-ABC-1234",
+        "status": "pending",
+        "amount": {
+          "type": "paid",
+          "value": null,
+          "label": "خالص"
+        },
+        "customerName": "محمد المرجاني",
+        "date": "11/02/2025"
+      },
+      {
+        "orderCode": "ABC-ABC-1234",
+        "status": "completed",
+        "amount": {
+          "type": "unpaid",
+          "value": null,
+          "label": "غير خالص"
+        },
+        "customerName": "محمد المرجاني",
+        "date": "11/02/2025"
+      },
+      {
+        "orderCode": "ABC-ABC-1234",
+        "status": "pending",
+        "amount": {
+          "type": "installment",
+          "value": 20,
+          "label": "تنسيق",
+          "currency": "درهم"
+        },
+        "customerName": "محمد المرجاني",
+        "date": "11/02/2025"
+      },
+      {
+        "orderCode": "ABC-ABC-1234",
+        "status": "pending",
+        "amount": {
+          "type": "installment",
+          "value": 20,
+          "label": "تنسيق",
+          "currency": "درهم"
+        },
+        "customerName": "محمد المرجاني",
+        "date": "11/02/2025"
+      }
+    ]
+  }

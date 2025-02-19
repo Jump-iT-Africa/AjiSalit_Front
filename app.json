@@ -1,12 +1,13 @@
 {
   "expo": {
     "name": "Aji Salit",
-    "slug": "Aji Salit",
+    "slug": "aji-salit",
+    
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
-    "scheme": "Aji Salit",
-    "userInterfaceStyle": "white",
+    "scheme": "aji-salit",
+    "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/images/logo.png",
       "resizeMode": "contain",
@@ -23,11 +24,21 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.ajisalit.it"
+
     },
     "plugins": [
       "expo-router"
     ],
-    "newArchEnabled": true
+    "newArchEnabled": true,
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "030d5d7e-44ce-495d-8b8e-93b299a138b2"
+      }
+    }
   }
 }
