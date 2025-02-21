@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import {
   Alert,
   Animated,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   View,
   Text,
+  Dimensions,
 } from 'react-native';
 import { CurvedBottomBarExpo } from 'react-native-curved-bottom-bar';
 import { NavigationContainer } from '@react-navigation/native';
@@ -13,17 +14,19 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
 import IndexPage from "./index";
 import SavesPage from "./Saves";
+import ScannerPage from "./Scanner";
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import ActionSheetToAddProduct from "@/components/ActionSheetToAddProduct/ActionSheetToAddProduct"
+import { router } from 'expo-router';
+import ActionSheetToAddProduct from '@/components/ActionSheetToAddProduct/ActionSheetToAddProduct';
+import { createStackNavigator } from '@react-navigation/stack';
 
-export default function HomeLayouts() {
+const Stack = createStackNavigator();
 
+function MainTabs() {
+  const actionSheetRef = useRef(null);
+  const [isSheetVisible, setIsSheetVisible] = useState(false);
 
-  
-
-
-
-  const _renderIcon = (routeName: string, selectedTab: string) => {
+  const _renderIcon = (routeName, selectedTab) => {
     if (routeName === 'الرئيسية') {
       return (
         <View style={styles.tabContent}>
@@ -59,7 +62,7 @@ export default function HomeLayouts() {
     }
   };
 
-  const renderTabBar = ({ routeName, selectedTab, navigate }) => {
+  const renderTabBar = ({ routeName, selectedTab, navigate }:any) => {
     return (
       <TouchableOpacity
         onPress={() => navigate(routeName)}
@@ -70,15 +73,21 @@ export default function HomeLayouts() {
     );
   };
 
+  const handleCloseActionSheet = () => {
+    setIsSheetVisible(false);
+  };
+
   return (
+    <>
       <CurvedBottomBarExpo.Navigator
         type="UP"
         style={styles.bottomBar}
         shadowStyle={styles.shadow}
         height={80}
-        circleWidth={0}
+        circleWidth={50}
         bgColor="white"
         initialRouteName="الرئيسية"
+        borderTopLeftRight
         screenOptions={{
           headerShown: false
         }}
@@ -86,15 +95,20 @@ export default function HomeLayouts() {
           <Animated.View style={styles.btnCircleUp}>
             <TouchableOpacity
               style={styles.button}
-              onPress={() => Alert.alert('Click Action')}
+              onPress={() => {
+                setIsSheetVisible(true);
+                actionSheetRef.current?.show();
+              }}
             >
               <FontAwesome6 name="plus" size={24} color="white" />
-
             </TouchableOpacity>
           </Animated.View>
         )}
         tabBar={renderTabBar}
-        
+        width={Dimensions.get('window').width}
+        borderColor="#DDD"
+        borderWidth={1}
+        id="main-navigator"
       >
         <CurvedBottomBarExpo.Screen
           name="الرئيسية"
@@ -107,6 +121,21 @@ export default function HomeLayouts() {
           position="LEFT"
         />
       </CurvedBottomBarExpo.Navigator>
+      <ActionSheetToAddProduct 
+        ref={actionSheetRef}
+        isVisible={isSheetVisible}
+        onClose={handleCloseActionSheet}
+      />
+    </>
+  );
+}
+
+export default function HomeLayouts() {
+  return (
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="MainTabs" component={MainTabs} />
+        <Stack.Screen name="Scanner" component={ScannerPage} />
+      </Stack.Navigator>
   );
 }
 

@@ -24,7 +24,7 @@ const DateFiler = ({ onFilterChange }: TimeFilterProps) => {
   };
 
   return (
-    <View className="flex-row items-center justify-center gap-3 pt-3 px-7 ">
+    <View className="flex-row items-center justify-center gap-3 pt-3 px-7 w-[53%] mx-auto">
       {filters.map((filter) => (
         <TouchableOpacity
           key={filter.id}
@@ -36,7 +36,7 @@ const DateFiler = ({ onFilterChange }: TimeFilterProps) => {
             }`}
         >
           <Text
-            className={`text-base text-[13.9px] text-center font-tajawalregular
+            className={`text-base text-[12px] text-center font-tajawalregular
               ${activeFilter === filter.id 
                 ? 'text-white' 
                 : 'text-green-700'
