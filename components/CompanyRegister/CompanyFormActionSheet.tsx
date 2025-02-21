@@ -6,8 +6,9 @@ import Color from '@/constants/Colors';
 import ActionSheetComponent from '@/components/ui/ActionSheet';
 import { ActionSheetRef } from 'react-native-actions-sheet';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import AccountCreatedSuccessfully from '../AccountCreatedSuccessfully/AccountCreatedSuccessfully';
 import { router } from 'expo-router';
+import SuccessActionSheetComponent from '../ui/SuccessActionSheet';
+import Colors from '@/constants/Colors';
 
 export default function CombinedCompanyForm() {
     const [formData, setFormData] = useState({
@@ -255,8 +256,12 @@ export default function CombinedCompanyForm() {
             className={`flex p-4 ${isSheetVisible ? "opacity-50" : "bg-white"}`}
             style={{ minHeight: 500 }} 
         >
-            <ActionSheetComponent ref={actionSheetRef}>
-                <View className="flex-1 items-center justify-center h-full">
+            <ActionSheetComponent ref={actionSheetRef}
+
+            containerStyle={{backgroundColor:Colors.green}}
+            contentStyle={{backgroundColor:Colors.green}}
+            >
+                <View className="flex-1 items-center justify-center h-full ">
                     <View>
                         <AntDesign name="checkcircleo" size={190} color="white" />
                     </View>
@@ -269,7 +274,7 @@ export default function CombinedCompanyForm() {
                     <View className="w-full mt-20">
                         <CustomButton 
                             onPress={() => {
-                                setIsSheetVisible(false);
+                                setIsSheetVisible(false)
                                 actionSheetRef.current?.hide();
                                 router.replace('(home)')
                             }} 

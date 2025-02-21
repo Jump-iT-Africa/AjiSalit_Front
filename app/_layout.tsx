@@ -53,7 +53,7 @@ export default function RootLayout() {
       if (isReady && isAppFirstLaunched !== null && fontsLoaded) {
         try {
           await SplashScreen.hideAsync();
-         //router.replace(isAppFirstLaunched ? '/onboarding' : '/(tabs)');
+        //  router.replace(isAppFirstLaunched ? '/onboarding' : '/(tabs)');
           router.replace(isAppFirstLaunched ? '/(home)' : '/(tabs)');
         } catch (error) {
           console.warn('Error hiding splash screen:', error);
