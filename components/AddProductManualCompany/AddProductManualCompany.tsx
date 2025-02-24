@@ -1,12 +1,12 @@
 
-import { View, Text, TouchableOpacity, Linking, Alert} from 'react-native'
+import { View, Text, TouchableOpacity, Linking, Alert , Image} from 'react-native'
 import React, { useRef, useState } from 'react'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import ActionSheetToAddProduct from '../ActionSheetToAddProduct/ActionSheetToAddProduct';
 import { useCameraPermissions } from "expo-camera";
 import { useRouter } from 'expo-router';
-
+import AddIcon from "@/assets/images/Addicone.png"
 
 
 export default function AddProductManualCompany()
@@ -54,24 +54,27 @@ export default function AddProductManualCompany()
                 <View>
                     <TouchableOpacity 
                     activeOpacity={0.7} 
-                    className='bg-[#F52525] rounded-full min-h-[50px] w-auto px-9 flex-row items-center justify-center text-white mt-6'
+                    className='bg-[#F52525] rounded-full min-h-[50px] w-auto px-9 flex-row items-center justify-center text-white mt-6 '
                     onPress={() =>{
 
                         setIsSheetVisible(true);
                         actionSheetRef.current?.show();
                         
                     }}>
-                        <Text className='font-semibold text-[16px] text-white font-tajawal text-center'>أضف يدويا</Text>
-                        <MaterialIcons name="add-circle" size={24} color="white"/>
+                        <Text className='font-semibold text-[16px] text-white font-tajawal text-center mr-2'>أضف يدويا</Text>
+                        <Image 
+                          source={AddIcon}
+                          className='w-4 h-4'
+                        />
                     </TouchableOpacity>
                 </View>
 
                 <View>
                     <TouchableOpacity 
                         activeOpacity={0.7} 
-                        className='bg-[#2e752f] rounded-full min-h-[50px] w-auto px-9 flex-row items-center justify-center text-white mt-6'
+                        className='bg-[#2e752f] rounded-full min-h-[50px] w-auto px-9 flex-row items-center justify-center text-white mt-6 '
                         onPress={handleScanPress}>
-                            <Text className='font-semibold text-[16px] text-white font-tajawal text-center'>مسح QR</Text>
+                            <Text className='font-semibold text-[16px] text-white font-tajawal text-center mr-2'>مسح QR</Text>
                             <MaterialCommunityIcons name="qrcode-scan" size={24} color="white" />
                     </TouchableOpacity>
                 </View>

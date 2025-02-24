@@ -16,6 +16,7 @@ export default function Scanner()
             />
 
             <CameraView 
+                className="rounded-full"
                 style={StyleSheet.absoluteFillObject}
                 facing="back"
                 onBarcodeScanned={({data}) =>{
