@@ -1,39 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Dimensions, Text, Image, TouchableOpacity } from 'react-native';
 import Colors from "@/constants/Colors";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import CustomButton from '@/components/ui/CustomButton';
 import AddIcon from '@/assets/images/Addicone.png';
-import { Camera } from 'expo-camera';
+import { router } from 'expo-router';
+import AddManuallyTheId from '@/components/AddManuallyTheId/AddManuallyTheId';
 
 const { width, height } = Dimensions.get("window");
 const innerDimension = 300;
 
-export const Overlay = () => {
-  const [flashEnabled, setFlashEnabled] = useState(false);
-  const [hasFlashPermision, sethasFlashPermision] = useState(false);
+const topMargin = 230;
+const bottomSpace = height - innerDimension - topMargin;
 
-  useEffect(() => {
-    (async () => {
-      const { status } = await Camera.requestCameraPermissionsAsync();
-      sethasFlashPermision(status === 'granted');
-    })();
-  }, []);
+export const Overlay = ({ flashEnabled, toggleFlash, hasFlashPermission, onManualIdSubmit }:any) => {
+  const [modalVisible, setModalVisible] = useState(false);
 
-  const toggleFlash = async () => {
-    if (hasFlashPermision) {
-      setFlashEnabled(prevState => !prevState);
+  const handleOpenModal = () => {
+    setModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
+  };
+
+  const handleIdSubmit = (id) => {
+    if (onManualIdSubmit) {
+      onManualIdSubmit(id);
     }
+    setModalVisible(false);
   };
 
   return (
     <View className="absolute inset-0">
-      <View className="absolute z-20 w-full flex-row items-center h-40 px-12 pt-8">
-        <Ionicons name="chevron-back-outline" size={24} color="white"/>
+      <View className="absolute z-20 w-full flex-row items-center h-40 px-3 pt-8">
+        <Ionicons name="chevron-back-outline" size={24} color="white" onPress={() => router.back()}/>
         <View className="flex-1 items-center">
           <Text className="text-white text-xl font-tajawal">مسح QR</Text>
         </View>
-        <TouchableOpacity onPress={toggleFlash} className="p-2">
+        <TouchableOpacity
+          onPress={toggleFlash}
+          className="p-2"
+          disabled={!hasFlashPermission}
+        >
           {flashEnabled ? (
             <Ionicons name="flash" size={24} color="white" />
           ) : (
@@ -45,8 +54,9 @@ export const Overlay = () => {
       <View style={{
         backgroundColor: Colors.green,
         width: '100%',
-        height: (height - innerDimension) / 2,
+        height: topMargin,
       }} />
+      
       <View className="flex-row" style={{ height: innerDimension }}>
         <View style={{
           backgroundColor: Colors.green,
@@ -77,30 +87,41 @@ export const Overlay = () => {
         }} />
       </View>
       
-      <View className="absolute z-20 w-full bottom-32 flex items-center justify-center">
-        <View className="flex-row items-center bg-[#F52525] rounded-full px-12 py-2">
-          <CustomButton
-            title="أضف يدويا"
-            containerStyles=""
-            textStyles="text-white font-tajawal"
-          />
-          <Image
-            source={AddIcon}
-            className="w-4 h-4 ml-2"
-            resizeMode="contain"
-          />
-        </View>
+      <View style={{
+        backgroundColor: Colors.green,
+        width: '100%',
+        height: bottomSpace,
+      }} />
+      
+      <View className="absolute z-20 w-full bottom-44 flex items-center justify-center">
+        <TouchableOpacity onPress={handleOpenModal}>
+          <View className="flex-row items-center bg-[#F52525] rounded-full px-12 py-0">
+            <CustomButton
+              title="أضف يدويا"
+              containerStyles=""
+              textStyles="text-white font-tajawal"
+              onPress={handleOpenModal}
+            />
+            <Image
+              source={AddIcon}
+              className="w-4 h-4 ml-2"
+              resizeMode="contain"
+            />
+          </View>
+        </TouchableOpacity>
       </View>
-      <View className="absolute z-20 w-full items-center px-10 bottom-11">
+      <View className="absolute z-20 w-full items-center px-10 bottom-24">
         <Text className="text-white font-tajawalregular text-center">
           إلا ما خدمش المسح، دخل رمز الطلب يدويًا بالضغط على الزر أسفله!
         </Text>
       </View>
-      <View style={{
-        backgroundColor: Colors.green,
-        width: '100%',
-        height: (height - innerDimension) / 2,
-      }} />
+
+        <AddManuallyTheId
+          visible={modalVisible}
+          onClose={handleCloseModal}
+          onSubmit={handleIdSubmit}
+          containerStyle="bg-[#2e752f]"
+        />
     </View>
   );
 };

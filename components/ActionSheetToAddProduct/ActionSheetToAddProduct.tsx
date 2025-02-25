@@ -184,7 +184,6 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
     { id: 2, label: 'غير خالص' },
     { id: 3, label: 'تسبيق'}
     ]
-    
 
 
   const Step1Form = (

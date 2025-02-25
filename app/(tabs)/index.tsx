@@ -13,7 +13,7 @@ const App = () => {
   return (
     <View className="flex-1">
       <ImageBackground source={HeroImage} resizeMode="cover" className="flex-1">
-        <AppGradient colors={["rgba(0,0,0,0.5), rgba(0,0,0,0.8)"]}>
+        <AppGradient colors={["rgba(0,0,0,0.5)", "rgba(0,0,0,0.8)"]}>
           <SafeAreaView className="flex-1 mx-5 my-12 justify-between">
             <View className="mt-20">
               

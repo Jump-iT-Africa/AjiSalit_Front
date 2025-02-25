@@ -32,7 +32,7 @@ const slides = [
     id: '3',
     image: require('@/assets/images/onboarding3.png'),
     title: 'إنشاء المهام بسهولة!',
-    subtitle: 'أضف المهام بسرعة، حدد المواعيد النهائية، وأضف الوصف بسهولة باستخدام تطبيق إدارة المهام الخاص بنا. بسّط سير عملك وحافظ على تنظيمك..',
+    subtitle: 'أضف المهام بسرعة، حدد المواعيد النهائية، وأضف الوصف بسهولة باستخدام تطبيق إدارة المهام الخاص بنا ..',
   },
 ];
 
@@ -79,25 +79,30 @@ const OnboardingScreen = () => {
             />
           ))}
         </View>
-
+  
         <View style={styles.buttonContainer}>
           {currentSlideIndex == slides.length - 1 ? (
             <View style={styles.buttonWrapper}>
+              {/* Login button */}
               <TouchableOpacity
                 style={styles.loginBtn}
                 onPress={() => router.replace('register')}>
-                <Text style={styles.loginBtnText} className='font-tajawal'>
+                <Text style={[styles.loginBtnText, { fontFamily: 'Tajawal' }]}>
                   تسجيل دخول
                 </Text>
               </TouchableOpacity>
-
-              <TouchableOpacity
-                
-                onPress={() => router.replace('register')}>
-                <Text className='font-tajawalregular text-center color-white mt-2'>
-                لا تمتلك حساب؟ <Text className='underline font-tajawal' onPress={() => router.push('login')}>قم بإنشاء حساب</Text>
+  
+              {/* Create account text */}
+              <View style={{ marginTop: 10, alignItems: 'center' }}>
+                <Text style={{ color: 'white', fontFamily: 'Tajawal' }}>
+                  لا تمتلك حساب؟{' '}
+                  <Text 
+                    style={{ textDecorationLine: 'underline', fontFamily: 'Tajawal' }}
+                    onPress={() => router.push('login')}>
+                    قم بإنشاء حساب
+                  </Text>
                 </Text>
-              </TouchableOpacity>
+              </View>
             </View>
           ) : (
             <View style={styles.navigationButtons}>
@@ -105,7 +110,7 @@ const OnboardingScreen = () => {
                 activeOpacity={0.8}
                 onPress={goToNextSlide}
                 style={styles.nextBtn}>
-                <Text style={styles.nextBtnText} className='font-tajawal'>
+                <Text style={[styles.nextBtnText, { fontFamily: 'Tajawal' }]}>
                   التالي
                 </Text>
               </TouchableOpacity>
@@ -113,7 +118,7 @@ const OnboardingScreen = () => {
                 activeOpacity={0.8}
                 style={[styles.skipBtn]}
                 onPress={skip}>
-                <Text style={styles.skipBtnText} className='font-tajawal'>
+                <Text style={[styles.skipBtnText, { fontFamily: 'Tajawal' }]}>
                   تخطي
                 </Text>
               </TouchableOpacity>
@@ -137,7 +142,6 @@ const OnboardingScreen = () => {
         data={slides}
         renderItem={({item}) => <Slide item={item} />}
         style={styles.flatList}
-        
       />
       <Footer />
     </SafeAreaView>
@@ -151,6 +155,7 @@ const styles = StyleSheet.create({
   },
   flatList: {
     flex: 1,
+    fontFamily: 'tajawal',
   },
   footer: {
     height: height * 0.25,
@@ -173,7 +178,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   buttonWrapper: {
-    height: 50,
+    height: 100,
   },
   navigationButtons: {
     flexDirection: 'column',
@@ -194,13 +199,15 @@ const styles = StyleSheet.create({
   },
   skipBtnText: {
     color: Colors.white,
-    fontWeight: 'bold',
+    fontWeight: 100,
     fontSize: 15,
+    fontFamily: 'Tajawal',
   },
   nextBtnText: {
     color: Colors.white,
-    fontWeight: 'bold',
+    fontWeight: 100,
     fontSize: 15,
+    fontFamily: 'Tajawal',
   },
   loginBtn: {
     height: 50,
@@ -211,8 +218,10 @@ const styles = StyleSheet.create({
   },
   loginBtnText: {
     color: Colors.white,
-    fontWeight: 'bold',
+    fontWeight: 100,
     fontSize: 15,
+    fontFamily: 'Tajawal',
+
   }
 });
 

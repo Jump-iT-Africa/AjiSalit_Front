@@ -7,13 +7,32 @@ import ActionSheetToAddProduct from '../ActionSheetToAddProduct/ActionSheetToAdd
 import { useCameraPermissions } from "expo-camera";
 import { useRouter } from 'expo-router';
 import AddIcon from "@/assets/images/Addicone.png"
-
+import AddManuallyTheId from '../AddManuallyTheId/AddManuallyTheId';
 
 export default function AddProductManualCompany()
 {
     const [permission, requestPermission] = useCameraPermissions();
+    const [modalVisible, setModalVisible] = useState(false);
     const isPermissionGranted = Boolean(permission?.granted);
     const router = useRouter(); 
+
+
+
+
+    const handleOpenModal = () => {
+      setModalVisible(true);
+    };
+
+    const handleCloseModal = () => {
+      setModalVisible(false);
+    };
+  
+    // const handleIdSubmit = (id) => {
+    //   if (onManualIdSubmit) {
+    //     onManualIdSubmit(id);
+    //   }
+    //   setModalVisible(false);
+    // };
 
     const handleScanPress = async () => {
         console.log(isPermissionGranted);
@@ -55,12 +74,7 @@ export default function AddProductManualCompany()
                     <TouchableOpacity 
                     activeOpacity={0.7} 
                     className='bg-[#F52525] rounded-full min-h-[50px] w-auto px-9 flex-row items-center justify-center text-white mt-6 '
-                    onPress={() =>{
-
-                        setIsSheetVisible(true);
-                        actionSheetRef.current?.show();
-                        
-                    }}>
+                    onPress={handleOpenModal}>
                         <Text className='font-semibold text-[16px] text-white font-tajawal text-center mr-2'>أضف يدويا</Text>
                         <Image 
                           source={AddIcon}
@@ -69,22 +83,24 @@ export default function AddProductManualCompany()
                     </TouchableOpacity>
                 </View>
 
-                <View>
-                    <TouchableOpacity 
-                        activeOpacity={0.7} 
-                        className='bg-[#2e752f] rounded-full min-h-[50px] w-auto px-9 flex-row items-center justify-center text-white mt-6 '
-                        onPress={handleScanPress}>
-                            <Text className='font-semibold text-[16px] text-white font-tajawal text-center mr-2'>مسح QR</Text>
-                            <MaterialCommunityIcons name="qrcode-scan" size={24} color="white" />
-                    </TouchableOpacity>
-                </View>
+              <View>
+                <TouchableOpacity 
+                    activeOpacity={0.7} 
+                    className='bg-[#2e752f] rounded-full min-h-[50px] w-auto px-9 flex-row items-center justify-center text-white mt-6 '
+                    onPress={handleScanPress}>
+                        <Text className='font-semibold text-[16px] text-white font-tajawal text-center mr-2'>مسح QR</Text>
+                        <MaterialCommunityIcons name="qrcode-scan" size={24} color="white" />
+                </TouchableOpacity>
+              </View>
         </View>
 
-        <ActionSheetToAddProduct 
-        ref={actionSheetRef}
-        isVisible={isSheetVisible}
-        onClose={handleCloseActionSheet}/>
-       
+        <AddManuallyTheId
+          visible={modalVisible}
+          onClose={handleCloseModal}
+          onSubmit={undefined}
+          useBlur={true}
+          blurIntensity={80}
+        />
        </>
     )
 }

@@ -24,9 +24,9 @@ const Slide: React.FC<{ item: SlideItem }> = ({ item }) => {
       <View style={styles.contentContainer}>
         <View style={styles.textShadowContainer}>
           <View style={styles.textContainer} className="bg-black">
-            <Text style={styles.title} className='font-tajawal'>{item?.title}</Text>
+            <Text style={styles.title} className="font-tajawal">{item?.title}</Text>
             <View>
-              <Text style={[styles.subtitle, { textAlign: 'center', padding: 10, color: 'white' }]} className='font-tajawal'>
+              <Text style={[styles.subtitle, { textAlign: 'center', padding: 10, color: 'white' }]} className="font-tajawal">
                 {item?.subtitle}
               </Text>
             </View>
@@ -108,9 +108,10 @@ const styles = StyleSheet.create({
   title: {
     color: 'white',
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: 100,
     textAlign: 'right',
     marginBottom: 10,
+    fontFamily: 'TajawalRegular'
   },
   subtitle: {
     color: 'white',
