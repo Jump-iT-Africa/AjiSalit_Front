@@ -8,6 +8,9 @@ import {
   SafeAreaView,
   Platform,
   KeyboardAvoidingView,
+  Dimensions,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -17,9 +20,14 @@ import RegisterBackImage from "@/assets/images/home.jpg";
 import AppGradient from "../../components/ui/AppGradient";
 import HeaderWithBack from "@/components/ui/HeaderWithToolTipAndback";
 
+
+const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
+
 const Register: React.FC = () => {
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("+212 ");
+
   const toast = useToast();
 
   const formatPhoneNumber = (text: string) => {
@@ -87,7 +95,12 @@ const Register: React.FC = () => {
   };
 
   return (
-   
+    <KeyboardAvoidingView className="flex-1">
+       <TouchableWithoutFeedback
+          onPress={() => {
+            Keyboard.dismiss();
+          }}
+        >
       <View className="flex-1">
         <ImageBackground
           source={RegisterBackImage}
@@ -96,27 +109,31 @@ const Register: React.FC = () => {
         >
           <AppGradient colors={["rgba(0,0,0,0.4)", "rgba(0,0,0,0.0)"]}>
             <SafeAreaView className="flex-1">
-            
-
-          
-                <HeaderWithBack 
-                        tooltipVisible={tooltipVisible} 
-                        setTooltipVisible={setTooltipVisible} 
-                        content="فهاد الصفحة تقدر تزيد رقم الهاتف تاعك 😊"
-                        onPress={()=>router.push('(tabs)')}
-                        /> 
+              <HeaderWithBack 
+                    tooltipVisible={tooltipVisible} 
+                    setTooltipVisible={setTooltipVisible} 
+                    content="فهاد الصفحة تقدر تزيد رقم الهاتف تاعك 😊"
+                    onPress={()=>router.push('(tabs)')}
+                    /> 
               <View className="flex-1 justify-center px-0">
                 <Text className="text-white text-center text-[20px] leading-[24px] font-tajawal mb-8 pt-4">
                   دخل رقم الهاتف ديالك باش تسجل فالطبيق.
                 </Text>
                 <View className="flex-row items-center mb-8 justify-center">
-                  <View className="flex-row items-center bg-[#ffffff5f] rounded-full p-[11] pr-2 w-[90%] pl-5">
+                <View
+                    className={`flex-row items-center bg-[#ffffff5f] rounded-full ${
+                      Platform.OS === "android" ? "p-[5]" : "p-[12]"
+                    } pr-2 ${Platform.OS === "android" ? "w-[100%]" : "w-[90%]"} pl-5`}
+                  >
                     <Feather name="phone" size={21} color="#F52525" className="pl-8" />
                     <TextInput
                       value={phoneNumber}
                       onChangeText={handlePhoneNumberChange}
                       keyboardType="phone-pad"
-                      className="flex-1 text-white text-lg font-tajawal mx-3 rtl:text-right pt-2"
+                      className="flex-1 text-white text-lg font-tajawal mx-3 rtl:text-right"
+                      style={{
+                        paddingTop: Platform.OS === "android" ? 10 : 6,
+                      }}
                       placeholderTextColor="rgba(255, 255, 255, 0.7)"
                       placeholder="+212 0697042864"
                     />
@@ -134,6 +151,8 @@ const Register: React.FC = () => {
         </ImageBackground>
         <StatusBar style="light" />
       </View>
+      </TouchableWithoutFeedback> 
+    </KeyboardAvoidingView>
   );
 };
 

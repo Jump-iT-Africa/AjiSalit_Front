@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   TouchableOpacity,
   KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -91,13 +92,13 @@ const OtpVerification: React.FC = () => {
                   {phoneNumber}
                 </Text>
 
-                <View className="w-[90%]">
+                <View className={`${Platform.OS == "ios" ? "w-[90%]" : "w-[100%]"}`}>
                   <TextInput
                     value={otp}
                     onChangeText={(text) => setOtp(text.slice(0, 6))}
                     keyboardType="phone-pad"
                     maxLength={6}
-                    className="opacity-0 absolute w-full h-10 z-10"
+                    className="opacity-0 absolute top-4 w-full h-10 z-10 "
                     autoFocus
                   />
                   {/* Timer */}
@@ -110,7 +111,7 @@ const OtpVerification: React.FC = () => {
                     </Text>
                   </TouchableOpacity>
                   {/* OTP Display */}
-                  <View className="flex-row justify-center items-center bg-[#ffffff5f] rounded-full px-2 py-4">
+                  <View className="flex-row justify-center items-center bg-[#ffffff5f] rounded-full px-2 py-0 h-16 w-[100%]">
                     {[...Array(6)].map((_, index) => (
                       <View key={index} className="w-8 mx-1 items-center">
                         <Text className="text-white text-xl font-medium">
