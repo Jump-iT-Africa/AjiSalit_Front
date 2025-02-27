@@ -36,9 +36,9 @@ const ActionSheetComponent = forwardRef<ActionSheetRef, ActionSheetProps>(
 const styles = StyleSheet.create({
     container: {
         backgroundColor:Colors.green, 
-        borderTopLeftRadius: 20, 
-        borderTopRightRadius: 20, 
-        height: '95%',
+        borderTopLeftRadius: 10, 
+        borderTopRightRadius: 10, 
+        height: '100%',
     },
     content: {
         padding: 20,

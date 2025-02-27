@@ -19,7 +19,6 @@ const HeaderWithBack: React.FC<HeaderWithBackProps> = ({
 }) => {
   const router = useRouter();
 
-  // Use platform-specific styling
   const containerClassName = Platform.OS === 'ios' 
     ? "flex-row justify-between mx-5 mt-4" 
     : "flex-row justify-between mx-0 mt-14";

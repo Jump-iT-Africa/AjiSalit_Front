@@ -218,18 +218,7 @@ export default function CombinedCompanyForm() {
                 {errors.taxID ? <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[13px]">{errors.taxID}</Text> : null}
             </View>
 
-            <View className="mt-4 mb-6">
-                <Text className="text-right text-gray-700 mb-2 font-tajawal" style={{ color: Color.green }}>
-                    كود الإحالة (اختياري):
-                </Text>
-                <TextInput
-                    placeholder="أدخل كود الإحالة (إذا كان متوفر)"
-                    placeholderTextColor="#888"
-                    value={formData.referralCode}
-                    onChangeText={(text) => setFormData({ ...formData, referralCode: text })}
-                    className="border border-[#2e752f] rounded-lg p-3 text-black text-right bg-white font-tajawalregular"
-                />
-            </View>
+            
 
             <Divider />
 
