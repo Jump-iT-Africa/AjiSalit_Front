@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Image, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { useRouter } from 'expo-router';
 import AppGradient from '@/components/ui/AppGradient';
 import Color from '@/constants/Colors';
@@ -70,6 +70,12 @@ export default function CreatePIN() {
   },[code])
 
   return (
+    <KeyboardAvoidingView className="flex-1">
+      <TouchableWithoutFeedback
+        onPress={() => {
+          Keyboard.dismiss();
+        }}
+      >
     <AppGradient colors={[Color.red, Color.red]} className="flex-1">
       <TouchableOpacity onPress={handleBack}>
         <HeaderWithBack
@@ -89,11 +95,16 @@ export default function CreatePIN() {
         <Text className="text-white font-tajawal text-center mb-8 text-xl px-10 ">
           دخل كود سري جديد للتطبيق باش تكمل.
         </Text>
-        
-        <TouchableOpacity 
-          onPress={() => inputRef.current?.focus()}
+        <TouchableOpacity
+          onPress={() => {
+            console.log("TouchableOpacity Pressed");
+            if (inputRef.current) {
+              inputRef.current.focus();
+            }
+          }}
           activeOpacity={1}
         >
+
           <View className="flex-row justify-center items-center space-x-5 ">
             {[...Array(PIN_LENGTH)].map((_, index) => (
               <View key={index} className="w-5 h-5 justify-center items-center">
@@ -114,17 +125,17 @@ export default function CreatePIN() {
             ))}
           </View>
         </TouchableOpacity>
-
         <TextInput
           ref={inputRef}
           value={code}
           onChangeText={handlePinChange}
           keyboardType="numeric"
           maxLength={PIN_LENGTH}
-          className="absolute opacity-0 w-px h-px"
-          autoFocus={true}
+          className="absolute -top-20 left-0 w-1 h-1 text-transparent bg-transparent"
         />
       </View>
     </AppGradient>
+    </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
   );
 }

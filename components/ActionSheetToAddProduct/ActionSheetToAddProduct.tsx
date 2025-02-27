@@ -11,7 +11,8 @@ import {
   Modal,
   FlatList,
   TouchableWithoutFeedback, 
-  Keyboard
+  Keyboard,
+  Image
 } from 'react-native';
 import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
 import { router } from 'expo-router';
@@ -21,6 +22,9 @@ import ActionSheetComponent from '../ui/ActionSheet';
 import Divider from '../ui/Devider';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AntDesign from '@expo/vector-icons/AntDesign';
+import * as ImagePicker from 'expo-image-picker';
+import Noimages from "@/assets/images/noImages.png"
+import UniqueIdModal from '../QrCodeGeneration/GenerateQrCode';
 
 const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) => {
   const actionSheetRef = useRef(null);
@@ -48,7 +52,10 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
   const step1Animation = useRef(new Animated.Value(1)).current;
   const step2Animation = useRef(new Animated.Value(0)).current;
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const [uniqueId, setUniqueId] = useState('');
+  const [showIdModal, setShowIdModal] = useState(false);
 
+  
 
   useImperativeHandle(ref, () => ({
     show: () => {
@@ -60,6 +67,45 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
     }
   }));
 
+
+
+
+const [uploadedImages, setUploadedImages] = useState([]);
+
+
+
+const takePhoto = async () => {
+  try {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      alert(' يرجى تمكينها في إعدادات جهازك لاستخدام الكاميرا!');
+      return;
+    }
+    
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const newImage = {
+        id: Date.now(),
+        uri: result.assets[0].uri,
+        name: `photo_${Date.now()}.jpg`,
+        size: `${Math.round(result.assets[0].fileSize / 1024)}kb`,
+      };
+      setUploadedImages([...uploadedImages, newImage]);
+    }
+  } catch (error) {
+    console.log('Error taking photo:', error);
+  }
+};
+
+const removeImage = (id) => {
+  const newImages = uploadedImages.filter(img => img.id !== id);
+  setUploadedImages(newImages);
+};
 
   const handleClose = () => {
     setTimeout(() => {
@@ -155,11 +201,30 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
     return valid;
   };
 
-  const handleSubmit = () => {
-    if (validateStep2()) {
-      setFormSubmitted(true);
+  const generateUniqueId = (length = 12) => {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
     }
+    return result;
   };
+
+
+  
+
+  const handleSubmit = () => {
+    console.log('Button clicked');
+      const newUniqueId = generateUniqueId(12);
+      setUniqueId(newUniqueId);
+      console.log('Generated ID:', newUniqueId); 
+      setShowIdModal(true);
+  };
+
+const handleModalClose = () => {
+  setShowIdModal(false);
+  setFormSubmitted(true);
+};
 
 
 
@@ -298,10 +363,10 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
 
         <View className="mt-4 mb-6">
           <Text className="text-right text-gray-700 mb-2 font-tajawal" style={{ color: Color.green }}>
-            كود الإحالة (اختياري):
+          المدينة:<Text className="text-red-500">*</Text>
           </Text>
           <TextInput
-            placeholder="يرجى إدخال كود الإحالة (إن كان متوفراً)"
+            placeholder="يرجى إدخال المدينة"
             placeholderTextColor="#888"
             value={formData.referralCode}
             onChangeText={(text) => setFormData({ ...formData, referralCode: text })}
@@ -413,12 +478,83 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
           معلومات الطلب
         </Text>
         <Divider />
-
-
-
+  
+        <View className="my-8">
+          <Text className="text-right text-gray-700 font-tajawal mb-5" style={{ color: Color.green }}>
+            تحميل الصور:
+          </Text>
+          
+          <View className="border border-dashed border-[#2e752f] rounded-lg p-4 items-center mb-4 ">
+            <AntDesign name="camera" size={32} color="#2e752f" />
+            <Text className="text-center text-gray-500 mt-2 font-tajawalregular">
+              حمل صورك (JPG, PNG)
+            </Text>
+            
+            <View className="flex-row justify-center space-x-2 mt-3">
+              <TouchableOpacity 
+                className="border border-[#2e752f] rounded-full px-4 py-2 flex-row items-center"
+                onPress={takePhoto}
+              >
+                <AntDesign name="camera" size={16} color="#2e752f" style={{ marginRight: 5 }} />
+                <Text className="text-[#2e752f] font-tajawalregular">التقط صورة</Text>
+              </TouchableOpacity>
+              
+              
+            </View>
+          </View>
+       
+          {uploadedImages.length > 0 ? (
+            <View className="mb-4">
+              {uploadedImages.map((image) => (
+                <View key={image.id} className="flex-row justify-between items-center bg-gray-100 rounded-lg p-3 mb-2">
+                  <TouchableOpacity onPress={() => removeImage(image.id)}>
+                    <View className="w-6 h-6 rounded-full bg-red-500 items-center justify-center">
+                      <AntDesign name="close" size={16} color="white" />
+                    </View>
+                  </TouchableOpacity>
+                  <View className="flex-row items-center flex-1 justify-end">
+                    <Text className="text-gray-500 mr-2 font-tajawalregular">{image.size}</Text>
+                    <Text className="text-black font-tajawalregular" numberOfLines={1} ellipsizeMode="middle" style={{ maxWidth: 180 }}>
+                      {image.name}
+                    </Text>
+                      <View className="h-10 w-10 bg-gray-300 rounded ml-2 overflow-hidden">
+                        {uploadedImages[0]?.uri ? (
+                          <Image 
+                            source={{ uri: uploadedImages[0].uri }} 
+                            style={{ width: '100%', height: '100%' }} 
+                            resizeMode="cover"
+                          />
+                        ) : (
+                          <View className="h-full w-full items-center justify-center">
+                            <AntDesign name="picture" size={20} color="#666" />
+                          </View>
+                        )}
+                      </View>  
+                  </View>
+                </View>
+              ))}
+            </View>
+          ) :(
+              <View className='w-full h-40 flex items-center'>
+                <Image
+                  source={Noimages}
+                  resizeMode='contain'
+                  className='flex-1 w-full h-100'
+                />
+                <Text className='font-tajawal text-[#2e752f] mt-2 text-xl'>
+                لا يوجد صور 
+                </Text>
+                <Text className='font-tajawalregular'>
+                قم بتحميل صورك الآن
+                </Text>
+              </View>
+            )
+          }
+        </View>
+  
         <Divider />
-
-        <View className="mt-6 flex-row justify-between gap">
+  
+        <View className="mt-6 flex-row justify-between">
           <CustomButton
             title="رجوع"
             onPress={animateToPreviousStep}
@@ -426,12 +562,17 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
             textStyles="text-white text-center font-tajawal text-[15px]"
           />
           <CustomButton
-            title="إنشاء حساب"
+            title="إنشاء طلب"
             onPress={handleSubmit}
             containerStyles="p-3 bg-[#2e752f] rounded-full w-2/4"
             textStyles="text-white text-center font-tajawal text-[15px]"
           />
         </View>
+        <UniqueIdModal 
+          visible={showIdModal} 
+          onClose={handleModalClose} 
+          uniqueId={uniqueId} 
+        />
       </Animated.View>
     </KeyboardAvoidingView>
   );
@@ -477,6 +618,8 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
             </View>
           </KeyboardAvoidingView>
         )}
+        
+
       </ActionSheetComponent>
     </TouchableWithoutFeedback>
   );

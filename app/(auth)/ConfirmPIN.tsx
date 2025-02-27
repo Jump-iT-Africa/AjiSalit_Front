@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from "expo-router";
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Image, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity, Image, TextInput, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import AppGradient from '@/components/ui/AppGradient';
 import Color from '@/constants/Colors';
@@ -88,7 +88,7 @@ export default function ConfirmPIN() {
                     content="فهاد صفحة غادي تأكد الكود ديالك"
                 />
             </TouchableOpacity>
-            <View className="flex-1 justify-start items-center mt-[30%]">
+            <View className={`flex-1 justify-start items-center ${Platform.OS == "ios" ? "mt-[14%]" : "mt-[4%]"}`}>
                 <Image
                     source={Whitelogo}
                     resizeMode="contain"
@@ -98,7 +98,6 @@ export default function ConfirmPIN() {
                     {pin}
                     أكد الكود السري ديالك للتطبيق باش تكمل.
                 </Text>
-
                 <TouchableOpacity
                     onPress={() => inputRef.current?.focus()}
                     activeOpacity={1}

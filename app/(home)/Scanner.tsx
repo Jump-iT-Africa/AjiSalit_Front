@@ -23,23 +23,52 @@ export default function Scanner() {
     processScannedData(id);
   };
 
-  const processScannedData = (data) => {
-    if (!data) {
-      Alert.alert("خطأ", "الرمز غير صالح، حاول مرة أخرى");
-      return;
-    }
+let isProcessing = false;
 
-    try {
-      if (data.startsWith('http') || data.startsWith('https')) {
-        Linking.openURL(data);
-      } else {
-        Alert.alert("نجاح", `تم العثور على الطلب بالرمز: ${data}`);
-      }
-    } catch (error) {
-      console.error("Error processing data:", error);
-      Alert.alert("خطأ", "حدث خطأ أثناء معالجة البيانات");
-    }
-  };
+const processScannedData = (data) => {
+  if (isProcessing) {
+    return;
+  }
+  
+  isProcessing = true;
+  
+  if (!data) {
+    Alert.alert("خطأ", "الرمز غير صالح، حاول مرة أخرى");
+    setTimeout(() => {
+      isProcessing = false;
+    }, 1000);
+    return;
+  }
+    
+  try {
+    Alert.alert(
+      "نجاح", 
+      `تم العثور على الطلب بالرمز: ${data}`,
+      [
+        {
+          text: "موافق",
+          onPress: () => {
+            isProcessing = false;
+          }
+        }
+      ]
+    );
+  }catch (error) {
+    console.error("Error processing data:", error);
+    Alert.alert(
+      "خطأ", 
+      "حدث خطأ أثناء معالجة البيانات",
+      [
+        {
+          text: "موافق",
+          onPress: () => {
+            isProcessing = false;
+          }
+        }
+      ]
+    );
+  }
+};
 
   return (
     <SafeAreaView style={StyleSheet.absoluteFillObject}>
