@@ -1,7 +1,7 @@
 version: 2.1
 
 executors:
-  docker-executor:
+  docker-executor:  # Correct executor name
     docker:
       - image: node:20.14.0-alpine
     working_directory: ~/app
