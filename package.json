@@ -55,10 +55,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.23.0",
-<<<<<<< HEAD
     "@types/react-native": "^0.73.0",
-=======
->>>>>>> 64ef25b (fixign the problem of running test)
     "jest": "^29.7.0",
     "tailwindcss": "3.3.2"
   },
