@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import React, { useState } from 'react';
 import { View, Text, Modal, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
@@ -13,8 +15,6 @@ const UniqueIdModal = ({ visible, onClose, uniqueId }:any) => {
   const copyToClipboard = async (uniqueId:string) => {
     await Clipboard.setStringAsync(uniqueId);
   };
-
-
 
   return (
     <Modal
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
   },
   modalContent: {
     width: '95%',

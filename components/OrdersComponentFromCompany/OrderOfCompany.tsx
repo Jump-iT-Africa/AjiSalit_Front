@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   View, 
@@ -16,6 +17,7 @@ import NoOrdersExists from '../NoOrderExists/NoOrdersExists';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { FlashList } from "@shopify/flash-list";
 import AjiSalit from "@/assets/images/logo.png"
+import { useRouter } from 'expo-router';
 
 
 
@@ -210,13 +212,14 @@ const sampleData = {
   ]
 };
 
-const OrdersOfCompany = ({ SearchCode }: { SearchCode: string }) => {
-
+const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState(SearchCode);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [currentStatusFilter, setCurrentStatusFilter] = useState(statusFilter);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -237,17 +240,48 @@ const OrdersOfCompany = ({ SearchCode }: { SearchCode: string }) => {
     setSearchTerm(SearchCode);
   }, [SearchCode]);
 
+  useEffect(() => {
+    setCurrentStatusFilter(statusFilter);
+  }, [statusFilter]);
 
-
-  //hadi drtha to memoize the calculations
+  // Filter by both search term and status
   const filteredOrders = useMemo(() => {
-    if (!searchTerm) return orders;
+    let result = orders;
     
-    return orders.filter(order => 
-      order.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customerName.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [orders, searchTerm]);
+    // Apply search term filter
+    if (searchTerm) {
+      result = result.filter(order => 
+        order.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.customerName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    // Apply status filter
+    if (currentStatusFilter) {
+      // Map status filter to the corresponding type in the data structure
+      let typeToFilter;
+      
+      switch(currentStatusFilter) {
+        case 'خالص':
+          typeToFilter = 'paid';
+          break;
+        case 'غير خالص':
+          typeToFilter = 'unpaid';
+          break;
+        case 'التسبيق':
+          typeToFilter = 'installment';
+          break;
+        default:
+          typeToFilter = null;
+      }
+      
+      if (typeToFilter) {
+        result = result.filter(order => order.amount.type === typeToFilter);
+      }
+    }
+    
+    return result;
+  }, [orders, searchTerm, currentStatusFilter]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -256,11 +290,8 @@ const OrdersOfCompany = ({ SearchCode }: { SearchCode: string }) => {
     }, 2000);
   }, []);
 
-
-
-
-
   const OrderItem = ({ item }) => {
+    // Rest of OrderItem component remains the same
     const [isGray, setIsGray] = useState(true);
   
     const getStatusColor = (type) => {
@@ -287,84 +318,97 @@ const OrdersOfCompany = ({ SearchCode }: { SearchCode: string }) => {
   
     return (
       <View>
-        <View className="bg-white rounded-3xl p-4 mb-3 shadow-md border border-[#295f2b] flex-row-reverse justify-between items-center">
-          <View>
-            <View className="flex flex-row-reverse justify-between items-center mb-1">
-              <View className="flex flex-row-reverse items-center">
-                <Text className="text-black mr-2 font-tajawalregular text-[14px]">رمز الطلب:</Text>
-                <Text className="font-bold text-[#295f2b]">{item.orderCode}</Text>
+        <TouchableOpacity 
+          activeOpacity={0.7}
+          onPress={() => {
+            console.log('Item pressed:', item.orderCode);
+            router.push({
+              pathname: '/DetailsPage',
+              params: { id: item.orderCode }
+            });
+          }}
+          style={{ width: '100%' }}
+        >
+          <View className="bg-white rounded-3xl p-4 mb-3 shadow-md border border-[#295f2b] flex-row-reverse justify-between items-center">
+            <View>
+              <View className="flex flex-row-reverse justify-between items-center mb-1">
+                <View className="flex flex-row-reverse items-center">
+                  <Text className="text-black mr-2 font-tajawalregular text-[14px]">رمز الطلب:</Text>
+                  <Text className="font-bold text-[#295f2b]">{item.orderCode}</Text>
+                </View>
               </View>
-            </View>
-            <View className='w-full flex-row-reverse items-center mb-1'>
-              <Text className="text-black mr-2 font-tajawalregular text-[14px] ml-1">المبلغ:</Text>
-              <View className={`px-2 py-0 rounded-full w-auto text-start flex flex-row ${getStatusColor(item.amount.type)}`}>
-                {item.amount.value !== null && (
-                  <Text className="font-bold text-white font-tajawalregular text-[9px] flex flex-row-reverse">
-                    {item.amount.value} {item.amount.currency}
+              <View className='w-full flex-row-reverse items-center mb-1'>
+                <Text className="text-black mr-2 font-tajawalregular text-[14px] ml-1">المبلغ:</Text>
+                <View className={`px-2 py-0 rounded-full w-auto text-start flex flex-row ${getStatusColor(item.amount.type)}`}>
+                  {item.amount.value !== null && (
+                    <Text className="font-bold text-white font-tajawalregular text-[9px] flex flex-row-reverse">
+                      {item.amount.value} {item.amount.currency}
+                    </Text>
+                  )}
+                  <Text className="text-white text-[9px] font-medium font-tajawalregular">
+                    {item.amount.label}
                   </Text>
-                )}
-                <Text className="text-white text-[9px] font-medium font-tajawalregular">
-                  {item.amount.label}
-                </Text>
-              </View>
-            </View>
-            <View className="flex flex-row-reverse justify-between">
-              <View className="flex flex-col items-end">
-                <View className='flex-row-reverse mb-1 gap-1'>
-                  <Text className="text-black mr-2 font-tajawalregular text-[14px]">صاحب(ة) الطلب:</Text>
-                  <Text className="text-gray-900 font-tajawalregular text-[#295f2b]">{item.customerName}</Text>
                 </View>
-                <View className='flex flex-row gap-1 mr-2'>
-                  <Text className="text-black">{item.date}</Text>
-                  <AntDesign name="calendar" size={15} color="#F52525" />
+              </View>
+              <View className="flex flex-row-reverse justify-between">
+                <View className="flex flex-col items-end">
+                  <View className='flex-row-reverse mb-1 gap-1'>
+                    <Text className="text-black mr-2 font-tajawalregular text-[14px]">صاحب(ة) الطلب:</Text>
+                    <Text className="text-gray-900 font-tajawalregular text-[#295f2b]">{item.customerName}</Text>
+                  </View>
+                  <View className='flex flex-row gap-1 mr-2'>
+                    <Text className="text-black">{item.date}</Text>
+                    <AntDesign name="calendar" size={15} color="#F52525" />
+                  </View>
                 </View>
               </View>
             </View>
+            <Pressable 
+              onPress={() => !isConfirmed && setShowModal(true)}
+              disabled={isConfirmed}
+            >
+              <Image 
+                source={AjiSalit}
+                style={{
+                  width: 36,
+                  height: 36,
+                  opacity: isConfirmed ? 1 : 1,
+                  tintColor: isGray ? '#808080' : 'red',
+                }}
+                resizeMode='contain'
+              />
+            </Pressable>
           </View>
-          <Pressable 
-            onPress={() => !isConfirmed && setShowModal(true)}
-            disabled={isConfirmed}
-          >
-            <Image 
-              source={AjiSalit}
-              style={{
-                width: 36,
-                height: 36,
-                opacity: isConfirmed ? 1 : 1,
-                tintColor: isGray ? '#808080' : 'red',
-              }}
-              resizeMode='contain'
-            />
-          </Pressable>
-        </View>
+        </TouchableOpacity>
+
         <Modal
-        animationType="fade"
-        transparent={true}
-        visible={showModal}
-        onRequestClose={() => setShowModal(false)}
-      >
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalText} className='font-tajawalregular'>واش متأكد بغي تأكد الطلب ؟</Text>
-            
-            <View style={styles.buttonContainer}>
-              <Pressable
-                style={[styles.button, styles.buttonConfirm]}
-                onPress={handleConfirm}
-              >
-                <Text style={styles.textStyle} className='font-tajawal'>نعم</Text>
-              </Pressable>
+          animationType="fade"
+          transparent={true}
+          visible={showModal}
+          onRequestClose={() => setShowModal(false)}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Text style={styles.modalText} className='font-tajawalregular'>واش متأكد بغي تأكد الطلب ؟</Text>
               
-              <Pressable
-                style={[styles.button, styles.buttonCancel]}
-                onPress={() => setShowModal(false)}
-              >
-                <Text style={styles.textStyle} className='font-tajawal'>إلغاء</Text>
-              </Pressable>
+              <View style={styles.buttonContainer}>
+                <Pressable
+                  style={[styles.button, styles.buttonConfirm]}
+                  onPress={handleConfirm}
+                >
+                  <Text style={styles.textStyle} className='font-tajawal'>نعم</Text>
+                </Pressable>
+                
+                <Pressable
+                  style={[styles.button, styles.buttonCancel]}
+                  onPress={() => setShowModal(false)}
+                >
+                  <Text style={styles.textStyle} className='font-tajawal'>إلغاء</Text>
+                </Pressable>
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
       </View>
     );
   };
@@ -409,12 +453,11 @@ const OrdersOfCompany = ({ SearchCode }: { SearchCode: string }) => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         showsVerticalScrollIndicator={false}
-        ListFooterComponent={<View style={{ height: 800 }} />}
+        ListFooterComponent={<View style={{ height: 80 }} />}
       />
     </SafeAreaView>
   );
 };
-
 
 const styles = StyleSheet.create({
   centeredView: {

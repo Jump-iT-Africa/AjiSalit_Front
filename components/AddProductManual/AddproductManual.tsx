@@ -17,6 +17,7 @@ const AddproductManual = () => {
             <MaterialIcons name="add-circle" size={24} color="white"/>
         </TouchableOpacity>
 
+
         <View className='flex-row-reverse items-center justify-center mt-1 '>
             <Ionicons name="information-circle-outline" size={19} color={Colors.green} />
             <Text className='font-tajawalregular text-[10px]' style={{color:Colors.green}}>إلا ما خدمش المسح، دخل رمز الطلب يدويًا بالضغط على الزر أعلاه!</Text>

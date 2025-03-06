@@ -1,3 +1,4 @@
+import { ModalPresentationIOS } from "@react-navigation/stack/lib/typescript/commonjs/src/TransitionConfigs/TransitionPresets";
 import { Stack } from "expo-router";
 
 export default function AuthLayout() {

@@ -57,7 +57,7 @@ const Register: React.FC = () => {
   const isValidMoroccanNumber = (number: string) => {
     const cleaned = number.replace(/\s/g, '');
     
-    if (!/^\+212\d{8,10}$/.test(cleaned)) {
+    if (!/^\+212\d{9,10}$/.test(cleaned)) {
       return { isValid: false, message: "رقم الهاتف خاصو يبدا ب +212 و يكون فيه 8 أرقام أو 10" };
     }
   
@@ -84,7 +84,9 @@ const Register: React.FC = () => {
   const handleSubmit = () => {
     const validation = isValidMoroccanNumber(phoneNumber);
     if (!validation.isValid) {
-      toast.show(validation.message, { type: "danger" });
+      console.log('error in 87 page register');
+      
+      // toast.show(validation.message, { type: "danger" });
       return;
     }
 
@@ -127,6 +129,7 @@ const Register: React.FC = () => {
                   >
                     <Feather name="phone" size={21} color="#F52525" className="pl-8" />
                     <TextInput
+                      autoFocus
                       value={phoneNumber}
                       onChangeText={handlePhoneNumberChange}
                       keyboardType="phone-pad"

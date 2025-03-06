@@ -12,13 +12,14 @@ import { CurvedBottomBarExpo } from 'react-native-curved-bottom-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
-import IndexPage from "./index";
-import SavesPage from "./Saves";
+import HomePage from "./index"; // Use consistent naming
+import OrderHistory from "./OrderHistory";
 import ScannerPage from "./Scanner";
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { router } from 'expo-router';
 import ActionSheetToAddProduct from '@/components/ActionSheetToAddProduct/ActionSheetToAddProduct';
 import { createStackNavigator } from '@react-navigation/stack';
+import DetailsPage from './DetailsPage';
 
 const Stack = createStackNavigator();
 
@@ -113,11 +114,11 @@ function MainTabs() {
         <CurvedBottomBarExpo.Screen
           name="الرئيسية"
           position="RIGHT"
-          component={IndexPage}
+          component={HomePage} 
         />
         <CurvedBottomBarExpo.Screen
           name="المحفوظات"
-          component={SavesPage}
+          component={OrderHistory}
           position="LEFT"
         />
       </CurvedBottomBarExpo.Navigator>
@@ -130,15 +131,22 @@ function MainTabs() {
   );
 }
 
-export default function HomeLayouts() {
+function IndexWithBottomNav({ navigation, route }) {
   return (
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="MainTabs" component={MainTabs} />
-        <Stack.Screen name="Scanner" component={ScannerPage} />
-      </Stack.Navigator>
+    <MainTabs initialRouteName="الرئيسية" />
   );
 }
 
+export default function HomeLayouts() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="MainTabs" component={MainTabs} />
+      <Stack.Screen name="Scanner" component={ScannerPage} />
+      <Stack.Screen name="DetailsPage" component={DetailsPage} />
+      <Stack.Screen name="index" component={IndexWithBottomNav} />
+    </Stack.Navigator>
+  );
+}
 
 const styles = StyleSheet.create({
   shadow: {

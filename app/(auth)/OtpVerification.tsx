@@ -48,14 +48,12 @@ const OtpVerification: React.FC = () => {
   const handleResendCode = () => {
     if (timer === 0) {
       setTimer(59);
-      toast.show("تم ارسال الكود بنجاح✅", { type: "success" });
     }
   };
 
   useEffect(() => {
     try {
       if (otp.length == 6) {
-        toast.show("تم التوتيق بنجاح ✅", { type: "success" });
         setTimeout(() => {
           router.push("/CreatePIN");
         }, 2000);
