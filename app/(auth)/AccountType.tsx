@@ -82,8 +82,7 @@ export default function AccountnType() {
                 }}
                 gestureEnabled={true}
                 closable={true}
-                snapPoints={[90]}
-            >
+                snapPoints={[90]}>
                 <PersonalInfoScreen 
                     accountType={selectedAccountType}
                 />

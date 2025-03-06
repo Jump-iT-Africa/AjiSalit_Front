@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { forwardRef, useState, useRef, useImperativeHandle } from 'react';
 import {
   View,
@@ -25,13 +26,14 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import * as ImagePicker from 'expo-image-picker';
 import Noimages from "@/assets/images/noImages.png"
 import UniqueIdModal from '../QrCodeGeneration/GenerateQrCode';
+import PaymentStatus from './PaymenStatus';
 
 const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) => {
   const actionSheetRef = useRef(null);
 
   const [formData, setFormData] = useState({
     price: '',
-    referralCode: '',
+    // city: '',
     RecieveDate: '',
     fieldOfCompany: '',
     status: '',
@@ -54,8 +56,8 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [uniqueId, setUniqueId] = useState('');
   const [showIdModal, setShowIdModal] = useState(false);
+  const [status, setStatus] = useState('');
 
-  
 
   useImperativeHandle(ref, () => ({
     show: () => {
@@ -113,7 +115,7 @@ const removeImage = (id) => {
       setFormSubmitted(false);
       setFormData({
         price: '',
-        referralCode: '',
+        // city: '',
         RecieveDate: '',
         fieldOfCompany: '',
         advanceAmount: '',
@@ -178,6 +180,14 @@ const removeImage = (id) => {
       newErrors.price = '';
     }
 
+    // if (!formData.city.trim()) {
+    //   newErrors.city = 'أدخل مدينتك';
+    //   valid = false;
+    // }else {
+    //   newErrors.city = '';
+    // }
+
+
 
 
     setErrors(newErrors);
@@ -211,8 +221,6 @@ const removeImage = (id) => {
   };
 
 
-  
-
   const handleSubmit = () => {
     console.log('Button clicked');
       const newUniqueId = generateUniqueId(12);
@@ -221,10 +229,10 @@ const removeImage = (id) => {
       setShowIdModal(true);
   };
 
-const handleModalClose = () => {
-  setShowIdModal(false);
-  setFormSubmitted(true);
-};
+  const handleModalClose = () => {
+    setShowIdModal(false);
+    setFormSubmitted(true);
+  };
 
 
 
@@ -242,14 +250,15 @@ const handleModalClose = () => {
     return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
   };
 
-
-
-  const statusOptions = [
-    { id: 1, label: 'خالص' },
-    { id: 2, label: 'غير خالص' },
-    { id: 3, label: 'تسبيق'}
-    ]
-
+  const handleStatusChange = (status: string, advanceAmount?: string) => {
+    setFormData({
+      ...formData,
+      status,
+      advanceAmount: advanceAmount || ''
+    });
+    console.log(formData);
+    
+  };
 
   const Step1Form = (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -270,9 +279,8 @@ const handleModalClose = () => {
         <Text className="text-center text-[#F52525] text-xl font-bold mb-6 font-tajawal">
           معلومات الطلب
         </Text>
-        <Divider />
 
-        
+        <Divider />
 
         <View className="mb-4 mt-4">
           <Text className="text-right text-gray-700 mb-2 font-tajawal" style={{ color: Color.green }}>
@@ -289,53 +297,14 @@ const handleModalClose = () => {
           {errors.price ? <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[13px]">{errors.price}</Text> : null}
         </View>
 
-
-
         <View className="mb-4 mt-4">
           <Text className="text-right text-gray-700 mb-2 font-tajawal" style={{ color: Color.green }}>
             الحالة: <Text className="text-red-500">*</Text>
           </Text>
 
-          <TouchableOpacity
-            onPress={() => setShowStatusDropdown(true)}
-            className={`border ${errors.status ? 'border-red-500' : 'border-[#2e752f]'} rounded-lg p-3 bg-white flex-row justify-between items-center`}
-          >
-            <AntDesign name="down" size={16} color="#2e752f" />
-            <Text className="text-black text-right font-tajawalregular">
-              {formData.status || "اختر الحالة"}
-            </Text>
-          </TouchableOpacity>
-
-          <Modal
-            visible={showStatusDropdown}
-            transparent={true}
-            animationType="fade"
-            onRequestClose={() => setShowStatusDropdown(false)}
-          >
-            <TouchableOpacity
-              style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }}
-              activeOpacity={1}
-              onPress={() => setShowStatusDropdown(false)}
-            >
-              <View className="bg-white rounded-lg mx-4 mt-32 overflow-hidden">
-                <FlatList
-                  data={statusOptions}
-                  keyExtractor={(item) => item.id.toString()}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      onPress={() => {
-                        setFormData({ ...formData, status: item.label });
-                        setShowStatusDropdown(false);
-                      }}
-                      className="p-4 border-b border-gray-200"
-                    >
-                      <Text className="text-right font-tajawalregular text-black">{item.label}</Text>
-                    </TouchableOpacity>
-                  )}
-                />
-              </View>
-            </TouchableOpacity>
-          </Modal>
+          <PaymentStatus 
+          onStatusChange={handleStatusChange} 
+          currentPrice={formData.price}/>
 
           {errors.status ? (
             <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[13px]">
@@ -344,35 +313,21 @@ const handleModalClose = () => {
           ) : null}
         </View>
 
-        {formData.status === 'تسبيق' && (
-          <View className="mb-4 mt-4">
-            <Text className="text-right text-gray-700 mb-2 font-tajawal" style={{ color: Color.green }}>
-              مبلغ التسبيق (بالدرهم): <Text className="text-red-500">*</Text>
-            </Text>
-            <TextInput
-              placeholder="يرجى إدخال مبلغ التسبيق"
-              placeholderTextColor="#888"
-              value={formData.advanceAmount}
-              keyboardType='number-pad'
-              onChangeText={(text) => setFormData({ ...formData, advanceAmount: text })}
-              className={`border ${errors.advanceAmount ? 'border-red-500' : 'border-[#2e752f]'} rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}
-            />
-            {errors.advanceAmount ? <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[13px]">{errors.advanceAmount}</Text> : null}
-          </View>
-        )}
+        
 
-        <View className="mt-4 mb-6">
+        {/* <View className="mt-4 mb-6">
           <Text className="text-right text-gray-700 mb-2 font-tajawal" style={{ color: Color.green }}>
           المدينة:<Text className="text-red-500">*</Text>
           </Text>
           <TextInput
             placeholder="يرجى إدخال المدينة"
             placeholderTextColor="#888"
-            value={formData.referralCode}
-            onChangeText={(text) => setFormData({ ...formData, referralCode: text })}
-            className="border border-[#2e752f] rounded-lg p-3 text-black text-right bg-white font-tajawalregular"
+            value={formData.city}
+            onChangeText={(text) => setFormData({ ...formData, city: text })}
+            className={`border ${errors.city ? 'border-red-500' : 'border-[#2e752f]'} rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}
           />
-        </View>
+          {errors.city ? <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[13px]">{errors.city}</Text> : null}
+        </View> */}
 
         <View className="mt-4 mb-6">
           <Text className="text-right text-gray-700 mb-2 font-tajawal" style={{ color: Color.green }}>
@@ -568,7 +523,7 @@ const handleModalClose = () => {
             textStyles="text-white text-center font-tajawal text-[15px]"
           />
         </View>
-        <UniqueIdModal 
+        <UniqueIdModal
           visible={showIdModal} 
           onClose={handleModalClose} 
           uniqueId={uniqueId} 
@@ -578,7 +533,7 @@ const handleModalClose = () => {
   );
 
   const SuccessView = (
-    <View className="flex-1 items-center justify-center h-full">
+    <View className="flex-1 items-center justify-center h-full  w-full">
       <View>
         <AntDesign name="checkcircleo" size={190} color="white" />
       </View>
@@ -605,8 +560,8 @@ const handleModalClose = () => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <ActionSheetComponent ref={actionSheetRef} containerStyle={{ backgroundColor: 'white' }} onClose={handleClose}>
-        {formSubmitted ? SuccessView : (
+      <ActionSheetComponent ref={actionSheetRef} containerStyle={{ backgroundColor: 'white' }} onClose={handleClose} >
+
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             className="flex"
@@ -617,8 +572,6 @@ const handleModalClose = () => {
               {Step2Form}
             </View>
           </KeyboardAvoidingView>
-        )}
-        
 
       </ActionSheetComponent>
     </TouchableWithoutFeedback>

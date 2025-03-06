@@ -19,7 +19,7 @@
     ],
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.ajisalit.it",
+      "bundleIdentifier": "com.app.ajisalit",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -30,7 +30,7 @@
         "backgroundColor": "#ffffff",
         "userInterfaceStyle": "light"
       },
-      "package": "com.ajisalit.it",
+      "package": "com.app.ajisalit",
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"

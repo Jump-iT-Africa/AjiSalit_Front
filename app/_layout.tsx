@@ -6,7 +6,8 @@ import * as SplashScreen from 'expo-splash-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from "expo-router";
 import { View } from 'react-native';
-
+import { Provider } from 'react-redux';
+import store from '@/store/actions/OrderDetailsAction';
 
 SplashScreen.preventAutoHideAsync()
   .catch(console.warn);
@@ -69,20 +70,13 @@ export default function RootLayout() {
   }
 
   return (
-    <ToastProvider
-    placement="top"
-    duration={4000}
-    animationType="slide-in"
-    successColor="green"
-    dangerColor="red"
-    warningColor="orange"
-    normalColor="gray"
-  >
-    <Stack>
-      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="(home)" options={{ headerShown: false }} />
-    </Stack>
-  </ToastProvider>
+    <Provider store={store}>
+      <Stack>
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="(home)" options={{ headerShown: false }} />
+      </Stack>
+    </Provider>
+
   );
 }

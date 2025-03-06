@@ -60,17 +60,16 @@ export default function ConfirmPIN() {
                         await AsyncStorage.setItem('AppCodePin', pin);
                         const storedPin = await AsyncStorage.getItem('AppCodePin');
                         if (storedPin === pin) {
-                            toast.show('تم حفض كلمة المرور الخاصة بك', { type: "success" });
                             router.replace("AccountType");
                         } else {
-                            toast.show('Error storing PIN', { type: "error" });
+                            console.log("error in line 65 in cnfirmPin");
+                            
                         }
                     } else {
-                        toast.show('لكود غلط عاود', { type: "error" });
+                        console.log("error in line 69 in cnfirmPin");
                     }
                 } catch (err) {
                     console.error('Error storing PIN:', err);
-                    toast.show('وقع مشكل حول تجرب من بعد!', { type: "error" });
                 }
             }
         };

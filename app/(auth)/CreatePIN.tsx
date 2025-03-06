@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard } from 'react-native';
+import { View, Text, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import AppGradient from '@/components/ui/AppGradient';
 import Color from '@/constants/Colors';
@@ -15,7 +15,6 @@ export default function CreatePIN() {
   const inputRef = useRef(null);
   const timeoutRef = useRef(null);
   const toast = useToast();
-
 
   console.log(code);
   
@@ -59,7 +58,6 @@ export default function CreatePIN() {
   {
       if(code.length === 4)
       {
-        toast.show("تم حفظ هد الرقم ✅", { type: "success" });
         setTimeout(() => {
           router.push({
             pathname:'ConfirmPIN',
@@ -86,7 +84,7 @@ export default function CreatePIN() {
         />
 
       </TouchableOpacity>
-      <View className="flex-1 justify-start items-center mt-[30%]">
+      <View className={`flex-1 justify-start items-center ${Platform.OS == "ios" ? "mt-[14%]" : "mt-[4%]"}`}>
         <Image
           source={Whitelogo}
           resizeMode="contain"
@@ -126,6 +124,7 @@ export default function CreatePIN() {
           </View>
         </TouchableOpacity>
         <TextInput
+        autoFocus
           ref={inputRef}
           value={code}
           onChangeText={handlePinChange}

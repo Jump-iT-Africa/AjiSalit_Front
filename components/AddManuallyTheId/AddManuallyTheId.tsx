@@ -67,7 +67,7 @@ export default function AddManuallyTheId({
                   
                   <Text style={styles.headerText}>أدخل رمز الطلب</Text>
                   
-                  <Text style={styles.label}>رمز الطلب:</Text>
+                  <Text style={styles.label} className="font-tajawalregular">رمز الطلب:</Text>
                   
                   <TextInput
                     style={styles.input}
@@ -77,6 +77,7 @@ export default function AddManuallyTheId({
                     keyboardType="default"
                     returnKeyType="done"
                     onSubmitEditing={handleSubmit}
+                    className="font-tajawalregular"
                   />
                   
                   <TouchableOpacity
@@ -118,7 +119,8 @@ const styles = StyleSheet.create({
   },
   headerText: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 100,
+    fontFamily:"Tajawal",
     color: Colors.green,
     marginBottom: 20,
     textAlign: "center"
@@ -155,6 +157,7 @@ const styles = StyleSheet.create({
   submitButtonText: {
     color: "white",
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: 100,
+    fontFamily:"Tajawal",
   }
 });
