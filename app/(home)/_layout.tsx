@@ -12,7 +12,7 @@ import { CurvedBottomBarExpo } from 'react-native-curved-bottom-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
-import HomePage from "./index"; // Use consistent naming
+import HomePage from "./index"; 
 import OrderHistory from "./OrderHistory";
 import ScannerPage from "./Scanner";
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
@@ -107,7 +107,7 @@ function MainTabs() {
         )}
         tabBar={renderTabBar}
         width={Dimensions.get('window').width}
-        borderColor="#DDD"
+        borderColor="green"
         borderWidth={1}
         id="main-navigator"
       >

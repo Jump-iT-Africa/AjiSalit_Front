@@ -1,3 +1,5 @@
+//@ts-nocheck
+
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, Modal, StyleSheet } from 'react-native';
 import { AntDesign, Ionicons } from '@expo/vector-icons';
