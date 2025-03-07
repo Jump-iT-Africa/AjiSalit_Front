@@ -15,7 +15,7 @@ const Home = () => {
   const [dateFilter, setDateFilter] = useState(null);
 
   const handleStatusFilter = (filters) => {
-    console.log('Applying filters:', filters);
+    console.log('Applying filters:', filters.status);
     setStatusFilter(filters.status);
   };
   

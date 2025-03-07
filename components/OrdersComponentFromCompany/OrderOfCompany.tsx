@@ -244,11 +244,9 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
     setCurrentStatusFilter(statusFilter);
   }, [statusFilter]);
 
-  // Filter by both search term and status
   const filteredOrders = useMemo(() => {
     let result = orders;
     
-    // Apply search term filter
     if (searchTerm) {
       result = result.filter(order => 
         order.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -256,9 +254,7 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
       );
     }
     
-    // Apply status filter
     if (currentStatusFilter) {
-      // Map status filter to the corresponding type in the data structure
       let typeToFilter;
       
       switch(currentStatusFilter) {
@@ -291,7 +287,6 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
   }, []);
 
   const OrderItem = ({ item }) => {
-    // Rest of OrderItem component remains the same
     const [isGray, setIsGray] = useState(true);
   
     const getStatusColor = (type) => {
@@ -327,8 +322,7 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
               params: { id: item.orderCode }
             });
           }}
-          style={{ width: '100%' }}
-        >
+          style={{ width: '100%' }}>
           <View className="bg-white rounded-3xl p-4 mb-3 shadow-md border border-[#295f2b] flex-row-reverse justify-between items-center">
             <View>
               <View className="flex flex-row-reverse justify-between items-center mb-1">
@@ -453,7 +447,7 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         showsVerticalScrollIndicator={false}
-        ListFooterComponent={<View style={{ height: 80 }} />}
+        ListFooterComponent={<View style={{ height: 800 }} />}
       />
     </SafeAreaView>
   );
