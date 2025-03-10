@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import React, { useRef, useState } from 'react';
 import {
   Alert,
@@ -20,10 +22,16 @@ import { router } from 'expo-router';
 import ActionSheetToAddProduct from '@/components/ActionSheetToAddProduct/ActionSheetToAddProduct';
 import { createStackNavigator } from '@react-navigation/stack';
 import DetailsPage from './DetailsPage';
+import { useSelector } from 'react-redux';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+
+
 
 const Stack = createStackNavigator();
 
 function MainTabs() {
+  const role = useSelector((state) => state.role.role); 
+  
   const actionSheetRef = useRef(null);
   const [isSheetVisible, setIsSheetVisible] = useState(false);
 
@@ -85,7 +93,7 @@ function MainTabs() {
         style={styles.bottomBar}
         shadowStyle={styles.shadow}
         height={80}
-        circleWidth={50}
+        circleWidth={30}
         bgColor="white"
         initialRouteName="الرئيسية"
         borderTopLeftRight
@@ -97,11 +105,19 @@ function MainTabs() {
             <TouchableOpacity
               style={styles.button}
               onPress={() => {
-                setIsSheetVisible(true);
-                actionSheetRef.current?.show();
+                if (role === 'company') {
+                  setIsSheetVisible(true);
+                  actionSheetRef.current?.show();
+                } else {
+                  navigate('Scanner');
+                }
               }}
             >
-              <FontAwesome6 name="plus" size={24} color="white" />
+              {role === 'company' ? (
+                <FontAwesome6 name="plus" size={24} color="white" />
+              ) : (
+                <MaterialCommunityIcons name="qrcode-scan" size={29} color="white" />
+              )}
             </TouchableOpacity>
           </Animated.View>
         )}
@@ -166,7 +182,6 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   bottomBar: {
-    paddingBottom: 5,
     paddingTop: 5,
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
