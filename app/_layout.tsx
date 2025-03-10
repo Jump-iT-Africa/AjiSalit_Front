@@ -7,7 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from "expo-router";
 import { View } from 'react-native';
 import { Provider } from 'react-redux';
-import store from '@/store/actions/OrderDetailsAction';
+import store from '@/store/actions/Store';
 
 SplashScreen.preventAutoHideAsync()
   .catch(console.warn);
@@ -54,8 +54,8 @@ export default function RootLayout() {
       if (isReady && isAppFirstLaunched !== null && fontsLoaded) {
         try {
           await SplashScreen.hideAsync();
-         router.replace(isAppFirstLaunched ? '/onboarding' : '/(tabs)');
-          // router.replace(isAppFirstLaunched ? '/(home)' : '/(tabs)');
+        //  router.replace(isAppFirstLaunched ? '/onboarding' : '/(tabs)');
+          router.replace(isAppFirstLaunched ? '/(home)' : '/(tabs)');
         } catch (error) {
           console.warn('Error hiding splash screen:', error);
         }
