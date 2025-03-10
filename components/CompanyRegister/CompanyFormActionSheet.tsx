@@ -20,8 +20,12 @@ import { router } from "expo-router";
 import SuccessActionSheetComponent from "../ui/SuccessActionSheet";
 import Colors from "@/constants/Colors";
 import CompanyFieldDropDown from "./CompanyFieldDropDown";
+import { useDispatch, useSelector } from 'react-redux';
+import { setRole } from '@/store/slices/RoleSlice';
 
 export default function CombinedCompanyForm() {
+  const dispatch = useDispatch();
+
   const [isCompanyFieldValid, setIsCompanyFieldValid] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -126,8 +130,11 @@ export default function CombinedCompanyForm() {
 
     // Validate step 2
     if (validateStep2()) {
+      dispatch(setRole('company'));
+      
       setIsSheetVisible(true);
       actionSheetRef.current?.show();
+      console.log("Creating company account with:", { ...formData, role: 'company' });
     }
   };
 
