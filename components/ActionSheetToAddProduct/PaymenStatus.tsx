@@ -8,12 +8,12 @@ import Color from '@/constants/Colors';
 
 
 interface PaymentStatusProps {
-  onStatusChange: (status: string, advanceAmount?: string) => void;
+  onStatusChange: (status: string, advancedAmount?: string) => void;
   currentPrice: string;
 }
 const PaymentStatus: React.FC<PaymentStatusProps> = ({ onStatusChange, currentPrice }) => {
   const [selectedStatus, setSelectedStatus] = useState('');
-  const [advanceAmount, setAdvanceAmount] = useState('');
+  const [advancedAmount, setadvancedAmount] = useState('');
   const [showAdvanceInput, setShowAdvanceInput] = useState(false);
   const [AdvanceError , setAdvanceError] = useState('')
   const statusOptions = [
@@ -37,30 +37,32 @@ const PaymentStatus: React.FC<PaymentStatusProps> = ({ onStatusChange, currentPr
     },
   ];
 
-  const handleStatusSelect = (status: string) => {
-    setSelectedStatus(status);
-    setShowAdvanceInput(status === 'تسبيق');
-    
-    if (status !== 'تسبيق') {
-      setAdvanceAmount('');
-    }
-    
-    onStatusChange(status, status === 'تسبيق' ? advanceAmount : undefined);
-  };
+const handleStatusSelect = (status: string) => {
+  setSelectedStatus(status);
+  setShowAdvanceInput(status === 'تسبيق');
+  
+  if (status !== 'تسبيق') {
+    setadvancedAmount('');
+  }
+  
+  onStatusChange(status, status === 'تسبيق' ? advancedAmount : undefined);
+};
 
-  const handleAdvanceAmountChange = (text: string) => {
-    setAdvanceAmount(text);
-    const advanceValue = parseFloat(text) || 0;
-    const totalPrice = parseFloat(currentPrice) || 0;
-    console.log('current',currentPrice);
-    console.log('advance',advanceValue);
-    if (advanceValue <= totalPrice || !currentPrice) {
-      onStatusChange(selectedStatus, text);
-    } else {
-      setAdvanceError('مبلغ التسبيق لا يمكن أن يتجاوز المبلغ الإجمالي');
-      onStatusChange(selectedStatus, currentPrice);
-    }
-  };
+const handleAdvanceAmountChange = (text: string) => {
+  console.log("Setting advance amount to:", text);
+  setadvancedAmount(text);
+  const advanceValue = parseFloat(text) || 0;
+  const totalPrice = parseFloat(currentPrice) || 0;
+  
+  if (advanceValue <= totalPrice || !currentPrice) {
+    console.log("Calling onStatusChange with:", selectedStatus, text);
+    onStatusChange(selectedStatus, text); 
+    setAdvanceError(''); 
+  } else {
+    setAdvanceError('مبلغ التسبيق لا يمكن أن يتجاوز المبلغ الإجمالي');
+    setadvancedAmount(text);
+  }
+};
 
   return (
     <View>
@@ -116,12 +118,12 @@ const PaymentStatus: React.FC<PaymentStatusProps> = ({ onStatusChange, currentPr
           <TextInput
             placeholder="يرجى إدخال مبلغ التسبيق"
             placeholderTextColor="#888"
-            value={advanceAmount}
+            value={advancedAmount}
             keyboardType="numeric"
             onChangeText={handleAdvanceAmountChange}
             style={{
               borderWidth: 1,
-              borderColor: parseFloat(advanceAmount) > parseFloat(currentPrice) ? 'red' : Color.green,
+              borderColor: parseFloat(advancedAmount) > parseFloat(currentPrice) ? 'red' : Color.green,
               borderRadius: 8,
               padding: 12,
               textAlign: 'right',
@@ -130,7 +132,7 @@ const PaymentStatus: React.FC<PaymentStatusProps> = ({ onStatusChange, currentPr
               backgroundColor: 'white',
             }}
           />
-            {parseFloat(advanceAmount) > parseFloat(currentPrice) && (
+            {parseFloat(advancedAmount) > parseFloat(currentPrice) && (
               <Text style={{ color: 'red', textAlign: 'right', marginTop: 4, fontFamily: 'TajawalRegular', fontSize:12 }}>
                 مبلغ التسبيق لا يمكن أن يتجاوز المبلغ الإجمالي
               </Text>

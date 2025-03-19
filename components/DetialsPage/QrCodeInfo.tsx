@@ -64,8 +64,8 @@ const styles = StyleSheet.create({
         borderColor: Colors.green,
         borderRadius: 10,
         marginBottom: 20,
-       marginRight:80,
-       marginLeft:80
+       marginRight:85,
+       marginLeft:85
     },
     divider: {
         height: 1,

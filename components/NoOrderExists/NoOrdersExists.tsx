@@ -6,7 +6,7 @@ import Colors from "@/constants/Colors";
 export default function NoOrdersExists()
 {
     return(
-        <View className="flex items-center justify-center mt-20">
+        <View className="flex items-center justify-center mt-20 ">
             <View>
                 <Image source={NoOrders}
                 className="w-40 h-40"

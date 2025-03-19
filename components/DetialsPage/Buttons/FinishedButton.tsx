@@ -10,7 +10,12 @@ import { router } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSelector, useDispatch } from 'react-redux';
 import {finishButtonPressed}  from '@/store/slices/OrderDetailsSlice';
+
+
+
 console.log("Action:", finishButtonPressed);
+
+
 export default function FinishedButton() {
     const actionSheetRef = useRef(null);
     
