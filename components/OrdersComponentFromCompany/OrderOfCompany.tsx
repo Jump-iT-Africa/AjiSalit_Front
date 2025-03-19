@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { 
   View, 
   Text, 
@@ -9,286 +9,92 @@ import {
   RefreshControl,
   Image,
   Pressable,
-  Alert,
   Modal,
   StyleSheet
 } from 'react-native';
 import NoOrdersExists from '../NoOrderExists/NoOrdersExists';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { FlashList } from "@shopify/flash-list";
-import AjiSalit from "@/assets/images/logo.png"
+import AjiSalit from "@/assets/images/logo.png";
 import { useRouter } from 'expo-router';
-
-
-
-interface OrderAmount {
-  type: string;
-  value: number | null;
-  label: string;
-  currency?: string;
-}
-
-interface Order {
-  orderCode: string;
-  status: string;
-  amount: OrderAmount;
-  customerName: string;
-  date: string;
-}
-
-const sampleData = {
-  "orders": [
-    {
-      "orderCode": "asd",
-      "status": "pending",
-      "amount": {
-        "type": "paid",
-        "value": null,
-        "label": "خالص"
-      },
-      "customerName": "samawi" ,
-      "date": "11/02/2025"
-    },
-    {
-      "orderCode": "qwe",
-      "status": "completed",
-      "amount": {
-        "type": "unpaid",
-        "value": null,
-        "label": "غير خالص"
-      },
-      "customerName": "mimoun",
-      "date": "11/02/2025"
-    },
-    {
-      "orderCode": "msd",
-      "status": "pending",
-      "amount": {
-        "type": "installment",
-        "value": 20,
-        "label": "تنسيق",
-        "currency": "درهم"
-      },
-      "customerName": "ayoub",
-      "date": "11/02/2025"
-    },
-
-    {
-      "orderCode": "jhf",
-      "status": "pending",
-      "amount": {
-        "type": "paid",
-        "value": null,
-        "label": "خالص"
-      },
-      "customerName": "Mohammed ali",
-      "date": "11/02/2025"
-    },
-    {
-      "orderCode": "yetr",
-      "status": "completed",
-      "amount": {
-        "type": "unpaid",
-        "value": null,
-        "label": "غير خالص"
-      },
-      "customerName": "محمد المرجاني",
-      "date": "11/02/2025"
-    },
-    {
-      "orderCode": "kut",
-      "status": "pending",
-      "amount": {
-        "type": "installment",
-        "value": 20,
-        "label": "تنسيق",
-        "currency": "درهم"
-      },
-      "customerName": "محمد المرجاني",
-      "date": "11/02/2025"
-    },
-    {
-      "orderCode": "cbv",
-      "status": "pending",
-      "amount": {
-        "type": "paid",
-        "value": null,
-        "label": "خالص"
-      },
-      "customerName": "محمد المرجاني",
-      "date": "11/02/2025"
-    },
-    {
-      "orderCode": "etr",
-      "status": "completed",
-      "amount": {
-        "type": "unpaid",
-        "value": null,
-        "label": "غير خالص"
-      },
-      "customerName": "محمد المرجاني",
-      "date": "11/02/2025"
-    },
-    {
-      "orderCode": "bnbn",
-      "status": "pending",
-      "amount": {
-        "type": "installment",
-        "value": 20,
-        "label": "تنسيق",
-        "currency": "درهم"
-      },
-      "customerName": "محمد المرجاني",
-      "date": "11/02/2025"
-    },
-    {
-      "orderCode": "lsf",
-      "status": "pending",
-      "amount": {
-        "type": "paid",
-        "value": null,
-        "label": "خالص"
-      },
-      "customerName": "محمد المرجاني",
-      "date": "11/02/2025"
-    },
-    {
-      "orderCode": "pwp",
-      "status": "completed",
-      "amount": {
-        "type": "unpaid",
-        "value": null,
-        "label": "غير خالص"
-      },
-      "customerName": "محمد المرجاني",
-      "date": "11/02/2025"
-    },
-    {
-      "orderCode": "mmm",
-      "status": "pending",
-      "amount": {
-        "type": "installment",
-        "value": 20,
-        "label": "تنسيق",
-        "currency": "درهم"
-      },
-      "customerName": "محمد المرجاني",
-      "date": "11/02/2025"
-    },
-    {
-      "orderCode": "cdd",
-      "status": "pending",
-      "amount": {
-        "type": "paid",
-        "value": null,
-        "label": "خالص"
-      },
-      "customerName": "محمد المرجاني",
-      "date": "11/02/2025"
-    },
-    {
-      "orderCode": "pop",
-      "status": "completed",
-      "amount": {
-        "type": "unpaid",
-        "value": null,
-        "label": "غير خالص"
-      },
-      "customerName": "محمد المرجاني",
-      "date": "11/02/2025"
-    },
-    {
-      "orderCode": "lkl",
-      "status": "pending",
-      "amount": {
-        "type": "installment",
-        "value": 20,
-        "label": "تنسيق",
-        "currency": "درهم"
-      },
-      "customerName": "محمد المرجاني",
-      "date": "11/02/2025"
-    },
-  ]
-};
+import { useSelector, useDispatch } from 'react-redux';
+import { 
+  fetchOrders, 
+  selectFilteredOrders, 
+  selectOrdersLoading, 
+  selectOrdersError,
+  setSearchTerm,
+  setStatusFilter,
+  markOrderFinished
+} from '@/store/slices/OrdersSlice';
+import { finishButtonPressed } from '@/store/slices/OrderDetailsSlice';
+import { useState } from 'react';
 
 const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
   const router = useRouter();
-  const [searchTerm, setSearchTerm] = useState(SearchCode);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const dispatch = useDispatch();
+  const filteredOrders = useSelector(selectFilteredOrders);
+  const loading = useSelector(selectOrdersLoading);
+  const error = useSelector(selectOrdersError);
+  const finishButtonClicked = useSelector(state => state.buttons.finishButtonClicked);
+  const isAuthenticated = useSelector(state => state.user.isAuthenticated);
+  const token = useSelector(state => state.user.token);
   const [refreshing, setRefreshing] = useState(false);
-  const [currentStatusFilter, setCurrentStatusFilter] = useState(statusFilter);
+  const [ordersLoaded, setOrdersLoaded] = useState(false);
+
+  console.log('FilteredOrders length:', filteredOrders?.length);
+  console.log('Search term:', SearchCode);
+  console.log('Status filter:', statusFilter);
+  console.log('Loading state:', loading);
+  console.log('Orders loaded:', ordersLoaded);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      try {
-        setOrders(sampleData.orders || []);
-        setLoading(false);
-      } catch (err) {
-        console.log('Error setting orders:', err);
-        setError('Failed to load orders');
-        setLoading(false);
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    setSearchTerm(SearchCode);
-  }, [SearchCode]);
-
-  useEffect(() => {
-    setCurrentStatusFilter(statusFilter);
-  }, [statusFilter]);
-
-  const filteredOrders = useMemo(() => {
-    let result = orders;
-    
-    if (searchTerm) {
-      result = result.filter(order => 
-        order.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.customerName.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+    if (SearchCode !== undefined && SearchCode !== null) {
+      dispatch(setSearchTerm(SearchCode));
     }
-    
-    if (currentStatusFilter) {
-      let typeToFilter;
-      
-      switch(currentStatusFilter) {
-        case 'خالص':
-          typeToFilter = 'paid';
-          break;
-        case 'غير خالص':
-          typeToFilter = 'unpaid';
-          break;
-        case 'التسبيق':
-          typeToFilter = 'installment';
-          break;
-        default:
-          typeToFilter = null;
-      }
-      
-      if (typeToFilter) {
-        result = result.filter(order => order.amount.type === typeToFilter);
-      }
+  }, [SearchCode, dispatch]);
+
+  useEffect(() => {
+    if (statusFilter !== undefined && statusFilter !== null) {
+      dispatch(setStatusFilter(statusFilter));
     }
-    
-    return result;
-  }, [orders, searchTerm, currentStatusFilter]);
+  }, [statusFilter, dispatch]);
+
+  useEffect(() => {
+    if (isAuthenticated && token) {
+      console.log("User is authenticated, fetching orders");
+      dispatch(fetchOrders())
+        .then(() => {
+          setOrdersLoaded(true);
+          console.log("Orders fetched successfully");
+        })
+        .catch(err => {
+          console.log("Error fetching orders:", err);
+          setOrdersLoaded(true);
+        });
+    } else {
+      console.log("User is not authenticated, cannot fetch orders");
+    }
+  }, [dispatch, isAuthenticated, token]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 2000);
-  }, []);
+    dispatch(fetchOrders())
+      .then(() => {
+        console.log("Orders refreshed");
+        setRefreshing(false);
+      })
+      .catch(err => {
+        console.log("Error refreshing orders:", err);
+        setRefreshing(false);
+      });
+  }, [dispatch]);
 
   const OrderItem = ({ item }) => {
     const [isGray, setIsGray] = useState(true);
-  
+    const [isConfirmed, setIsConfirmed] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+
     const getStatusColor = (type) => {
       switch (type) {
         case 'paid':
@@ -302,10 +108,9 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
       }
     };
 
-    const [isConfirmed, setIsConfirmed] = useState(false);
-    const [showModal, setShowModal] = useState(false);
-
     const handleConfirm = () => {
+      dispatch(finishButtonPressed());
+      dispatch(markOrderFinished(item.id));
       setIsGray(!isGray);
       setIsConfirmed(true);
       setShowModal(false);
@@ -316,10 +121,9 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
         <TouchableOpacity 
           activeOpacity={0.7}
           onPress={() => {
-            console.log('Item pressed:', item.orderCode);
             router.push({
               pathname: '/DetailsPage',
-              params: { id: item.orderCode }
+              params: { id: item.id }
             });
           }}
           style={{ width: '100%' }}>
@@ -359,15 +163,15 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
             </View>
             <Pressable 
               onPress={() => !isConfirmed && setShowModal(true)}
-              disabled={isConfirmed}
+              disabled={isConfirmed || item.isFinished}
             >
               <Image 
                 source={AjiSalit}
                 style={{
                   width: 36,
                   height: 36,
-                  opacity: isConfirmed ? 1 : 1,
-                  tintColor: isGray ? '#808080' : 'red',
+                  opacity: isConfirmed || item.isFinished ? 1 : 1,
+                  tintColor: isConfirmed || item.isFinished ? 'red' : '#808080',
                 }}
                 resizeMode='contain'
               />
@@ -411,7 +215,8 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
     return <OrderItem item={item} />;
   }, []);
 
-  if (loading) {
+  // Show loading only when initially loading and not refreshing
+  if (loading && !refreshing && !ordersLoaded) {
     return (
       <View className="flex-1 justify-center items-center">
         <ActivityIndicator size="large" color="#4CAF50" />
@@ -419,13 +224,18 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
     );
   }
 
-  if (error) {
+  // Show error message if there's an error and not refreshing
+  if (error && !refreshing) {
+    const errorMessage = typeof error === 'object' 
+      ? error.message || JSON.stringify(error) 
+      : String(error);
+      
     return (
       <View className="flex-1 justify-center items-center">
-        <Text className="text-red-500 mb-4">{error}</Text>
+        <Text className="text-red-500 mb-4">{errorMessage}</Text>
         <TouchableOpacity 
           className="bg-green-500 px-4 py-2 rounded" 
-          onPress={() => setOrders(sampleData.orders || [])}
+          onPress={() => dispatch(fetchOrders())}
         >
           <Text className="text-white font-medium">إعادة المحاولة</Text>
         </TouchableOpacity>
@@ -433,14 +243,20 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
     );
   }
 
-  if (filteredOrders.length === 0) {
-    return <NoOrdersExists />;
+  if (ordersLoaded && Array.isArray(filteredOrders) && filteredOrders.length === 0) {
+    console.log("No orders found, showing NoOrdersExists component");
+    return (
+      <SafeAreaView className="flex-1 bg-gray-100">
+        <NoOrdersExists />
+      </SafeAreaView>
+    );
   }
-
+  
+  // Show the FlashList when we have orders
   return (
     <SafeAreaView className="flex-1 bg-gray-100 p-4 pb-10">
       <FlashList
-        data={filteredOrders}
+        data={filteredOrders || []}
         renderItem={renderOrder}
         estimatedItemSize={200}
         refreshControl={

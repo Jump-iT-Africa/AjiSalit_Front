@@ -6,6 +6,10 @@ import Color from '@/constants/Colors';
 import HeaderWithBack from '@/components/ui/HeaderWithToolTipAndback';
 import Whitelogo from "@/assets/images/whiteLogo.png";
 import { useToast } from 'react-native-toast-notifications';
+import { useDispatch } from 'react-redux';
+import {setPassword} from "@/store/slices/userSlice"
+
+
 
 export default function CreatePIN() {
   const router = useRouter();
@@ -15,9 +19,8 @@ export default function CreatePIN() {
   const inputRef = useRef(null);
   const timeoutRef = useRef(null);
   const toast = useToast();
+  const dispatch = useDispatch();
 
-  console.log(code);
-  
 
   const handleBack = () => {
     setTimeout(() => {
@@ -25,7 +28,7 @@ export default function CreatePIN() {
     }, 100);
   };
 
-  const PIN_LENGTH = 4;
+  const PIN_LENGTH = 6;
 
   const handlePinChange = (value) => {
     const newValue = value.replace(/[^0-9]/g, '').slice(0, PIN_LENGTH);
@@ -56,13 +59,11 @@ export default function CreatePIN() {
 
   useEffect(()=>
   {
-      if(code.length === 4)
+      if(code.length === 6)
       {
         setTimeout(() => {
-          router.push({
-            pathname:'ConfirmPIN',
-            params:{pin: code}
-          });
+          dispatch(setPassword(code));
+          router.navigate('ConfirmPIN');
         }, 1000);
       }
   },[code])

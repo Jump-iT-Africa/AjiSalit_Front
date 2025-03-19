@@ -10,9 +10,21 @@ import OrdersOfCompany from '@/components/OrdersComponentFromCompany/OrderOfComp
 import AddProductManualCompany from '@/components/AddProductManualCompany/AddProductManualCompany'
 import { useSelector, useDispatch } from 'react-redux';
 import OrdersOfClient from "@/components/OrdersOfClient/OrdersOfClient"
-
+import getAuthToken from "@/services/api"
+import getUserData from "@/services/api"
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Home = () => {
+
+  const checkStoredData = async () => {
+    const token = await AsyncStorage.getItem('token')
+    const userData = await AsyncStorage.getItem('user');
+    // console.log("this is user data", userData);
+  };
+  
+  checkStoredData();
+  
+  
   const [searchCode, setSearchCode] = useState('');
   const [statusFilter, setStatusFilter] = useState(null);
   const [dateFilter, setDateFilter] = useState(null);
@@ -42,8 +54,8 @@ const Home = () => {
             {role === 'client' && <AddProductManualClient/>}
             {role === 'company' && <AddProductManualCompany />}
           </View>
-          <View className='mt-5 w-full flex items-end'>
-            <Text className='text-end text-xl font-tajawal'>الطلبات ديالك</Text>
+          <View className='mt-8  w-full flex items-end'>
+            <Text className='text-end text-xl font-tajawal'>الطلبات المتوفرة</Text>
           </View>
         </View>
         <View className='px-4'>
@@ -64,7 +76,9 @@ const Home = () => {
       </View>
       <View className='w-full h-full px-2 mt-4 '>
 
-        {role === 'client' && <OrdersOfClient />}
+        {role === 'client' && <OrdersOfClient 
+              SearchCode={searchCode} 
+        />}
         {role === 'company' && <OrdersOfCompany 
             SearchCode={searchCode} 
             statusFilter={statusFilter}

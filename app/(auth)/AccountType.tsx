@@ -1,5 +1,5 @@
 import AppGradient from "@/components/ui/AppGradient";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Color from "@/constants/Colors";
@@ -8,7 +8,8 @@ import Whitelogo from "@/assets/images/whiteLogo.png";
 import CustomButton from "@/components/ui/CustomButton";
 import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
 import PersonalInfoScreen from "@/components/ui/PersonalInfoScreen";
-
+import { useDispatch } from 'react-redux';
+import {setRole} from "@/store/slices/userSlice"
 
 
 
@@ -17,6 +18,7 @@ export default function AccountnType() {
     const [tooltipVisible, setTooltipVisible] = useState(false);
     const actionSheetRef = useRef<ActionSheetRef>(null);
     const [selectedAccountType, setSelectedAccountType] = useState('');
+    const dispatch = useDispatch();
 
     const handleBack = () => {
         setTimeout(() => {
@@ -27,10 +29,29 @@ export default function AccountnType() {
     const handleAccountTypeSelect = (type: string) => {
         actionSheetRef.current?.hide();
         setSelectedAccountType(type);
+        
         setTimeout(() => {
           actionSheetRef.current?.show();
         }, 300);
       };
+
+
+      useEffect(()=>{
+
+        try{
+            if(selectedAccountType === "شخص عادي" )
+            {
+                dispatch(setRole('client'))
+            }else{
+                dispatch(setRole('company'))
+            }
+
+        }catch(e)
+        {
+            console.log(e);
+        }
+
+      },[selectedAccountType])
 
     return (
         <AppGradient colors={[Color.red, Color.red]} className="flex-1">
