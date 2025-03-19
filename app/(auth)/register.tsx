@@ -19,14 +19,28 @@ import { useToast } from "react-native-toast-notifications";
 import RegisterBackImage from "@/assets/images/home.jpg";
 import AppGradient from "../../components/ui/AppGradient";
 import HeaderWithBack from "@/components/ui/HeaderWithToolTipAndback";
+import { useDispatch } from 'react-redux';
+
+
+//redux imports 
+
+import {setPhoneNumber} from "@/store/slices/userSlice"
+
+
+
 
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 const Register: React.FC = () => {
+
   const [tooltipVisible, setTooltipVisible] = useState(false);
-  const [phoneNumber, setPhoneNumber] = useState("+212 ");
+  // const [phoneNumber, setPhone] = useState("+212 ");
+  const [phone, setPhone] = useState('+212 ');
+
+  const dispatch = useDispatch();
+
 
   const toast = useToast();
 
@@ -78,23 +92,32 @@ const Register: React.FC = () => {
 
   const handlePhoneNumberChange = (text: string) => {
     const formattedNumber = formatPhoneNumber(text);
-    setPhoneNumber(formattedNumber);
+    setPhone(formattedNumber);
   };
 
+
+
+
+
   const handleSubmit = () => {
-    const validation = isValidMoroccanNumber(phoneNumber);
+    const validation = isValidMoroccanNumber(phone);
     if (!validation.isValid) {
       console.log('error in 87 page register');
-      
       // toast.show(validation.message, { type: "danger" });
       return;
     }
 
-    router.push({
-      pathname: "OtpVerification",
-      params: { phoneNumber: phoneNumber.replace(/\s/g, '') } 
-    });
+      dispatch(setPhoneNumber(phone));
+      router.navigate('/CreatePIN');
+
+    // router.push({
+    //   pathname: "OtpVerification",
+    //   params: { phoneNumber: phoneNumber.replace(/\s/g, '') } 
+    // });
   };
+
+
+
 
   return (
     <KeyboardAvoidingView className="flex-1">
@@ -130,7 +153,7 @@ const Register: React.FC = () => {
                     <Feather name="phone" size={21} color="#F52525" className="pl-8" />
                     <TextInput
                       autoFocus
-                      value={phoneNumber}
+                      value={phone}
                       onChangeText={handlePhoneNumberChange}
                       keyboardType="phone-pad"
                       className="flex-1 text-white text-lg font-tajawal mx-3 rtl:text-right"

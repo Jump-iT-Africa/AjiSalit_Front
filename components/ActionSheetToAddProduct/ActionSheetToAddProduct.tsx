@@ -1,22 +1,23 @@
 // @ts-nocheck
-import React, { forwardRef, useState, useRef, useImperativeHandle } from 'react';
+import React, { forwardRef, useState, useRef, useImperativeHandle, useEffect } from 'react';
 import {
   View,
   Text,
   TextInput,
-  StyleSheet,
   KeyboardAvoidingView,
   TouchableOpacity,
   Platform,
   Animated,
   Modal,
-  FlatList,
-  TouchableWithoutFeedback, 
+  TouchableWithoutFeedback,
   Keyboard,
-  Image
+  Image,
+  ActivityIndicator
 } from 'react-native';
-import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
+import ActionSheet from "react-native-actions-sheet";
 import { router } from 'expo-router';
+import { useDispatch, useSelector } from 'react-redux';
+import { createOrder, resetOrderState } from '@/store/slices/CreateOrder';
 import Color from '@/constants/Colors';
 import CustomButton from '../ui/CustomButton';
 import ActionSheetComponent from '../ui/ActionSheet';
@@ -30,21 +31,24 @@ import PaymentStatus from './PaymenStatus';
 
 const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) => {
   const actionSheetRef = useRef(null);
+  const dispatch = useDispatch();
+  const { loading, error, success, currentOrder } = useSelector((state) => state.order);
 
   const [formData, setFormData] = useState({
     price: '',
-    // city: '',
     RecieveDate: '',
     fieldOfCompany: '',
-    status: '',
-    advanceAmount: '', 
+    status:"في طور الانجاز",
+    situation: '',
+    advancedAmount: '', 
+    pickupDate: '',
   });
 
   const [errors, setErrors] = useState({
     price: '',
     RecieveDate: '',
     fieldOfCompany: '',
-    advanceAmount: '', 
+    advancedAmount: '', 
   });
 
   const [step, setStep] = useState(1);
@@ -56,8 +60,6 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [uniqueId, setUniqueId] = useState('');
   const [showIdModal, setShowIdModal] = useState(false);
-  const [status, setStatus] = useState('');
-
 
   useImperativeHandle(ref, () => ({
     show: () => {
@@ -69,45 +71,47 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
     }
   }));
 
+  const [uploadedImages, setUploadedImages] = useState([]);
 
+  // Reset redux state when component unmounts
+  useEffect(() => {
+    return () => {
+      dispatch(resetOrderState());
+    };
+  }, [dispatch]);
 
+  const takePhoto = async () => {
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        alert(' يرجى تمكينها في إعدادات جهازك لاستخدام الكاميرا!');
+        return;
+      }
+      
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
 
-const [uploadedImages, setUploadedImages] = useState([]);
-
-
-
-const takePhoto = async () => {
-  try {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') {
-      alert(' يرجى تمكينها في إعدادات جهازك لاستخدام الكاميرا!');
-      return;
+      if (!result.canceled) {
+        const newImage = {
+          id: Date.now(),
+          uri: result.assets[0].uri,
+          name: `photo_${Date.now()}.jpg`,
+          size: `${Math.round(result.assets[0].fileSize / 1024)}kb`,
+        };
+        setUploadedImages([...uploadedImages, newImage]);
+      }
+    } catch (error) {
+      console.log('Error taking photo:', error);
     }
-    
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+  };
 
-    if (!result.canceled) {
-      const newImage = {
-        id: Date.now(),
-        uri: result.assets[0].uri,
-        name: `photo_${Date.now()}.jpg`,
-        size: `${Math.round(result.assets[0].fileSize / 1024)}kb`,
-      };
-      setUploadedImages([...uploadedImages, newImage]);
-    }
-  } catch (error) {
-    console.log('Error taking photo:', error);
-  }
-};
-
-const removeImage = (id) => {
-  const newImages = uploadedImages.filter(img => img.id !== id);
-  setUploadedImages(newImages);
-};
+  const removeImage = (id) => {
+    const newImages = uploadedImages.filter(img => img.id !== id);
+    setUploadedImages(newImages);
+  };
 
   const handleClose = () => {
     setTimeout(() => {
@@ -115,24 +119,24 @@ const removeImage = (id) => {
       setFormSubmitted(false);
       setFormData({
         price: '',
-        // city: '',
         RecieveDate: '',
         fieldOfCompany: '',
-        advanceAmount: '',
+        advancedAmount: '',
         status: '',
+        situation: '',
+        pickupDate: '',
       });
       setErrors({
         price: '',
         RecieveDate: '',
         fieldOfCompany: '',
-        advanceAmount: '', 
+        advancedAmount: '', 
       });
       step1Animation.setValue(1);
       step2Animation.setValue(0);
     }, 300);
     if (onClose) onClose();
   };
-
 
   const animateToNextStep = () => {
     Animated.parallel([
@@ -168,7 +172,6 @@ const removeImage = (id) => {
     });
   };
 
-
   const validateStep1 = () => {
     let valid = true;
     let newErrors = { ...errors };
@@ -180,16 +183,6 @@ const removeImage = (id) => {
       newErrors.price = '';
     }
 
-    // if (!formData.city.trim()) {
-    //   newErrors.city = 'أدخل مدينتك';
-    //   valid = false;
-    // }else {
-    //   newErrors.city = '';
-    // }
-
-
-
-
     setErrors(newErrors);
     return valid;
   };
@@ -198,12 +191,8 @@ const removeImage = (id) => {
     let valid = true;
     let newErrors = { ...errors };
 
-    if (!formData.RecieveDate.trim()) {
-      newErrors.RecieveDate = 'معرف الضريبة مطلوب';
-      valid = false;
-    }
-    if (!formData.fieldOfCompany.trim()) {
-      newErrors.fieldOfCompany = 'مجال الشركة مطلوب';
+    if (!formData.RecieveDate) {
+      newErrors.RecieveDate = 'تاريخ التسليم مطلوب';
       valid = false;
     }
 
@@ -220,21 +209,54 @@ const removeImage = (id) => {
     return result;
   };
 
-
   const handleSubmit = () => {
-    console.log('Button clicked');
-      const newUniqueId = generateUniqueId(12);
-      setUniqueId(newUniqueId);
-      console.log('Generated ID:', newUniqueId); 
-      setShowIdModal(true);
+    if (!validateStep2()) return;
+    
+    const newUniqueId = generateUniqueId(12);
+    setUniqueId(newUniqueId);
+    
+    const formatDateToIso = (date) => {
+      if (!(date instanceof Date)) return '';
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    };
+    
+    const deliveryDate = formData.RecieveDate;
+    const pickupDate = new Date(deliveryDate);
+    pickupDate.setDate(pickupDate.getDate() + 2);
+    
+    // Prepare order data
+
+
+    const orderData = {
+      price: parseFloat(formData.price),
+      situation: formData.situation || "خالص",
+      status: "في طور الانجاز",
+      advancedAmount: formData.situation === 'تسبيق' ? formData.advancedAmount : null,
+      deliveryDate: formatDateToIso(deliveryDate),
+      pickupDate: formatDateToIso(pickupDate),
+      qrCode: newUniqueId
+    };
+
+
+    console.log("info order",orderData);
+    
+    dispatch(createOrder(orderData));
+    
+    setShowIdModal(true);
   };
 
   const handleModalClose = () => {
     setShowIdModal(false);
     setFormSubmitted(true);
+    
+    if (success) {
+      setTimeout(() => {
+        actionSheetRef.current?.hide();
+        handleClose();
+        router.replace('(home)');
+      }, 1000);
+    }
   };
-
-
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showCalendar, setShowCalendar] = useState(false);
@@ -250,15 +272,28 @@ const removeImage = (id) => {
     return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
   };
 
-  const handleStatusChange = (status: string, advanceAmount?: string) => {
-    setFormData({
-      ...formData,
-      status,
-      advanceAmount: advanceAmount || ''
-    });
-    console.log(formData);
+  
+  
+
+  const handleStatusChange = (status, advancedAmount) => {
+    console.log("handleStatusChange received:", status, advancedAmount);
     
+    const processedAmount = advancedAmount ? advancedAmount : '';
+    
+    console.log("Setting formData with:", status, processedAmount);
+    
+    setFormData(prevData => {
+      const newData = {
+        ...prevData,
+        situation: status,
+        advancedAmount: status === 'تسبيق' ? processedAmount : ''
+      };
+      console.log("New formData:", newData);
+      return newData;
+    });
   };
+
+  
 
   const Step1Form = (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -302,9 +337,18 @@ const removeImage = (id) => {
             الحالة: <Text className="text-red-500">*</Text>
           </Text>
 
+
           <PaymentStatus 
-          onStatusChange={handleStatusChange} 
-          currentPrice={formData.price}/>
+            onStatusChange={(status, advancedAmount) => {
+              console.log("PaymentStatus callback with:", status, advancedAmount);
+              setFormData({
+                ...formData,
+                situation: status,
+                advancedAmount: advancedAmount
+              });
+            }} 
+            currentPrice={formData.price}
+          />
 
           {errors.status ? (
             <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[13px]">
@@ -312,22 +356,6 @@ const removeImage = (id) => {
             </Text>
           ) : null}
         </View>
-
-        
-
-        {/* <View className="mt-4 mb-6">
-          <Text className="text-right text-gray-700 mb-2 font-tajawal" style={{ color: Color.green }}>
-          المدينة:<Text className="text-red-500">*</Text>
-          </Text>
-          <TextInput
-            placeholder="يرجى إدخال المدينة"
-            placeholderTextColor="#888"
-            value={formData.city}
-            onChangeText={(text) => setFormData({ ...formData, city: text })}
-            className={`border ${errors.city ? 'border-red-500' : 'border-[#2e752f]'} rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}
-          />
-          {errors.city ? <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[13px]">{errors.city}</Text> : null}
-        </View> */}
 
         <View className="mt-4 mb-6">
           <Text className="text-right text-gray-700 mb-2 font-tajawal" style={{ color: Color.green }}>
@@ -453,8 +481,6 @@ const removeImage = (id) => {
                 <AntDesign name="camera" size={16} color="#2e752f" style={{ marginRight: 5 }} />
                 <Text className="text-[#2e752f] font-tajawalregular">التقط صورة</Text>
               </TouchableOpacity>
-              
-              
             </View>
           </View>
        
@@ -472,39 +498,38 @@ const removeImage = (id) => {
                     <Text className="text-black font-tajawalregular" numberOfLines={1} ellipsizeMode="middle" style={{ maxWidth: 180 }}>
                       {image.name}
                     </Text>
-                      <View className="h-10 w-10 bg-gray-300 rounded ml-2 overflow-hidden">
-                        {uploadedImages[0]?.uri ? (
-                          <Image 
-                            source={{ uri: uploadedImages[0].uri }} 
-                            style={{ width: '100%', height: '100%' }} 
-                            resizeMode="cover"
-                          />
-                        ) : (
-                          <View className="h-full w-full items-center justify-center">
-                            <AntDesign name="picture" size={20} color="#666" />
-                          </View>
-                        )}
-                      </View>  
+                    <View className="h-10 w-10 bg-gray-300 rounded ml-2 overflow-hidden">
+                      {image.uri ? (
+                        <Image 
+                          source={{ uri: image.uri }} 
+                          style={{ width: '100%', height: '100%' }} 
+                          resizeMode="cover"
+                        />
+                      ) : (
+                        <View className="h-full w-full items-center justify-center">
+                          <AntDesign name="picture" size={20} color="#666" />
+                        </View>
+                      )}
+                    </View>  
                   </View>
                 </View>
               ))}
             </View>
-          ) :(
-              <View className='w-full h-40 flex items-center'>
-                <Image
-                  source={Noimages}
-                  resizeMode='contain'
-                  className='flex-1 w-full h-100'
-                />
-                <Text className='font-tajawal text-[#2e752f] mt-2 text-xl'>
-                لا يوجد صور 
-                </Text>
-                <Text className='font-tajawalregular'>
-                قم بتحميل صورك الآن
-                </Text>
-              </View>
-            )
-          }
+          ) : (
+            <View className='w-full h-40 flex items-center'>
+              <Image
+                source={Noimages}
+                resizeMode='contain'
+                className='flex-1 w-full h-100'
+              />
+              <Text className='font-tajawal text-[#2e752f] mt-2 text-xl'>
+              لا يوجد صور 
+              </Text>
+              <Text className='font-tajawalregular'>
+              قم بتحميل صورك الآن
+              </Text>
+            </View>
+          )}
         </View>
   
         <Divider />
@@ -517,51 +542,75 @@ const removeImage = (id) => {
             textStyles="text-white text-center font-tajawal text-[15px]"
           />
           <CustomButton
-            title="إنشاء طلب"
+            title={loading ? "جاري الإرسال..." : "إنشاء طلب"}
             onPress={handleSubmit}
-            containerStyles="p-3 bg-[#2e752f] rounded-full w-2/4"
+            containerStyles={`p-3 ${loading ? "bg-gray-400" : "bg-[#2e752f]"} rounded-full w-2/4`}
             textStyles="text-white text-center font-tajawal text-[15px]"
+            disabled={loading}
           />
         </View>
+
+        {error && (
+          <Text className="text-red-500 text-center mt-2 font-tajawalregular">
+            {typeof error === 'string' ? error : 'حدث خطأ أثناء إنشاء الطلب'}
+          </Text>
+        )}
+        
+        {error ?  
+        
+          null
+        
+        :
+
         <UniqueIdModal
-          visible={showIdModal} 
-          onClose={handleModalClose} 
-          uniqueId={uniqueId} 
+        vis0697042868ible={showIdModal} 
+        onClose={handleModalClose} 
+        uniqueId={uniqueId} 
         />
+        }
+        
       </Animated.View>
     </KeyboardAvoidingView>
   );
 
   const SuccessView = (
-    <View className="flex-1 items-center justify-center h-full  w-full">
-      <View>
-        <AntDesign name="checkcircleo" size={190} color="white" />
-      </View>
-      <View>
-        <Text className="text-center text-white text-6xl font-tajawal pt-7 mt-4">مبروك!</Text>
-        <Text className="text-white text-lg font-bold text-center p-4 font-tajawalregular">
-          تم إنشاء حسابك بنجاح.
-        </Text>
-      </View>
-      <View className="w-full mt-20">
-        <CustomButton
-          onPress={() => {
-            actionSheetRef.current?.hide();
-            handleClose();
-            router.replace('(home)');
-          }}
-          title="انتقل للصفحة الرئيسية"
-          textStyles="text-sm font-tajawal px-2 py-0 text-[#2e752f]"
-          containerStyles="w-[90%] m-auto bg-white"
-        />
-      </View>
+    <View className="flex-1 items-center justify-center h-full w-full">
+      {loading ? (
+        <ActivityIndicator size="large" color="#2e752f" />
+      ) : (
+        <>
+          <View>
+            <AntDesign name="checkcircleo" size={190} color="white" />
+          </View>
+          <View>
+            <Text className="text-center text-white text-6xl font-tajawal pt-7 mt-4">مبروك!</Text>
+            <Text className="text-white text-lg font-bold text-center p-4 font-tajawalregular">
+              تم إنشاء الطلب بنجاح.
+            </Text>
+          </View>
+          <View className="w-full mt-20">
+            <CustomButton
+              onPress={() => {
+                actionSheetRef.current?.hide();
+                handleClose();
+                router.replace('(home)');
+              }}
+              title="انتقل للصفحة الرئيسية"
+              textStyles="text-sm font-tajawal px-2 py-0 text-[#2e752f]"
+              containerStyles="w-[90%] m-auto bg-white"
+            />
+          </View>
+        </>
+      )}
     </View>
   );
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <ActionSheetComponent ref={actionSheetRef} containerStyle={{ backgroundColor: 'white' }} onClose={handleClose} >
-
+        {formSubmitted && success ? (
+          SuccessView
+        ) : (
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             className="flex"
@@ -572,11 +621,10 @@ const removeImage = (id) => {
               {Step2Form}
             </View>
           </KeyboardAvoidingView>
-
+        )}
       </ActionSheetComponent>
     </TouchableWithoutFeedback>
   );
 });
-
 
 export default ActionSheetToAddProduct;
