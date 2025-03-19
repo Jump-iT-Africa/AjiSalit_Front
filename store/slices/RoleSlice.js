@@ -5,7 +5,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const roleSlice = createSlice({
   name: 'role',
-  initialState: { role: 'client' }, 
+  initialState: { role: 'company' }, 
   reducers: {
     setRole: (state, action) => {
       state.role = action.payload; 

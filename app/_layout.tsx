@@ -1,29 +1,26 @@
 import { Stack } from "expo-router";
-import React, { useState, useCallback, useEffect } from "react";
-import { ToastProvider } from "react-native-toast-notifications";
+import React, { useState, useEffect } from "react";
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from "expo-router";
 import { View } from 'react-native';
 import { Provider } from 'react-redux';
 import store from '@/store/actions/Store';
+import AuthCheck from "@/services/CheckIfUserAuth";
+import NavigationHandler from "@/services/NavigationHandler"; // Create this component
 
 SplashScreen.preventAutoHideAsync()
   .catch(console.warn);
 
 export default function RootLayout() {
-  const [isAppFirstLaunched, setIsAppFirstLaunched] = useState<boolean | null>(null);
+  const [isAppFirstLaunched, setIsAppFirstLaunched] = useState(null);
   const [isReady, setIsReady] = useState(false);
-  const router = useRouter();
 
   const [fontsLoaded] = useFonts({
     'Tajawal': require('../assets/fonts/Tajawal.ttf'),
     'TajawalRegular': require('../assets/fonts/TajawalRegular.ttf'),
   });
 
-
-  AsyncStorage.clear();
   useEffect(() => {
     const initializeApp = async () => {
       try {
@@ -46,16 +43,11 @@ export default function RootLayout() {
     initializeApp();
   }, []); 
 
-
-
-
   useEffect(() => {
     const prepare = async () => {
       if (isReady && isAppFirstLaunched !== null && fontsLoaded) {
         try {
           await SplashScreen.hideAsync();
-        //  router.replace(isAppFirstLaunched ? '/onboarding' : '/(tabs)');
-          router.replace(isAppFirstLaunched ? '/(home)' : '/(tabs)');
         } catch (error) {
           console.warn('Error hiding splash screen:', error);
         }
@@ -63,7 +55,7 @@ export default function RootLayout() {
     };
 
     prepare();
-  }, [isReady, isAppFirstLaunched, fontsLoaded, router]);
+  }, [isReady, isAppFirstLaunched, fontsLoaded]);
 
   if (!fontsLoaded || isAppFirstLaunched === null || !isReady) {
     return <View style={{ flex: 1 }} />;
@@ -71,12 +63,13 @@ export default function RootLayout() {
 
   return (
     <Provider store={store}>
+      <AuthCheck />
+      <NavigationHandler firstLaunch={isAppFirstLaunched} />
       <Stack>
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="(home)" options={{ headerShown: false }} />
       </Stack>
     </Provider>
-
   );
 }

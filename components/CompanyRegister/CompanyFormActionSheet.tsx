@@ -9,6 +9,7 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
+  ActivityIndicator,
 } from "react-native";
 import CustomButton from "../ui/CustomButton";
 import Divider from "../ui/Devider";
@@ -21,26 +22,29 @@ import SuccessActionSheetComponent from "../ui/SuccessActionSheet";
 import Colors from "@/constants/Colors";
 import CompanyFieldDropDown from "./CompanyFieldDropDown";
 import { useDispatch, useSelector } from 'react-redux';
-import { setRole } from '@/store/slices/RoleSlice';
+import { setCompanyInfo, registerUser, selectLoading, selectError } from '@/store/slices/userSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage'; 
+
+
 
 export default function CombinedCompanyForm() {
   const dispatch = useDispatch();
-
+  const userData = useSelector(state => state.user);
+  const isLoading = useSelector(selectLoading);
+  const error = useSelector(selectError);
+  
   const [isCompanyFieldValid, setIsCompanyFieldValid] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
-    address: "",
-    taxID: "",
-    fieldOfCompany: "",
-    referralCode: "",
+    city: "",
+    ice: "",
+    field: "",
   });
-
-  console.log(formData.taxID);
 
   const [errors, setErrors] = useState({
     name: "",
-    taxID: "",
-    fieldOfCompany: "",
+    ice: "",
+    field: "",
   });
 
   const [step, setStep] = useState(1);
@@ -104,20 +108,20 @@ export default function CombinedCompanyForm() {
     let valid = true;
     let newErrors = { ...errors };
 
-    if (!formData.taxID || formData.taxID.trim() === "") {
-      newErrors.taxID = "معرف الضريبة مطلوب";
+    if (!formData.ice || formData.ice.trim() === "" ) {
+      newErrors.ice = "معرف الضريبة مطلوب";
       valid = false;
     } else {
-      if (formData.taxID.trim().length <14) {
-        newErrors.taxID = "معرف الضريبة يجب أن يكون أطول";
+      if (formData.ice.trim().length <14) {
+        newErrors.ice = "معرف الضريبة يجب أن يكون أطول";
         valid = false;
       } else {
-        newErrors.taxID = "";
+        newErrors.ice = "";
       }
     }
 
-    if (!formData.fieldOfCompany.trim()) {
-      newErrors.fieldOfCompany = "مجال الشركة مطلوب";
+    if (!formData.field.trim()) {
+      newErrors.field = "مجال الشركة مطلوب";
       valid = false;
     }
 
@@ -125,16 +129,41 @@ export default function CombinedCompanyForm() {
     return valid;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setIsSubmitted(true);
-
-    // Validate step 2
+  
     if (validateStep2()) {
-      dispatch(setRole('company'));
+      dispatch(setCompanyInfo(formData));
       
-      setIsSheetVisible(true);
-      actionSheetRef.current?.show();
-      console.log("Creating company account with:", { ...formData, role: 'company' });
+      // Make sure phoneNumber is a string and not empty
+      let phoneNum = userData.phoneNumber;
+      if (!phoneNum || phoneNum.trim() === '') {
+        setErrors(prev => ({...prev, phoneNumber: "رقم الهاتف مطلوب"}));
+        return;
+      }
+      
+      // Ensure phoneNumber is a string
+      phoneNum = String(phoneNum).trim();
+      
+      const completeUserData = {
+        name: formData.name, 
+        city: formData.city,
+        field: formData.field,
+        ice: formData.ice,
+        phoneNumber: phoneNum, // Use the validated phone number
+        password: userData.password.replace(/\s/g, ""),
+        role: userData.role
+      };
+      
+      console.log("Submitting user data:", completeUserData); // Add this for debugging
+      
+      const resultAction = await dispatch(registerUser(completeUserData));
+      
+      if (registerUser.fulfilled.match(resultAction)) {
+        setIsSheetVisible(true);
+        await AsyncStorage.setItem("registered", "true"); // Use await here
+        actionSheetRef.current?.show();
+      }
     }
   };
 
@@ -155,7 +184,7 @@ export default function CombinedCompanyForm() {
       }}
     >
       <Text className="text-center text-[#F52525] text-xl font-bold mb-6 font-tajawal">
-        أدخل معلوماتك الشخصية
+        أدخل معلومات شركتك
       </Text>
       <Divider />
 
@@ -192,9 +221,9 @@ export default function CombinedCompanyForm() {
         <TextInput
           placeholder="أدخل العنوان، المدينة"
           placeholderTextColor="#888"
-          value={formData.address}
-          onChangeText={(text) => setFormData({ ...formData, address: text })}
-          className="border border-[#2e752f] rounded-lg p-3 text-black text-right bg-white font-tajawalregular"
+          value={formData.city}
+          onChangeText={(text) => setFormData({ ...formData, city: text })}
+          className={`border border-[#2e752f] rounded-lg p-3 text-black text-right bg--white font-tajawalregular`}
         />
       </View>
 
@@ -235,26 +264,14 @@ export default function CombinedCompanyForm() {
         أدخل تفاصيل الشركة
       </Text>
       <Divider />
-      {/* <Text className="text-right text-gray-700 mb-2 font-tajawal" style={{ color: Color.green }}>
-                    مجال الشركة: <Text className="text-red-600">*</Text>
-                </Text>
-                <TextInput
-                    placeholder="أدخل مجال الشركة"
-                    placeholderTextColor="#888"
-                    value={formData.fieldOfCompany}
-                    onChangeText={(text) => setFormData({ ...formData, fieldOfCompany: text })}
-                    className={`border ${errors.fieldOfCompany ? 'border-red-500' : 'border-[#2e752f]'} rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}
-                />
-                {errors.fieldOfCompany ? <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[13px]">{errors.fieldOfCompany}</Text> : null} */}
 
       <View className="mt-4 mb-0  w-full">
         <CompanyFieldDropDown
           onFieldSelect={(field) => {
-            setFormData((prev) => ({ ...prev, fieldOfCompany: field }));
-
-            setErrors((prev) => ({ ...prev, fieldOfCompany: "" }));
+            setFormData((prev) => ({ ...prev, field: field }));
+            setErrors((prev) => ({ ...prev, field: "" }));
           }}
-          initialValue={formData.fieldOfCompany}
+          initialValue={formData.field}
           errors={errors}
           isSubmitted={isSubmitted}
         />
@@ -271,15 +288,15 @@ export default function CombinedCompanyForm() {
           placeholder="أدخل معرف الضريبة"
           placeholderTextColor="#888"
           keyboardType="numeric"
-          value={formData.taxID}
-          onChangeText={(text) => setFormData({ ...formData, taxID: text })}
+          value={formData.ice}
+          onChangeText={(text) => setFormData({ ...formData, ice: text })}
           className={`border ${
-            errors.taxID ? "border-red-500" : "border-[#2e752f]"
+            errors.ice ? "border-red-500" : "border-[#2e752f]"
           } rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}
         />
-        {errors.taxID ? (
+        {errors.ice ? (
           <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[13px]">
-            {errors.taxID}
+            {errors.ice}
           </Text>
         ) : null}
       </View>
@@ -293,13 +310,25 @@ export default function CombinedCompanyForm() {
           containerStyles="p-3 bg-gray-500 rounded-full w-2/4 mr-2"
           textStyles="text-white text-center font-tajawal text-[15px]"
         />
-        <CustomButton
-          title="إنشاء حساب"
-          onPress={handleSubmit}
-          containerStyles="p-3 bg-[#2e752f] rounded-full w-2/4"
-          textStyles="text-white text-center font-tajawal text-[15px]"
-        />
+        {isLoading ? (
+          <View className="p-3 bg-[#2e752f] rounded-full w-2/4 justify-center items-center">
+            <ActivityIndicator size="small" color="#ffffff" />
+          </View>
+        ) : (
+          <CustomButton
+            title="إنشاء حساب"
+            onPress={handleSubmit}
+            containerStyles="p-3 bg-[#2e752f] rounded-full w-2/4"
+            textStyles="text-white text-center font-tajawal text-[15px]"
+          />
+        )}
       </View>
+      
+      {error && (
+        <Text className="text-red-500 text-center mt-4 font-tajawalregular text-[13px]">
+          {typeof error === 'string' ? error : 'حدث خطأ أثناء التسجيل'}
+        </Text>
+      )}
     </Animated.View>
   );
 
