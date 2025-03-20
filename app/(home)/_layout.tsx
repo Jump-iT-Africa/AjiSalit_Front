@@ -24,13 +24,18 @@ import { createStackNavigator } from '@react-navigation/stack';
 import DetailsPage from './DetailsPage';
 import { useSelector } from 'react-redux';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-
+import {selectUserRole} from "@/store/slices/userSlice";
+import OrderDetailsScreen from './OrderDetailsScreen'
 
 
 const Stack = createStackNavigator();
 
 function MainTabs() {
-  const role = useSelector((state) => state.role.role); 
+  const role = useSelector(selectUserRole);
+  
+
+
+
   
   const actionSheetRef = useRef(null);
   const [isSheetVisible, setIsSheetVisible] = useState(false);
@@ -160,6 +165,7 @@ export default function HomeLayouts() {
       <Stack.Screen name="Scanner" component={ScannerPage} />
       <Stack.Screen name="DetailsPage" component={DetailsPage} />
       <Stack.Screen name="index" component={IndexWithBottomNav} />
+      <Stack.Screen name="OrderDetailsScreen" component={OrderDetailsScreen} />
     </Stack.Navigator>
   );
 }

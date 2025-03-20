@@ -7,12 +7,14 @@ import { View } from 'react-native';
 import { Provider } from 'react-redux';
 import store from '@/store/actions/Store';
 import AuthCheck from "@/services/CheckIfUserAuth";
-import NavigationHandler from "@/services/NavigationHandler"; // Create this component
+import NavigationHandler from "@/services/NavigationHandler";
+
 
 SplashScreen.preventAutoHideAsync()
   .catch(console.warn);
 
 export default function RootLayout() {
+
   const [isAppFirstLaunched, setIsAppFirstLaunched] = useState(null);
   const [isReady, setIsReady] = useState(false);
 

@@ -13,13 +13,14 @@ import OrdersOfClient from "@/components/OrdersOfClient/OrdersOfClient"
 import getAuthToken from "@/services/api"
 import getUserData from "@/services/api"
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {selectUserRole} from "@/store/slices/userSlice";
+
 
 const Home = () => {
 
   const checkStoredData = async () => {
     const token = await AsyncStorage.getItem('token')
     const userData = await AsyncStorage.getItem('user');
-    // console.log("this is user data", userData);
   };
   
   checkStoredData();
@@ -40,7 +41,8 @@ const Home = () => {
   };
 
 
-  const role = useSelector((state) => state.role.role); 
+
+  const role = useSelector(selectUserRole);
   const dispatch = useDispatch();
 
   console.log(role);
@@ -54,7 +56,7 @@ const Home = () => {
             {role === 'client' && <AddProductManualClient/>}
             {role === 'company' && <AddProductManualCompany />}
           </View>
-          <View className='mt-8  w-full flex items-end'>
+          <View className='mt-10  w-full flex items-end'>
             <Text className='text-end text-xl font-tajawal'>الطلبات المتوفرة</Text>
           </View>
         </View>

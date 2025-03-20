@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import HeaderWithBack from "@/components/ui/HeaderWithToolTipAndback";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useState, useRef } from "react";
@@ -24,9 +26,11 @@ export default function DetailsPage()
   const ViewShotRef = useRef();
   const role = useSelector((state) => state.role.role); 
 
-  const { id } = useLocalSearchParams();
-  console.log(id);
-  
+  const { orderId, qrCode } = useLocalSearchParams();
+  console.log("Order ID from params:", orderId);
+  console.log("QR Code from params:", qrCode);
+  const currentOrder = useSelector(state => state.orderDetails.currentOrder);
+
 
   const handleDateChange = (newDate, reason) => {
     console.log('New delivery date:', newDate);
@@ -87,13 +91,13 @@ export default function DetailsPage()
               <ClientOrderCards />
                 ):(
                   <OrderDetailsCard 
-                  totalAmount={150}
-                  paidAmount={50}
-                  remainingAmount={100}
-                  deliveryDate="11/02/2025"
-                  currency="درهم"
-                  onDateChange={handleDateChange}
-                />
+                      totalAmount={currentOrder?.price || 0}
+                      paidAmount={currentOrder?.advancedAmount || 0}
+                      remainingAmount={(currentOrder?.price || 0) - (currentOrder?.advancedAmount || 0)}
+                      deliveryDate={new Date(currentOrder?.deliveryDate).toLocaleDateString()}
+                      currency="درهم"
+                      onDateChange={handleDateChange}
+                    />
                 )}
               <QrCodeInfo uniqueId={'H1Hsqw2200bd'}/>
           </Viewshot>

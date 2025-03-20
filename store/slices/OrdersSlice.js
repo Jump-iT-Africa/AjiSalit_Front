@@ -2,10 +2,12 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'https://www.ajisalit.com';
+// const API_URL = 'https://www.ajisalit.com';
+const API_URL = 'http://192.168.100.170:3000';
 
 export const fetchOrders = createAsyncThunk(
     'orders/fetchOrders',
+    
     async (_, { getState, rejectWithValue }) => {
       try {
         const token = await AsyncStorage.getItem('token');
