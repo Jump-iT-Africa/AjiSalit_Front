@@ -31,7 +31,8 @@ export default function DetailsPage()
   console.log("QR Code from params:", qrCode);
   const currentOrder = useSelector(state => state.orderDetails.currentOrder);
 
-
+  console.log("this is current order", currentOrder.qrCode);
+  
   const handleDateChange = (newDate, reason) => {
     console.log('New delivery date:', newDate);
     console.log('Reason for change:', reason);
@@ -99,7 +100,7 @@ export default function DetailsPage()
                       onDateChange={handleDateChange}
                     />
                 )}
-              <QrCodeInfo uniqueId={'H1Hsqw2200bd'}/>
+              <QrCodeInfo uniqueId={currentOrder.qrCode}/>
           </Viewshot>
 
 
