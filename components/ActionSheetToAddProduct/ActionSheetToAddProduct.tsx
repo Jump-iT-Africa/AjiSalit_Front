@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { forwardRef, useState, useRef, useImperativeHandle, useEffect } from 'react';
 import {
   View,
@@ -563,7 +562,7 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
         :
 
         <UniqueIdModal
-        vis0697042868ible={showIdModal} 
+        visible={showIdModal} 
         onClose={handleModalClose} 
         uniqueId={uniqueId} 
         />

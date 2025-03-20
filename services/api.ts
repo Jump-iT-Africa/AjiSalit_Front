@@ -3,6 +3,7 @@
 import axios from 'axios';
 
 const API_BASE_URL = 'https://www.ajisalit.com';
+// const API_BASE_URL = 'http://192.168.100.170:3000';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
