@@ -8,9 +8,21 @@ import { Provider } from 'react-redux';
 import store from '@/store/actions/Store';
 import AuthCheck from "@/services/CheckIfUserAuth";
 import NavigationHandler from "@/services/NavigationHandler"; // Create this component
+import { NotificationProvider } from "@/context/NotificationContext";
+import * as Notifications from "expo-notifications";
+
+
 
 SplashScreen.preventAutoHideAsync()
   .catch(console.warn);
+
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    }),
+  });
 
 export default function RootLayout() {
   const [isAppFirstLaunched, setIsAppFirstLaunched] = useState(null);
@@ -21,6 +33,7 @@ export default function RootLayout() {
     'TajawalRegular': require('../assets/fonts/TajawalRegular.ttf'),
   });
 
+  
   useEffect(() => {
     const initializeApp = async () => {
       try {
@@ -62,6 +75,7 @@ export default function RootLayout() {
   }
 
   return (
+    <NotificationProvider>
     <Provider store={store}>
       <AuthCheck />
       <NavigationHandler firstLaunch={isAppFirstLaunched} />
@@ -71,5 +85,6 @@ export default function RootLayout() {
         <Stack.Screen name="(home)" options={{ headerShown: false }} />
       </Stack>
     </Provider>
+    </NotificationProvider>
   );
 }
