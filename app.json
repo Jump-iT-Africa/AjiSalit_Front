@@ -1,13 +1,14 @@
 {
   "expo": {
     "name": "Aji Salit",
-    "slug": "aji-salit",
-    
+    "slug": "ajisalit",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
     "scheme": "aji-salit",
     "userInterfaceStyle": "light",
+    "development": true,
+    "debugger": true,
     "splash": {
       "image": "./assets/images/logo.png",
       "resizeMode": "contain",
@@ -18,6 +19,7 @@
       "assets/fonts/*"
     ],
     "ios": {
+      "googleServicesFile": "./google-services.json",
       "supportsTablet": false,
       "bundleIdentifier": "com.app.ajisalit",
       "infoPlist": {
@@ -25,6 +27,7 @@
       }
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo.png",
         "backgroundColor": "#ffffff",
@@ -34,7 +37,11 @@
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
-      ]
+      ],
+      "config": {
+        "usesCleartextTraffic": true
+
+      }
     },
     "plugins": [
       "expo-router",
@@ -45,6 +52,13 @@
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
           "recordAudioAndroid": true
         }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/logo.png",
+          "color": "#ffffff"
+        }
       ]
     ],
     "newArchEnabled": true,
@@ -53,8 +67,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "030d5d7e-44ce-495d-8b8e-93b299a138b2"
+        "projectId": "46ec5070-4c89-4c34-9dbe-7350c1a1d4c5"
       }
-    }
+    },
+    "owner": "tttesttt12"
   }
 }
