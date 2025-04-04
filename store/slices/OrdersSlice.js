@@ -3,46 +3,47 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const API_URL = 'https://www.ajisalit.com';
+// const API_URL = 'http://192.168.100.170:3000';
 
 export const fetchOrders = createAsyncThunk(
-    'orders/fetchOrders',
-    async (_, { getState, rejectWithValue }) => {
-      try {
-        const token = await AsyncStorage.getItem('token');
-        
-        if (!token) {
-          return rejectWithValue('No authentication token available');
-        }
-        
-        const userData = await AsyncStorage.getItem('user');
-        const user = userData ? JSON.parse(userData) : null;
-        
-        if (!user) {
-          return rejectWithValue('User data not available');
-        }
-        
-        const role = getState().role.role;
-        
-        let queryParam = '';
-        if (role === 'client') {
-          queryParam = `?clientId=${user._id}`;
-        } else if (role === 'company') {
-          queryParam = `?companyId=${user._id}`;
-        }
-        
-        const response = await axios.get(`${API_URL}/order${queryParam}`, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-        
-        console.log("Orders API response:", response.data);
-        return response.data;
-      } catch (error) {
-        console.log("Orders API error:", error.response?.data || error.message);
-        return rejectWithValue(error.response?.data || error.message);
+  'orders/fetchOrders', 
+  async (_, { getState, rejectWithValue }) => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      
+      if (!token) {
+        return rejectWithValue('No authentication token available');
       }
+      
+      const userData = await AsyncStorage.getItem('user');
+      const user = userData ? JSON.parse(userData) : null;
+      
+      if (!user) {
+        return rejectWithValue('User data not available');
+      }
+      
+      const role = getState().role.role;
+      
+      let queryParam = '';
+      if (role === 'client') {
+        queryParam = `?clientId=${user.id}`; // Using id instead of _id based on your earlier data
+      } else if (role === 'company') {
+        queryParam = `?companyId=${user.id}`; // Using id instead of _id based on your earlier data
+      }
+      
+      const response = await axios.get(`${API_URL}/order${queryParam}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      console.log("Orders API response:", response.data);
+      return response.data;
+    } catch (error) {
+      console.log("Orders API error:", error.response?.data || error.message);
+      return rejectWithValue(error.response?.data || error.message);
     }
+  }
 );
 
 const transformOrderData = (apiOrders) => {
@@ -55,7 +56,7 @@ const transformOrderData = (apiOrders) => {
       label: order.situation,
       currency: order.advancedAmount ? "درهم" : null
     },
-    customerName: order.clientId || "عميل غير معروف", 
+    customerName: order.clientId || "كليان مامعروفش", 
     date: formatDate(order.deliveryDate),
     id: order._id,
     price: order.price,
