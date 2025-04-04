@@ -2,12 +2,16 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { saveUserToDB, loginUser, getAuthToken, getUserData } from '@/services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
 export const registerUser = createAsyncThunk(
   'user/register',
   async (userData, { rejectWithValue }) => {
     try {
       const response = await saveUserToDB(userData);
+      
+      // Store user data and token in AsyncStorage for persistence
+      await AsyncStorage.setItem('token', response.token);
+      await AsyncStorage.setItem('user', JSON.stringify(response.user || response));
+      
       return {
         token: response.token,
         user: response.user || response
@@ -23,8 +27,11 @@ export const login = createAsyncThunk(
   async (credentials, { rejectWithValue }) => {
     try {
       const response = await loginUser(credentials);
-     
-
+      
+      // Store user data and token in AsyncStorage for persistence
+      await AsyncStorage.setItem('token', response.token);
+      await AsyncStorage.setItem('user', JSON.stringify(response.user || response));
+      
       return {
         token: response.token,
         user: response.user || response 
@@ -39,7 +46,7 @@ export const restoreAuthState = createAsyncThunk(
   'user/restore',
   async (_, { rejectWithValue }) => {
     try {
-      const token =  await AsyncStorage.getItem('token');
+      const token = await AsyncStorage.getItem('token');
       const userDataStr = await AsyncStorage.getItem('user');
       
       if (!token || !userDataStr) {
@@ -82,7 +89,6 @@ const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    
     setPhoneNumber: (state, action) => {
       state.phoneNumber = action.payload;
     },
@@ -112,10 +118,7 @@ const userSlice = createSlice({
     
     // Manual auth actions
     logout: (state) => {
-      Object.assign(state, {
-        ...initialState,
-        // We can keep form data if needed
-      });
+      Object.assign(state, initialState);
       
       // Clear AsyncStorage
       AsyncStorage.removeItem('token');
@@ -144,8 +147,8 @@ const userSlice = createSlice({
       state.phoneNumber = user.phoneNumber;
       state.role = user.role;
       state.city = user.city;
-      state.field = user.field;
-      state.ice = user.ice;
+      state.field = user.field || null;
+      state.ice = user.ice || null;
       state.ownRef = user.ownRef || '';
       state.listRefs = user.listRefs || [];
     });
@@ -163,19 +166,17 @@ const userSlice = createSlice({
     builder.addCase(login.fulfilled, (state, action) => {
       const { token, user } = action.payload;
       
-      // Update auth state
       state.token = token;
       state.isAuthenticated = true;
       state.loading = false;
       
-      // Update user data
       state.id = user.id;
       state.name = user.name;
       state.phoneNumber = user.phoneNumber;
       state.role = user.role;
       state.city = user.city;
-      state.field = user.field;
-      state.ice = user.ice;
+      state.field = user.field || null;
+      state.ice = user.ice || null;
       state.ownRef = user.ownRef || '';
       state.listRefs = user.listRefs || [];
     });
@@ -198,11 +199,10 @@ const userSlice = createSlice({
       state.id = user.id;
       state.name = user.name;
       state.phoneNumber = user.phoneNumber;
-      console.log(state.phoneNumber);
       state.role = user.role;
       state.city = user.city;
-      state.field = user.field;
-      state.ice = user.ice;
+      state.field = user.field || null;
+      state.ice = user.ice || null;
       state.ownRef = user.ownRef || '';
       state.listRefs = user.listRefs || [];
     });
@@ -232,5 +232,6 @@ export const selectUserData = (state) => {
   const { id, name, phoneNumber, role, city, field, ice, ownRef, listRefs } = state.user;
   return { id, name, phoneNumber, role, city, field, ice, ownRef, listRefs };
 };
+export const selectUserRole = (state) => state.user.role;
 export const selectLoading = (state) => state.user.loading;
 export const selectError = (state) => state.user.error;
