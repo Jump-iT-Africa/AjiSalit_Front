@@ -56,9 +56,19 @@ const Home = () => {
             {role === 'client' && <AddProductManualClient/>}
             {role === 'company' && <AddProductManualCompany />}
           </View>
-          <View className='mt-10  w-full flex items-end'>
+          {role === 'client' ? (
+
+          <View className='mt-20  w-full flex items-end'>
+          <Text className='text-end text-xl font-tajawal'>الطلبات المتوفرة</Text>
+          </View>
+          ):(
+            <View className='mt-8  w-full flex items-end'>
             <Text className='text-end text-xl font-tajawal'>الطلبات المتوفرة</Text>
           </View>
+          )
+
+        }
+         
         </View>
         <View className='px-4'>
           <SearchBar

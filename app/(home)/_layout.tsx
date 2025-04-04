@@ -25,7 +25,7 @@ import DetailsPage from './DetailsPage';
 import { useSelector } from 'react-redux';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import {selectUserRole} from "@/store/slices/userSlice";
-import OrderDetailsScreen from './OrderDetailsScreen'
+// import OrderDetailsScreen from './OrderDetailsScreen'
 
 
 const Stack = createStackNavigator();
@@ -165,7 +165,7 @@ export default function HomeLayouts() {
       <Stack.Screen name="Scanner" component={ScannerPage} />
       <Stack.Screen name="DetailsPage" component={DetailsPage} />
       <Stack.Screen name="index" component={IndexWithBottomNav} />
-      <Stack.Screen name="OrderDetailsScreen" component={OrderDetailsScreen} />
+      {/* <Stack.Screen name="OrderDetailsScreen" component={OrderDetailsScreen} /> */}
     </Stack.Navigator>
   );
 }

@@ -6,7 +6,7 @@ import { Audio } from 'expo-av';
 import { Overlay } from "./Overlay";
 import { useDispatch, useSelector } from 'react-redux';
 import { 
-  fetchOrderByQrCode, 
+  fetchOrderByQrCodeOrId, 
   selectOrderLoading, 
   selectOrderError,
   selectOrderSuccess,
@@ -44,14 +44,14 @@ export default function Scanner() {
     if (shouldNavigate && navigateParams && !isProcessing && !reduxLoading) {
       console.log("Attempting navigation with params:", navigateParams);
       
-      try {
+      try { 
         
         setShouldNavigate(false);
         
         router.push(navigateParams);
 
       } catch (error) {
-        console.error("Navigation error:", error);
+        console.log("Navigation error:", error);
         Alert.alert(
           "خطأ في التنقل",
           "حدث خطأ أثناء الانتقال إلى صفحة التفاصيل",
@@ -99,7 +99,7 @@ export default function Scanner() {
         });
       });
     } catch (error) {
-      console.error("Error playing sound:", error);
+      console.log("Error playing sound:", error);
       return Promise.resolve(); 
     }
   };
@@ -141,12 +141,12 @@ export default function Scanner() {
     }
     
     try {
-      console.log("Dispatching fetchOrderByQrCode with:", data);
+      console.log("Dispatching fetchOrderByQrCodeOrId with:", data);
       await playSuccessSound();
       
-      const result = await dispatch(fetchOrderByQrCode(data));
+      const result = await dispatch(fetchOrderByQrCodeOrId(data));
       
-      if (fetchOrderByQrCode.fulfilled.match(result)) {
+      if (fetchOrderByQrCodeOrId.fulfilled.match(result)) {
         const order = result.payload;
         console.log("Order fetched directly:", order);
         
@@ -165,13 +165,13 @@ export default function Scanner() {
                 }
               });
             } catch (navError) {
-              console.error("Direct navigation error:", navError);
+              console.log("Direct navigation error:", navError);
             }
           }, 1000);
         }
       }
     } catch (error) {
-      console.error("Error in processScannedData:", error);
+      console.log("Error in processScannedData:", error);
       Alert.alert(
         "خطأ",
         "حدث خطأ أثناء البحث عن الطلب",

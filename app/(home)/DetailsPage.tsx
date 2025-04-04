@@ -2,7 +2,7 @@
 
 import HeaderWithBack from "@/components/ui/HeaderWithToolTipAndback";
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Platform, ScrollView, TouchableOpacity, View,Text } from "react-native";
 import { Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -19,20 +19,53 @@ import ClientPikUpButton from '@/components/DetialsPage/Client/Buttons/ClientPik
 import Viewshot from "react-native-view-shot";
 import { shareAsync } from  "expo-sharing";
 import { AntDesign} from '@expo/vector-icons';
+import { current } from "@reduxjs/toolkit";
+import { Image } from "react-native";
+import DetailsOrdersNoImages from "@/assets/images/DetailsOrdersNoImages.png";
+
+
 
 export default function DetailsPage()
 {
-
+  const [remaining , setRemaining] = useState(0);
   const ViewShotRef = useRef();
   const role = useSelector((state) => state.role.role); 
-
   const { orderId, qrCode } = useLocalSearchParams();
-  console.log("Order ID from params:", orderId);
-  console.log("QR Code from params:", qrCode);
   const currentOrder = useSelector(state => state.orderDetails.currentOrder);
-
-  console.log("this is current order", currentOrder.qrCode);
+  const [OrderImages, setOrderImages]= useState(currentOrder?.images || null);
   
+  useEffect(()=>{
+      if(currentOrder?.situation === 'خالص')
+        {
+          setRemaining(0);
+        }
+        else{
+            setRemaining((currentOrder?.price || 0) - (currentOrder?.advancedAmount || 0));
+        }
+  }, [currentOrder])
+
+  useEffect(() => {
+    console.log('images are ', OrderImages);
+    
+    if(OrderImages?.length === 0)
+    {
+      console.log("no Images found 😢");
+      setOrderImages([0])
+    }else{
+      setOrderImages(currentOrder?.images)
+      console.log("wohooo there are", OrderImages?.length);
+    }
+  }, [])
+    
+
+    
+    // console.log(currentOrder.images.length)
+    
+
+
+
+
+
   const handleDateChange = (newDate, reason) => {
     console.log('New delivery date:', newDate);
     console.log('Reason for change:', reason);
@@ -65,7 +98,6 @@ export default function DetailsPage()
   ? "flex-row justify-between mx-5 mt-16" 
   : "flex-row justify-between mx-0 mt-14";
 
-
     return(
         <>
         <ScrollView
@@ -85,27 +117,39 @@ export default function DetailsPage()
                 placement="bottom"
               />
           </View>
+
+        {currentOrder?.images?.length === 0 ? (
+          <View className="w-80 h-80 m-auto">
+              <Image 
+              source={DetailsOrdersNoImages} 
+              style={{ width: '100%', height: '100%' }} 
+              resizeMode="contain"
+            />
+          </View>
+        ):(
           <ImagesSlider />
+        )}
+
 
           <Viewshot ref={ViewShotRef} options={{format:"jpg", quality:1}}>
-              {role ==="client" ?(
+              {role ==="client" ? (
               <ClientOrderCards />
                 ):(
                   <OrderDetailsCard 
                       totalAmount={currentOrder?.price || 0}
                       paidAmount={currentOrder?.advancedAmount || 0}
-                      remainingAmount={(currentOrder?.price || 0) - (currentOrder?.advancedAmount || 0)}
+                      remainingAmount={remaining}
                       deliveryDate={new Date(currentOrder?.deliveryDate).toLocaleDateString()}
                       currency="درهم"
+                      situation={currentOrder?.situation}
+                      images={currentOrder?.images}
                       onDateChange={handleDateChange}
                     />
                 )}
-              <QrCodeInfo uniqueId={currentOrder.qrCode}/>
+              <QrCodeInfo uniqueId={currentOrder?.qrCode}/>
           </Viewshot>
 
-
           {role ==="client" ?(
-            
             <View className="bg-gray-100 border-t border-gray-200 w-full py-5 pb-5 px-4">
               <View className="flex-row justify-between items-center space-x-2">
                 <TouchableOpacity
