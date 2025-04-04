@@ -97,6 +97,7 @@ const userSlice = createSlice({
     },
     setRole: (state, action) => {
       state.role = action.payload;
+      AsyncStorage.setItem('role', state.role);
     },
     setPersonalInfo: (state, action) => {
       const { name, city } = action.payload;
