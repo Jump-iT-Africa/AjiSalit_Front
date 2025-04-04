@@ -6,7 +6,7 @@ const API_URL = 'https://www.ajisalit.com';
 // const API_URL = 'http://192.168.100.170:3000';
 
 export const fetchOrders = createAsyncThunk(
-  'orders/fetchOrders', 
+  'orders/fetchOrders',
   async (_, { getState, rejectWithValue }) => {
     try {
       const token = await AsyncStorage.getItem('token');
@@ -23,19 +23,24 @@ export const fetchOrders = createAsyncThunk(
       }
       
       const role = getState().role.role;
-      
+    
       let queryParam = '';
       if (role === 'client') {
-        queryParam = `?clientId=${user.id}`; // Using id instead of _id based on your earlier data
+        queryParam = `?clientId=${user.id}`;
       } else if (role === 'company') {
-        queryParam = `?companyId=${user.id}`; // Using id instead of _id based on your earlier data
+        queryParam = `?companyId=${user.id}`;
       }
-      
+
       const response = await axios.get(`${API_URL}/order${queryParam}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
+      
+      console.log("reponse of the client or  company", response.data);
+      return response.data;
+      
+   
       
       console.log("Orders API response:", response.data);
       return response.data;
