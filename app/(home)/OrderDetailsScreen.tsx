@@ -4,7 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
-  fetchOrderByQrCode, 
+  fetchOrderByQrCodeOrId, 
   selectOrderLoading, 
   selectOrderError, 
   selectUserOrders, 
@@ -33,7 +33,7 @@ export default function OrderDetailsScreen() {
   useEffect(() => {
     const fetchOrderDetails = async () => {
       if (params.qrCode) {
-        await dispatch(fetchOrderByQrCode(params.qrCode));
+        await dispatch(fetchOrderByQrCodeOrId(params.qrCode));
       }
     };
     

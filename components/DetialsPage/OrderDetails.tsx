@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform, Modal, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Feather from '@expo/vector-icons/Feather';
@@ -13,6 +13,7 @@ const OrderDetailsCard = ({
   remainingAmount = 100, 
   deliveryDate = "11/02/2025",
   currency = "درهم",
+  situation,
   onDateChange = (newDate, reason) => {}
 }) => {
 
@@ -21,7 +22,7 @@ const OrderDetailsCard = ({
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [reason, setReason] = useState('');
   const [selectedDate, setSelectedDate] = useState(deliveryDate);
-
+  const [currentColor, setCurrentColor] = useState('#2e752f');
 
   const openDatePicker = () => {
     setShowDatePicker(true);
@@ -45,16 +46,35 @@ const OrderDetailsCard = ({
     setModalVisible(false);
     setReason('');
   };
+
+  console.log("this is situationn",situation);
+
+  useEffect(()=>
+    {
+      if(situation === "تسبيق")
+      {
+        setCurrentColor("#FAD513")
+      }
+      else if(situation === "غير خالص")
+      {
+        setCurrentColor("#F52525")
+      }else
+      {
+        setCurrentColor("#2F752F")
+      }
+    },[])
+
   
   return (
     <View className="border-4 border-[#2e752f] border-l-0 border-r-0 border-b-0 rounded-lg p-4 bg-white my-3 w-[95%] mx-auto" style={styles.detailscontainer}>
       <View className="flex-row-reverse justify-between items-center border-b border-gray-200 pb-2 mb-4">
         <Text className="font-bold text-green-700 text-right font-tajawalregular text-smt">تفاصيل الطلب:</Text>
-        <TouchableOpacity className="bg-yellow-400 px-5 pt-2 pb-1 rounded-full">
-          <Text className="text-gray-800 font-bold text-center font-tajawalregular text-xs">تسبيق</Text>
+        <TouchableOpacity style={{ backgroundColor: currentColor, paddingHorizontal: 20, paddingVertical: 8, borderRadius: 50 }}>
+
+          <Text className=" font-bold text-center font-tajawalregular text-xs text-white">{situation}</Text>
         </TouchableOpacity>
       </View>
-      
+
       <View className="flex-row-reverse justify-between border border-gray-200 rounded-lg mb-4 overflow-hidden">
         <View className="flex-1 p-3 items-center bg-gray-100">
           <Text className="mb-1.5 text-center font-bold font-tajawalregular text-xs">المبلغ الإجمالي</Text>
@@ -151,6 +171,7 @@ const OrderDetailsCard = ({
           </View>
         </View>
       </Modal>
+
     </View>
   );
 };

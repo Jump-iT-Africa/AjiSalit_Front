@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { act } from 'react';
 
 // const API_BASE_URL = 'http://192.168.100.170:3000';
 const API_BASE_URL = 'https://www.ajisalit.com';
@@ -22,6 +23,8 @@ export const fetchUserOrders = createAsyncThunk(
           Authorization: `Bearer ${token}`
         }
       });
+
+      console.log('these are the command of this user ', response);
       
       return response.data;
     } catch (error) {
@@ -31,8 +34,8 @@ export const fetchUserOrders = createAsyncThunk(
   }
 );
 
-export const fetchOrderByQrCode = createAsyncThunk(
-  'orders/fetchOrderByQrCode',
+export const fetchOrderByQrCodeOrId = createAsyncThunk(
+  'orders/fetchOrderByQrCodeOrId',
   async (qrCode, { rejectWithValue, dispatch }) => {
     try {
       console.log("Fetching order with QR code:", qrCode);
@@ -54,10 +57,37 @@ export const fetchOrderByQrCode = createAsyncThunk(
           Authorization: `Bearer ${token}`
         }
       });
+
+      //here i will update the order for just l client
+
+      const userDataStr = await AsyncStorage.getItem('user');
+        const userData = JSON.parse(userDataStr);
+        console.log('the role of scanner is', userData.role);
+        if(userData.role === 'client')
+        {
+          try
+          {
+            const response = await axios.patch(
+              `${API_BASE_URL}/order/${sanitizedQrCode}`,
+              {}, // Empty object for data (or put your data here if needed)
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`
+                }
+              }
+            );
+            console.log('this is log after adding user to Command Table when scan', response?.data);
+          }
+          catch(error)
+          {
+            console.log(error);
+            return rejectWithValue(error);
+          }
+        }
       
-      console.log("Order scan response:", response.data);
+      console.log("Order the response:", response.data);
       
-      // Store the order data persistently (could be useful for offline access)
+      //nstori l order f local storage bach ila dkhel fl offline ibarno lih fine
       try {
         await AsyncStorage.setItem('lastScannedOrder', JSON.stringify(response.data));
       } catch (storageError) {
@@ -99,7 +129,11 @@ export const createOrder = createAsyncThunk(
   }
 );
 
-// New action to initialize the current order from AsyncStorage
+
+
+
+
+
 export const initializeCurrentOrder = createAsyncThunk(
   'orders/initializeCurrentOrder',
   async (_, { dispatch }) => {
@@ -161,6 +195,7 @@ const ordersSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+
       .addCase(fetchUserOrders.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -174,12 +209,12 @@ const ordersSlice = createSlice({
         state.error = action.payload;
       })
       
-      .addCase(fetchOrderByQrCode.pending, (state) => {
+      .addCase(fetchOrderByQrCodeOrId.pending, (state) => {
         state.loading = true;
         state.error = null;
         state.success = false;
       })
-      .addCase(fetchOrderByQrCode.fulfilled, (state, action) => {
+      .addCase(fetchOrderByQrCodeOrId.fulfilled, (state, action) => {
         state.currentOrder = action.payload;
         state.loading = false;
         state.success = true;
@@ -196,7 +231,7 @@ const ordersSlice = createSlice({
           state.allOrders.push(action.payload);
         }
       })
-      .addCase(fetchOrderByQrCode.rejected, (state, action) => {
+      .addCase(fetchOrderByQrCodeOrId.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
         state.success = false;
@@ -225,8 +260,7 @@ const ordersSlice = createSlice({
       .addCase(initializeCurrentOrder.fulfilled, (state, action) => {
         if (action.payload && !state.currentOrder) {
           state.currentOrder = action.payload;
-      console.log("heeeeeeeeey", state.currentOrder);
-
+        console.log("heeeeeeeeey", state.currentOrder);
         }
       });
   },

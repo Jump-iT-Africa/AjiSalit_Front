@@ -5,16 +5,23 @@ import NoOrdersExists from '../NoOrderExists/NoOrdersExists';
 import OrderCard from './OrderCard';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchUserOrders, selectUserOrders, selectOrderLoading } from '@/store/slices/OrdersOfClient';
+import { fetchOrders } from '@/store/slices/OrdersSlice';
+
+
+
 
 const OrdersOfClient = ({ SearchCode }) => {
   const dispatch = useDispatch();
-  const orders = useSelector(selectUserOrders) || []; // Provide default empty array
-  const loading = useSelector(selectOrderLoading);
+  
+  // Update your selectors to match what's available in your store
+  const orders = useSelector(state => state.orders.orders) || []; // Adjust to match your actual Redux store structure
+  const loading = useSelector(state => state.orders.loading); // Adjust to match your actual Redux store structure
+  
   const [searchTerm, setSearchTerm] = useState(SearchCode);
 
   // Fetch orders when component mounts
   useEffect(() => {
-    dispatch(fetchUserOrders());
+    dispatch(fetchOrders());
   }, [dispatch]);
 
   useEffect(() => {
