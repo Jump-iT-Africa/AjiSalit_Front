@@ -13,25 +13,25 @@ const OrderCard = ({ item }) => {
   const dispatch = useDispatch();
   const router = useRouter();
 
-  // Safety check - if no item is provided, render nothing
+  
   if (!item) {
     return null;
   }
 
   const handleNavigateToDetails = () => {
-    // First dispatch the action to set the current order
+    
     dispatch(setCurrentOrder(item));
     
-    // Log to verify the action was dispatched
+    
     console.log("Navigating to details with order:", item);
     
-    // Use a small timeout to ensure the Redux state is updated before navigation
+    
     setTimeout(() => {
       router.push({ 
         pathname:'/DetailsPage',
-        params: item.qrCode
+        params: item.id
       });
-    }, 200); // Increased from 100ms to 200ms for more reliability
+    }, 100); 
   };
 
   const customerDisplay = item.customerName || "كليان";
@@ -47,7 +47,7 @@ const OrderCard = ({ item }) => {
           <View className='flex-row-reverse items-center justify-between w-full'>
             <View className='flex-row items-end justify-end space-x-2'>
               <View className="flex items-end">
-                <Text className={`text-lg font-bold text-[#295f2b] font-tajawal`}>{customerDisplay}</Text>
+                <Text className={`text-lg font-bold text-[#295f2b] font-tajawal`}>{item.field}</Text>
                 <Text className="text-black text-sm">#{item.orderCode}</Text>
               </View>
               <View className={`w-11 h-11 rounded bg-green-100 items-center justify-center`}>
@@ -72,7 +72,7 @@ const OrderCard = ({ item }) => {
           <View className="flex-1">
             <View className="bg-gray-100 rounded-lg mx-1 p-2 items-center border border-gray-300 border-1">
               <Text className="text-gray-600 mb-1 font-tajawalregular">الحالة</Text>
-              <Text className="text-base font-bold font-tajawal text-[13px]">
+              <Text className="text-base font-bold font-tajawal text-[12px]">
                 {item.status || "في طور الانجاز"}
               </Text>
             </View>

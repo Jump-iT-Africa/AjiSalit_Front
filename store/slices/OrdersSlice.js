@@ -2,8 +2,8 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'https://www.ajisalit.com';
-// const API_URL = 'http://192.168.100.170:3000';
+// const API_URL = 'https://www.ajisalit.com';
+const API_URL = 'http://192.168.1.66:3000';
 
 export const fetchOrders = createAsyncThunk(
   'orders/fetchOrders',
@@ -40,10 +40,6 @@ export const fetchOrders = createAsyncThunk(
       console.log("reponse of the client or  company", response.data);
       return response.data;
       
-   
-      
-      console.log("Orders API response:", response.data);
-      return response.data;
     } catch (error) {
       console.log("Orders API error:", error.response?.data || error.message);
       return rejectWithValue(error.response?.data || error.message);
@@ -61,7 +57,7 @@ const transformOrderData = (apiOrders) => {
       label: order.situation,
       currency: order.advancedAmount ? "درهم" : null
     },
-    customerName: order.clientId || "كليان مامعروفش", 
+    customerDisplayName: order.customerDisplayName || 'عميل غير معروف',
     date: formatDate(order.deliveryDate),
     id: order._id,
     price: order.price,

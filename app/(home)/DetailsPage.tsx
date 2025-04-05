@@ -25,7 +25,27 @@ export default function DetailsPage() {
   const [orderData, setOrderData] = useState(null);
   const ViewShotRef = useRef();
   const dispatch = useDispatch();
-  const role = useSelector((state) => state.role.role);
+  const [role, setRole] = useState(null);
+
+// Inside your useEffect or in a separate useEffect
+useEffect(() => {
+  const loadRole = async () => {
+    try {
+      const storedRole = await AsyncStorage.getItem('user');
+      if (storedRole) {
+        const role =  JSON.parse(storedRole);
+        setRole(role.role);
+      }
+    } catch (error) {
+      console.error("Error loading role from AsyncStorage:", error);
+    }
+  };
+  
+  loadRole();
+}, []);
+  
+  console.log('role from details is', role);
+  
   const params = useLocalSearchParams();
   const router = useRouter();
   

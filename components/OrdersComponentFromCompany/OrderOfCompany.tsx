@@ -91,7 +91,16 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
       });
   }, [dispatch]);
 
+
+
+
+
+  
+
   const OrderItem = ({ item }) => {
+
+    console.log('this  item', item);
+    
     const [isGray, setIsGray] = useState(true);
     const [isConfirmed, setIsConfirmed] = useState(false);
     const [showModal, setShowModal] = useState(false);
@@ -153,7 +162,7 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
                 <View className="flex flex-col items-end">
                   <View className='flex-row-reverse mb-1 gap-1'>
                     <Text className="text-black mr-2 font-tajawalregular text-[14px]">صاحب(ة) الطلب:</Text>
-                    <Text className="text-gray-900 font-tajawalregular text-[#295f2b]">{item.customerName}</Text>
+                    <Text className="text-gray-900 font-tajawalregular text-[#295f2b]">{item.customerDisplayName}</Text>
                   </View>
                   <View className='flex flex-row gap-1 mr-2'>
                     <Text className="text-black">{item.date}</Text>
@@ -216,7 +225,6 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
     return <OrderItem item={item} />;
   }, []);
 
-  // Show loading only when initially loading and not refreshing
   if (loading && !refreshing && !ordersLoaded) {
     return (
       <View className="flex-1 justify-center items-center">
@@ -225,7 +233,6 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
     );
   }
 
-  // Show error message if there's an error and not refreshing
   if (error && !refreshing) {
     const errorMessage = typeof error === 'object' 
       ? error.message || JSON.stringify(error) 
