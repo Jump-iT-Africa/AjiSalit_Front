@@ -17,7 +17,6 @@ import {selectUserRole} from "@/store/slices/userSlice";
 
 
 const Home = () => {
-
   const checkStoredData = async () => {
     const token = await AsyncStorage.getItem('token')
     const userData = await AsyncStorage.getItem('user');

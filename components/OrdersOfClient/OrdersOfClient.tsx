@@ -33,7 +33,7 @@ const OrdersOfClient = ({ SearchCode }) => {
     return orders.filter(order =>
       order.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (order.CompanyName && order.CompanyName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (order.customerName && order.customerName.toLowerCase().includes(searchTerm.toLowerCase()))
+      (order.customerName && order.customerDisplayName.toLowerCase().includes(searchTerm.toLowerCase()))
     );
   }, [searchTerm, orders]);
 

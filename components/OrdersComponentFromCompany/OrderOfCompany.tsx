@@ -28,8 +28,13 @@ import {
   setStatusFilter,
   markOrderFinished
 } from '@/store/slices/OrdersSlice';
+import {setCurrentOrder} from '@/store/slices/OrdersOfClient'
 import { finishButtonPressed } from '@/store/slices/OrderDetailsSlice';
 import { useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+
+
 
 const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
   const router = useRouter();
@@ -42,6 +47,8 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
   const token = useSelector(state => state.user.token);
   const [refreshing, setRefreshing] = useState(false);
   const [ordersLoaded, setOrdersLoaded] = useState(false);
+
+
 
   console.log('FilteredOrders length:', filteredOrders?.length);
   console.log('Search term:', SearchCode);
@@ -92,6 +99,21 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
   }, [dispatch]);
 
 
+  
+  const handleItemPress = async (item) => {
+    console.log('items pressed',item);
+    try {
+      const saved = await AsyncStorage.setItem('lastScannedOrder', JSON.stringify(item));
+      console.log('this is saved data', saved);
+      
+    } catch (storageError) {
+      console.log("Failed to store order in AsyncStorage:", storageError);
+    }
+    // dispatch(setCurrentOrder(item));
+    router.push('/DetailsPage');
+  };
+
+
 
 
 
@@ -99,7 +121,7 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
 
   const OrderItem = ({ item }) => {
 
-    console.log('this  item', item);
+    console.log('this is item', item);
     
     const [isGray, setIsGray] = useState(true);
     const [isConfirmed, setIsConfirmed] = useState(false);
@@ -130,12 +152,7 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
       <View>
         <TouchableOpacity 
           activeOpacity={0.7}
-          onPress={() => {
-            router.push({
-              pathname: '/DetailsPage',
-              params: { id: item.id }
-            });
-          }}
+          onPress={() => handleItemPress(item)}
           style={{ width: '100%' }}>
           <View className="bg-white rounded-3xl p-4 mb-3 shadow-md border border-[#295f2b] flex-row-reverse justify-between items-center">
             <View>
@@ -147,14 +164,14 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
               </View>
               <View className='w-full flex-row-reverse items-center mb-1'>
                 <Text className="text-black mr-2 font-tajawalregular text-[14px] ml-1">المبلغ:</Text>
-                <View className={`px-2 py-0 rounded-full w-auto text-start flex flex-row ${getStatusColor(item.amount.type)}`}>
-                  {item.amount.value !== null && (
+                <View className={`px-2 py-0 rounded-full w-auto text-start flex flex-row ${getStatusColor(item.type)}`}>
+                  {item.value !== null && (
                     <Text className="font-bold text-white font-tajawalregular text-[9px] flex flex-row-reverse">
-                      {item.amount.value} {item.amount.currency}
+                      {item.value} {item.currency}
                     </Text>
                   )}
                   <Text className="text-white text-[9px] font-medium font-tajawalregular">
-                    {item.amount.label}
+                    {item.label}
                   </Text>
                 </View>
               </View>
@@ -222,6 +239,8 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
   };
 
   const renderOrder = useCallback(({ item }) => {
+
+    
     return <OrderItem item={item} />;
   }, []);
 

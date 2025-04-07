@@ -49,10 +49,12 @@ const EditHistoryModal = ({ visible, onClose, orderCode }) => {
 };
 
 const ClientOrderCards = ({ item }) => {
+  console.log('item from client order card', item);
+  
   const [modalVisible, setModalVisible] = useState(false);
   
-  // Use provided item data or fallback to default values
-  const orderCode = item?.orderCode || "HFH83923nsh";
+
+  const orderCode = item?.qrCode || "HFH83923nsh";
   const orderType = item?.orderType || "خياط";
   const orderTypeColor = item?.orderTypeColor || "#d83ce9";
   const orderTypeBgColor = item?.orderTypeBgColor || "#f290fd";
