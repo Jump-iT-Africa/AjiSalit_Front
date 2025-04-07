@@ -58,11 +58,7 @@ export const fetchORderById = createAsyncThunk(
         console.log('order id response:', response.data);
 
         //nstori l order f local storage bach ila dkhel fl offline ibarno lih fine
-        try{
-            await AsyncStorage.setItem('lastScannedOrder', JSON.stringify(response.data))
-        }catch(error){
-            console.log('failed to store the order on the storage');
-        }
+       
 
     }catch(error)
     {

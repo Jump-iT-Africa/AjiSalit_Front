@@ -16,18 +16,21 @@ import Viewshot from "react-native-view-shot";
 import { shareAsync } from "expo-sharing";
 import { Image } from "react-native";
 import DetailsOrdersNoImages from "@/assets/images/DetailsOrdersNoImages.png";
-import { selectCurrentOrder, selectUserOrders, setCurrentOrder, fetchOrderByQrCodeOrId } from "@/store/slices/OrdersOfClient";
+import { selectCurrentOrder, selectUserOrders, setCurrentOrder, fetchORderById } from "@/store/slices/OrdersOfClient";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useSearchParams } from "expo-router/build/hooks";
 
 export default function DetailsPage() {
   const [remaining, setRemaining] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [orderData, setOrderData] = useState(null);
+
+  console.log('order to be fetched', orderData);
+  
   const ViewShotRef = useRef();
   const dispatch = useDispatch();
   const [role, setRole] = useState(null);
 
-// Inside your useEffect or in a separate useEffect
 useEffect(() => {
   const loadRole = async () => {
     try {
@@ -46,19 +49,24 @@ useEffect(() => {
   
   console.log('role from details is', role);
   
-  const params = useLocalSearchParams();
+  const {ItemID} = useLocalSearchParams();
+  console.log('this is the id of the command from details', ItemID);
+  
   const router = useRouter();
   
   
   const currentOrder = useSelector(selectCurrentOrder);
   const userOrders = useSelector(selectUserOrders);
+
+  useEffect(() => {
+    console.log('Current order updated:', currentOrder);
+  }, [currentOrder]);
   
   
   useEffect(() => {
     const loadOrderData = async () => {
       setIsLoading(true);
       try {
-        
         if (currentOrder) {
           console.log("Using current order from Redux:", currentOrder);
           setOrderData(currentOrder);
@@ -66,12 +74,11 @@ useEffect(() => {
           return;
         }
         
-        
-        if (params.id) {
-          console.log("Looking for order with ID:", params.id);
+        if (ItemID) {
+          console.log("Looking for order with ID:", ItemID);
           
           const foundOrder = userOrders.find(order => 
-            order.id === params.id || order._id === params.id || order.orderCode === params.id
+            order.id === ItemID || order._id === ItemID || order.orderCode === ItemID
           );
           
           if (foundOrder) {
@@ -82,33 +89,43 @@ useEffect(() => {
             return;
           }
           
-          
           console.log("Fetching order from API");
-          const result = await dispatch(fetchOrderByQrCodeOrId(params.id)).unwrap();
-          if (result) {
-            setOrderData(result);
-            setIsLoading(false);
-            return;
+          try {
+            const result = await dispatch(fetchORderById(ItemID)).unwrap();
+            if (result) {
+              dispatch(setCurrentOrder(result)); 
+              setOrderData(result);
+              setIsLoading(false);
+              return;
+            }
+          } catch (fetchError) {
+            console.error("Error fetching order:", fetchError);
           }
         }
         
-        
-        const storedOrder = await AsyncStorage.getItem('lastScannedOrder');
-        if (storedOrder) {
-          const parsedOrder = JSON.parse(storedOrder);
-          console.log("Using order from AsyncStorage:", parsedOrder);
-          dispatch(setCurrentOrder(parsedOrder));
-          setOrderData(parsedOrder);
+        try {
+
+          const storedOrder = await AsyncStorage.getItem('lastScannedOrder');
+          if (storedOrder) {
+            const parsedOrder = JSON.parse(storedOrder);
+            console.log("Using order from AsyncStorage:", parsedOrder);
+            dispatch(setCurrentOrder(parsedOrder));
+            setOrderData(parsedOrder);
+          } else {
+            console.error("No order data found anywhere");
+          }
+        } catch (storageError) {
+          console.error("Error accessing AsyncStorage:", storageError);
         }
       } catch (error) {
-        console.error("Error loading order data:", error);
+        console.error("General error loading order data:", error);
       } finally {
         setIsLoading(false);
       }
     };
     
     loadOrderData();
-  }, []);
+  }, [currentOrder, ItemID, dispatch, userOrders]);
   
   
   useEffect(() => {
@@ -163,7 +180,7 @@ useEffect(() => {
           لم يتم العثور على بيانات الطلب
         </Text>
         <TouchableOpacity 
-          onPress={() => router.replace('(tabs)')}
+          onPress={() => router.back()}
           style={{ 
             backgroundColor: '#295f2b', 
             paddingHorizontal: 20, 
@@ -215,14 +232,14 @@ useEffect(() => {
               totalAmount={orderData?.price || 0}
               paidAmount={orderData?.advancedAmount || 0}
               remainingAmount={remaining}
-              deliveryDate={orderData?.deliveryDate ? new Date(orderData.deliveryDate).toLocaleDateString() : 'N/A'}
+              deliveryDate={orderData?.deliveryDate}
               currency="درهم"
-              situation={orderData?.situation}
+              situation={orderData?.label}
               images={orderData?.images || []}
               onDateChange={handleDateChange}
             />
           )}
-          <QrCodeInfo uniqueId={orderData?.qrCode} />
+          <QrCodeInfo uniqueId={orderData?.orderCode} />
         </Viewshot>
 
         {role === "client" ? (

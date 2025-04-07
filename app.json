@@ -2,10 +2,6 @@
   "expo": {
     "name": "Aji Salit",
     "slug": "aji-salit",
-<<<<<<< HEAD
-=======
-    
->>>>>>> 063d03e (adding new changes on push)
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
@@ -30,7 +26,6 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo.png",
-<<<<<<< HEAD
         "backgroundColor": "#ffffff",
         "userInterfaceStyle": "light"
       },
@@ -39,12 +34,6 @@
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
       ]
-=======
-        "backgroundColor": "#ffffff"
-      },
-      "package": "com.ajisalit.it"
-
->>>>>>> 063d03e (adding new changes on push)
     },
     "plugins": [
       "expo-router",
@@ -63,15 +52,9 @@
         "origin": false
       },
       "eas": {
-<<<<<<< HEAD
         "projectId": "c7a7d86d-eaee-4ae9-b83f-80c994dfe970"
       }
     },
     "owner": "samawi"
-=======
-        "projectId": "030d5d7e-44ce-495d-8b8e-93b299a138b2"
-      }
-    }
->>>>>>> 063d03e (adding new changes on push)
   }
 }

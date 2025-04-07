@@ -2,8 +2,8 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// const API_URL = 'https://www.ajisalit.com';
-const API_URL = 'http://192.168.1.66:3000';
+const API_URL = 'https://www.ajisalit.com';
+// const API_URL = 'http://192.168.1.66:3000';
 
 export const fetchOrders = createAsyncThunk(
   'orders/fetchOrders',
@@ -51,12 +51,10 @@ const transformOrderData = (apiOrders) => {
   return apiOrders.map(order => ({
     orderCode: order.qrCode,
     status: order.status,
-    amount: {
-      type: getAmountType(order.situation),
-      value: order.advancedAmount,
-      label: order.situation,
-      currency: order.advancedAmount ? "درهم" : null
-    },
+    type: getAmountType(order.situation),
+    advancedAmount: order.advancedAmount,
+    label: order.situation,
+    currency: order.advancedAmount ? "درهم" : null,
     customerDisplayName: order.customerDisplayName || 'عميل غير معروف',
     date: formatDate(order.deliveryDate),
     id: order._id,
@@ -156,7 +154,7 @@ export const selectFilteredOrders = state => {
   if (searchTerm) {
     result = result.filter(order => 
       order.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customerName.toLowerCase().includes(searchTerm.toLowerCase())
+      order.customerDisplayName.toLowerCase().includes(searchTerm.toLowerCase())
     );
   }
   
@@ -178,7 +176,7 @@ export const selectFilteredOrders = state => {
     }
     
     if (typeToFilter) {
-      result = result.filter(order => order.amount.type === typeToFilter);
+      result = result.filter(order => order.type === typeToFilter);
     }
   }
   

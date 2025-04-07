@@ -11,7 +11,7 @@ const OrderDetailsCard = ({
   totalAmount = 150, 
   paidAmount = 50, 
   remainingAmount = 100, 
-  deliveryDate = "11/02/2025",
+  deliveryDate ,
   currency = "درهم",
   situation,
   onDateChange = (newDate, reason) => {}
@@ -102,7 +102,7 @@ const OrderDetailsCard = ({
         </View>
         <View className="flex-1 mx-3 items-end justify-between">
           <Text className="text-gray-800 text-right font-tajawalregular text-xs">تاريخ التسليم:</Text>
-          <Text className="font-bold text-green-700 text-right font-tajawalregular text-xs">{selectedDate ? selectedDate :deliveryDate} </Text>
+          <Text className="font-bold text-green-700 text-right font-tajawalregular text-xs">{deliveryDate} </Text>
         </View>
         <TouchableOpacity className="ml-2" onPress={() => setModalVisible(true)}>
           <Feather name="edit" size={21} color="#2e752f"/>
