@@ -58,7 +58,6 @@ export const fetchOrderByQrCodeOrId = createAsyncThunk(
         }
       });
 
-      //here i will update the order for just l client
 
       const userDataStr = await AsyncStorage.getItem('user');
         const userData = JSON.parse(userDataStr);
@@ -69,7 +68,7 @@ export const fetchOrderByQrCodeOrId = createAsyncThunk(
           {
             const response = await axios.patch(
               `${API_BASE_URL}/order/${sanitizedQrCode}`,
-              {}, // Empty object for data (or put your data here if needed)
+              {},
               {
                 headers: {
                   Authorization: `Bearer ${token}`
@@ -106,6 +105,7 @@ export const fetchOrderByQrCodeOrId = createAsyncThunk(
   }
 );
 
+
 export const createOrder = createAsyncThunk(
   'orders/createOrder',
   async (orderData, { rejectWithValue }) => {
@@ -128,11 +128,6 @@ export const createOrder = createAsyncThunk(
     }
   }
 );
-
-
-
-
-
 
 export const initializeCurrentOrder = createAsyncThunk(
   'orders/initializeCurrentOrder',

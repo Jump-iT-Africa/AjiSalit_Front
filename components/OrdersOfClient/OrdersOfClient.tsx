@@ -13,13 +13,11 @@ import { fetchOrders } from '@/store/slices/OrdersSlice';
 const OrdersOfClient = ({ SearchCode }) => {
   const dispatch = useDispatch();
   
-  // Update your selectors to match what's available in your store
-  const orders = useSelector(state => state.orders.orders) || []; // Adjust to match your actual Redux store structure
-  const loading = useSelector(state => state.orders.loading); // Adjust to match your actual Redux store structure
+  const orders = useSelector(state => state.orders.items) || []; 
+  const loading = useSelector(state => state.orders.loading); 
   
   const [searchTerm, setSearchTerm] = useState(SearchCode);
 
-  // Fetch orders when component mounts
   useEffect(() => {
     dispatch(fetchOrders());
   }, [dispatch]);
@@ -43,7 +41,7 @@ const OrdersOfClient = ({ SearchCode }) => {
     return <View className="flex-1 justify-center items-center"><Text>Loading...</Text></View>;
   }
 
-  if (filteredOrders.length === 0) {
+  if (orders.length === 0) {
     return <NoOrdersExists />;
   }
 
@@ -51,7 +49,7 @@ const OrdersOfClient = ({ SearchCode }) => {
     <View className="flex-1 bg-gray-100 p-2">
       <FlashList
         showsVerticalScrollIndicator={false}
-        data={filteredOrders}
+        data={orders}
         renderItem={({ item }) => <OrderCard item={item} />}
         keyExtractor={item => item.orderCode}
         ListFooterComponent={<View style={{ height: 800 }} />}
