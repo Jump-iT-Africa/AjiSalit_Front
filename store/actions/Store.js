@@ -4,7 +4,7 @@ import roleReducer from '../slices/RoleSlice.js';
 import userSlice from '../slices/userSlice.js';
 import ordersReducer from '../slices/OrdersSlice.js'
 import CreateOrderReducer from '../slices/CreateOrder.js'
-import OrdersOfClient from '../slices/OrdersOfClient.js';
+import OrdersManagment from '../slices/OrdersManagment.js';
 
 const store = configureStore({
   reducer: {
@@ -13,7 +13,7 @@ const store = configureStore({
     user:userSlice,
     orders: ordersReducer,
     order:CreateOrderReducer,
-    orderDetails: OrdersOfClient
+    orderDetails: OrdersManagment
   }
 });
 

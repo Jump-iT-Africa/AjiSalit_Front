@@ -13,7 +13,7 @@ import {
 import { BlurView } from 'expo-blur';
 import Colors from "@/constants/Colors";
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import {fetchOrderByQrCodeOrId,selectCurrentOrder} from '@/store/slices/OrdersOfClient';
+import {fetchOrderByQrCodeOrId,selectCurrentOrder} from '@/store/slices/OrdersManagment';
 import { useDispatch, useSelector } from "react-redux";
 import { router } from "expo-router";
 

@@ -1,7 +1,11 @@
-import { View, Text, Pressable, Image, Modal, TouchableOpacity, StyleSheet } from 'react-native'
-import React, { useState } from 'react'
+import { View, Text, Pressable, Modal, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native'
+import React, { useCallback, useEffect, useState } from 'react'
 import { FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons'
-import AjiSalit from "@/assets/images/logo.png"
+import { useSelector, useDispatch } from 'react-redux'
+import { fetchOrderByQrCodeOrId,selectCurrentOrder } from '@/store/slices/OrdersManagment' 
+import { fetchOrders } from '@/store/slices/OrdersSlice'
+
+
 
 const EditHistoryModal = ({ visible, onClose, orderCode }) => {
   return (
@@ -48,22 +52,124 @@ const EditHistoryModal = ({ visible, onClose, orderCode }) => {
   );
 };
 
-const ClientOrderCards = ({ item }) => {
+const ClientOrderCards = ({ item, orderId }) => {
+  const dispatch = useDispatch();
   const [modalVisible, setModalVisible] = useState(false);
+  const [remaining, setRemaining] = useState(0);
+  const currentOrder = useSelector(selectCurrentOrder);
+  const [currentColor,setCurrentColor] = useState('#FAD513');
+  const orderData = item || currentOrder;
+
   
-  // Use provided item data or fallback to default values
-  const orderCode = item?.orderCode || "HFH83923nsh";
-  const orderType = item?.orderType || "خياط";
+  useEffect(() => {
+    if (orderId && !orderData) {
+      dispatch(fetchOrderByQrCodeOrId(orderId));
+    }
+  }, [orderId, dispatch, orderData]);
+  
+  useEffect(() => {
+    if (!item) return;
+    
+    if (item.situation === 'خالص') {
+      setRemaining(0);
+    } else {
+      setRemaining((item.price || 0) - (item.advancedAmount || 0));
+    }
+  }, [item]);
+
+  
+  if (!item) {
+    return (
+      <View className='bg-white mx-3 my-3 rounded-lg p-2 border-t-4 border-[#f290fd]' style={styles.CardContainer}>
+         <ActivityIndicator size="large" color="#2e752f" />
+         <Text className="text-center p-4 font-tajawalregular">جاري تحميل الطلبات...</Text>
+      </View>
+    );
+  }
+
+  
+  const orderCode = item?.qrCode || item?.orderCode || "HFH83923nsh";
+  const orderType = item?.customerField;
   const orderTypeColor = item?.orderTypeColor || "#d83ce9";
   const orderTypeBgColor = item?.orderTypeBgColor || "#f290fd";
-  const orderStatus = item?.orderStatus || "تسبيق";
-  const totalAmount = item?.totalAmount || 150;
-  const paidAmount = item?.paidAmount || 50;
-  const remainingAmount = item?.remainingAmount || 100;
-  const deliveryDate = item?.deliveryDate || "10/03/2025";
-  const originalDeliveryDate = item?.originalDeliveryDate || "08/03/2025";
-  const wasEdited = item?.wasEdited || true;
+  
+  let orderStatus = item?.label || item?.situation;
 
+  useEffect(()=>
+    {
+      if(orderStatus === "تسبيق")
+      {
+        setCurrentColor("#FAD513")
+      }
+      else if(orderStatus === "غير خالص")
+      {
+        setCurrentColor("#F52525")
+      }else
+      {
+        setCurrentColor("#2F752F")
+      }
+    },[])
+  
+  const totalAmount = item?.price || 150;
+  const paidAmount = item?.advancedAmount || 0;
+  const remainingAmount = remaining;
+  
+  const customerField = item.customerField
+
+  
+  let formattedPickupDate = "08/03/2025";
+  if (item?.pickupDate) {
+    const date = new Date(item.pickupDate);
+    formattedPickupDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+  }
+  
+
+  function cleanDate(input) {
+    if (!input) return null;
+  
+    
+    if (typeof input === 'string' && input.includes('T')) {
+      return input.split('T')[0]; 
+    }
+  
+    return input; 
+  }
+
+
+  function formatDate(input) {
+    if (!input) return null;
+  
+    
+    if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(input)) {
+      return input;
+    }
+  
+    
+    if (typeof input === 'string' && input.includes('T')) {
+      input = input.split('T')[0]; 
+    }
+  
+    const date = new Date(input);
+    if (isNaN(date)) return null;
+  
+    const day = String(date.getDate()).padStart(1, '0');
+    const month = String(date.getMonth() + 1).padStart(1, '0');
+    const year = date.getFullYear();
+  
+    return `${day}/${month}/${year}`;
+  }
+  
+  
+  const formattedDeliveryDate = formatDate(item.deliveryDate);
+  
+
+
+  const originalDeliveryDate = item?.originalDeliveryDate || formattedPickupDate;
+  const wasEdited = item?.wasEdited || false;
+  const companyName = item?.companyId?.name || "Ajisalit";
+
+
+  
   return (
     <View className='bg-white mx-3 my-3 rounded-lg p-2 border-t-4 border-[#f290fd]' style={styles.CardContainer}>
       <View className="flex-row items-end justify-end space-x-2 p-4 border-b border-gray-100">
@@ -77,11 +183,22 @@ const ClientOrderCards = ({ item }) => {
               <FontAwesome5 name="cut" size={20} color={orderTypeColor}/>
             </View>
           </View>
-          <TouchableOpacity className="bg-yellow-400 px-5 pt-2 pb-1 rounded-full">
-            <Text className="text-gray-800 font-bold text-center font-tajawalregular text-xs">{orderStatus}</Text>
+          <TouchableOpacity style={{ backgroundColor: currentColor, paddingHorizontal: 20, paddingVertical: 8, borderRadius: 50 }}>
+            <Text className="text-white font-bold text-center font-tajawalregular text-xs">{orderStatus}</Text>
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* Company information if available */}
+      {item?.companyId && (
+        <View className="flex-row-reverse items-center border-b border-gray-100 px-4 py-2">
+          <Text className="font-tajawalregular text-gray-600">الشركة: </Text>
+          <Text className="font-tajawal font-semibold">{companyName}</Text>
+          {/* {item?.companyId?.phoneNumber && (
+            <Text className="ml-auto font-tajawalregular text-gray-500">{item.companyId.phoneNumber}</Text>
+          )} */}
+        </View>
+      )}
 
       <View className="flex-row justify-between p-2">
         <View className="flex-1">
@@ -123,9 +240,9 @@ const ClientOrderCards = ({ item }) => {
             </View>
           )}
           <View>
-            <Text className="text-sm text-black mr-2 font-tajawalregular mt-2">{deliveryDate}</Text>
+            <Text className="text-sm text-black mr-2 font-tajawalregular mt-2">{formattedDeliveryDate}</Text>
             {wasEdited && (
-              <Text className="text-sm text-gray-400 mr-2 font-tajawalregular line-through">{originalDeliveryDate}</Text>
+              <Text className="text-sm text-gray-400 mr-2 font-tajawalregular line-through">{formattedDeliveryDate}</Text>
             )}
           </View>
           <View className="bg-green-100 p-3 rounded-lg">

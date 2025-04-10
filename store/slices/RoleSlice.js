@@ -26,7 +26,7 @@ export const initializeRole = () => async (dispatch) => {
       dispatch(initializeRoleComplete());
     }
   } catch (error) {
-    console.error('Failed to load role from storage:', error);
+    console.log('Failed to load role from storage:', error);
     dispatch(initializeRoleComplete());
   }
 };

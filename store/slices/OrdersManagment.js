@@ -52,12 +52,12 @@ export const fetchOrderByQrCodeOrId = createAsyncThunk(
       
       const sanitizedQrCode = qrCode.trim();
 
-      const response = await axios.get(`${API_BASE_URL}/order/scan/${sanitizedQrCode}`, {
+      const result = await axios.get(`${API_BASE_URL}/order/scan/${sanitizedQrCode}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
-
+      console.log('data retured from scan',result.data);
 
       const userDataStr = await AsyncStorage.getItem('user');
         const userData = JSON.parse(userDataStr);
@@ -84,16 +84,17 @@ export const fetchOrderByQrCodeOrId = createAsyncThunk(
           }
         }
       
-      console.log("Order the response:", response.data);
-      
       //nstori l order f local storage bach ila dkhel fl offline ibarno lih fine
       try {
-        await AsyncStorage.setItem('lastScannedOrder', JSON.stringify(response.data));
+        await AsyncStorage.setItem('lastScannedOrder', JSON.stringify(result.data));
+        console.log('this is saved data', saved);
+        
       } catch (storageError) {
         console.log("Failed to store order in AsyncStorage:", storageError);
       }
       
-      return response.data;
+      dispatch(setCurrentOrder(result.data));
+      return result.data;
     } catch (error) {
       console.log("QR code fetch error:", error);
       if (error.response) {
@@ -129,23 +130,93 @@ export const createOrder = createAsyncThunk(
   }
 );
 
-export const initializeCurrentOrder = createAsyncThunk(
-  'orders/initializeCurrentOrder',
-  async (_, { dispatch }) => {
+
+export const fetchORderById = createAsyncThunk(
+    'orders/fetchOrderById',
+    async (OrderMainId, {rejectWithValue, dispatch}) =>{
+
+    try{
+        console.log('This is the id of the  command', OrderMainId);
+
+        const token = await AsyncStorage.getItem('token')
+
+        if(!token){
+            return rejectWithValue('No authenticated Token Available')    
+        }
+
+        if(!OrderMainId || typeof OrderMainId !== 'string'){
+            return rejectWithValue('Invalid Id format');
+        }
+
+        const sanitizedId = OrderMainId.trim();
+        console.log('this is the id of the clicked command');
+        const response = await axios.get(`${API_BASE_URL}/order/${sanitizedId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        
+        console.log('order id response:', response.data);
+
+        // //nstori l order f local storage bach ila dkhel fl offline ibarno lih fine
+        // try{
+        //     await AsyncStorage.setItem('lastScannedOrder', JSON.stringify(response.data))
+        // }catch(error){
+        //     console.log('failed to store the order on the storage');
+        // }
+
+        return response.data;
+
+    }catch(error)
+    {
+        console.log('error finding the Order');
+        if(error.response)
+        {
+            console.log('error in the responose:', error.response.data);
+            console.log('error in the status:', error.response.status);
+        }
+    }
+})
+
+
+export const updateOrderDate = createAsyncThunk(
+  'orders/updateOrderDate',
+  async ({ orderId, dateData }, { rejectWithValue, dispatch }) => {
     try {
-      const orderData = await AsyncStorage.getItem('lastScannedOrder');
-      if (orderData) {
-        const parsedOrder = JSON.parse(orderData);
-        dispatch(setCurrentOrder(parsedOrder));
-        return parsedOrder;
+      if (!orderId) {
+        return rejectWithValue('Order ID is required');
       }
-      return null;
+
+      const token = await AsyncStorage.getItem('token');
+      
+      if (!token) {
+        return rejectWithValue('No authentication token available');
+      }
+      
+      const response = await axios.put(
+        `${API_BASE_URL}/order/${orderId}`,
+        dateData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+      
+      console.log('Order date update response:', response.data);
+      return response.data;
     } catch (error) {
-      console.log('Failed to initialize order from storage:', error);
-      return null;
+      console.log('Order date update error:', error.message);
+      if (error.response) {
+        console.log('Error response data:', error.response.data);
+        console.log('Error response status:', error.response.status);
+      }
+      return rejectWithValue(error.response?.data || 'Failed to update order date');
     }
   }
 );
+
+
 
 const ordersSlice = createSlice({
   name: 'orders',
@@ -165,19 +236,52 @@ const ordersSlice = createSlice({
       state.success = false;
     },
     setCurrentOrder: (state, action) => {
-      state.currentOrder = action.payload;
-      state.success = true;
-      console.log("heeeeeeeeey", state.currentOrder);
+      console.log("setCurrentOrder payload:", action.payload);
       
-      if (action.payload) {
+      // Keep the original nested structure for objects like companyId
+      const normalizedOrder = {
+        _id: action.payload._id || action.payload.id,
+        id: action.payload.id || action.payload._id,
+        
+        orderCode: action.payload.orderCode || action.payload.qrCode,
+        qrCode: action.payload.qrCode || action.payload.orderCode,
+        
+        // Keep the original nested structure for companyId
+        companyId: action.payload.companyId,
+        
+        situation: action.payload.situation || 
+          (action.payload.amount?.type === 'paid' ? 'خالص' : 'غير خالص'),
+        
+        deliveryDate: action.payload.deliveryDate,
+        pickupDate: action.payload.pickupDate,
+        
+        price: action.payload.price,
+        
+        status: action.payload.status,
+        
+        advancedAmount: action.payload.advancedAmount || 
+          (action.payload.amount?.value || 0),
+        
+        ...action.payload
+      };
+      
+      console.log("Normalized order in Redux:", normalizedOrder);
+      
+      state.currentOrder = normalizedOrder;
+      state.success = true;
+      
+      if (normalizedOrder) {
         const existingOrderIndex = state.allOrders.findIndex(
-          order => order._id === action.payload._id || order.id === action.payload.id
+          order => (order._id === normalizedOrder._id) || 
+                   (order.id === normalizedOrder.id) ||
+                   (order.orderCode === normalizedOrder.orderCode) ||
+                   (order.qrCode === normalizedOrder.qrCode)
         );
         
         if (existingOrderIndex >= 0) {
-          state.allOrders[existingOrderIndex] = action.payload;
+          state.allOrders[existingOrderIndex] = normalizedOrder;
         } else {
-          state.allOrders.push(action.payload);
+          state.allOrders.push(normalizedOrder);
         }
       }
     },
@@ -251,14 +355,48 @@ const ordersSlice = createSlice({
         state.error = action.payload;
         state.success = false;
       })
-      
-      .addCase(initializeCurrentOrder.fulfilled, (state, action) => {
-        if (action.payload && !state.currentOrder) {
-          state.currentOrder = action.payload;
-        console.log("heeeeeeeeey", state.currentOrder);
+      .addCase(updateOrderDate.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        state.success = false;
+      })
+      .addCase(updateOrderDate.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        
+        const existingOrderIndex = state.allOrders.findIndex(
+          order => (order._id === action.payload._id) || 
+                   (order.id === action.payload.id)
+        );
+        
+        if (existingOrderIndex >= 0) {
+          state.allOrders[existingOrderIndex] = action.payload;
         }
-      });
-  },
+        
+        const userOrderIndex = state.userOrders.findIndex(
+          order => (order._id === action.payload._id) || 
+                   (order.id === action.payload.id)
+        );
+        
+        if (userOrderIndex >= 0) {
+          state.userOrders[userOrderIndex] = action.payload;
+        }
+        
+        if (state.currentOrder && 
+           (state.currentOrder._id === action.payload._id || 
+            state.currentOrder.id === action.payload.id)) {
+          state.currentOrder = action.payload;
+        }
+        if (state.currentOrder && action.payload) {
+          state.currentOrder.isFinished = action.payload.isFinished || action.meta.arg.dateData.isFinished;
+        }
+      })
+      .addCase(updateOrderDate.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.success = false;
+      })
+    },
 });
 
 export const { resetOrderState, setCurrentOrder, setQrCodeSearchTerm, clearCurrentOrder } = ordersSlice.actions;
@@ -269,6 +407,6 @@ export const selectCurrentOrder = (state) => state.orders.currentOrder;
 export const selectOrderLoading = (state) => state.orders.loading;
 export const selectOrderError = (state) => state.orders.error;
 export const selectOrderSuccess = (state) => state.orders.success;
-export const selectQrCodeSearchTerm = (state) => state.orders.qrCodeSearchTerm;
+export const selectQrCodeSearchTerm = (fstate) => state.orders.qrCodeSearchTerm;
 
 export default ordersSlice.reducer;
