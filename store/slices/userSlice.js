@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { saveUserToDB, loginUser, getAuthToken, getUserData } from '@/services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {clearCurrentOrder} from "@/store/slices/OrdersManagment"
 
 export const registerUser = createAsyncThunk(
   'user/register',
@@ -8,7 +9,7 @@ export const registerUser = createAsyncThunk(
     try {
       const response = await saveUserToDB(userData);
       
-      // Store user data and token in AsyncStorage for persistence
+    
       await AsyncStorage.setItem('token', response.token);
       await AsyncStorage.setItem('user', JSON.stringify(response.user || response));
       
@@ -28,7 +29,7 @@ export const login = createAsyncThunk(
     try {
       const response = await loginUser(credentials);
       
-      // Store user data and token in AsyncStorage for persistence
+      
       await AsyncStorage.setItem('token', response.token);
       await AsyncStorage.setItem('user', JSON.stringify(response.user || response));
       
@@ -69,9 +70,11 @@ export const logoutUser = createAsyncThunk(
   async (_, { dispatch }) => {
     await AsyncStorage.removeItem('token');
     await AsyncStorage.removeItem('user');
-    
+    await AsyncStorage.removeItem('lastScannedOrder');
+
     dispatch(logout());
     dispatch(resetOrdersState());
+    dispatch(clearCurrentOrder())
     
     return true;
   }
@@ -137,6 +140,15 @@ const userSlice = createSlice({
       // Clear AsyncStorage
       AsyncStorage.removeItem('token');
       AsyncStorage.removeItem('user');
+    },
+    resetOrdersState: (state) => {
+      state.allOrders = [];
+      state.userOrders = [];
+      state.currentOrder = null;
+      state.loading = false;
+      state.qrCodeSearchTerm = '';
+      state.error = null;
+      state.success = false;
     },
     
     resetUserState: () => initialState
@@ -235,6 +247,7 @@ export const {
   setCompanyInfo,
   setReferralInfo,
   logout,
+  resetOrdersState,
   resetUserState
 } = userSlice.actions;
 

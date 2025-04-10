@@ -70,14 +70,13 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
       dispatch(fetchOrders())
         .then(() => {
           setOrdersLoaded(true);
-          console.log("Orders fetched successfully");
         })
         .catch(err => {
-          console.log("Error fetching orders:", err);
           setOrdersLoaded(true);
         });
     } else {
       console.log("User is not authenticated, cannot fetch orders");
+      setOrdersLoaded(true); 
     }
   }, [dispatch, isAuthenticated, token]);
 
