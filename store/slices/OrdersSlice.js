@@ -22,6 +22,8 @@ export const fetchOrders = createAsyncThunk(
         return rejectWithValue('User data not available');
       }
       
+      
+
       const role = getState().role.role;
     
       let queryParam = '';
@@ -37,6 +39,9 @@ export const fetchOrders = createAsyncThunk(
         }
       });
       
+      if (response.data === "ماكين حتا طلب" || !Array.isArray(response.data)) {
+        return []; 
+      }
       console.log("reponse of the client or  company", response.data);
       return response.data;
       
@@ -48,7 +53,9 @@ export const fetchOrders = createAsyncThunk(
 );
 
 const transformOrderData = (apiOrders) => {
-  
+  if (!apiOrders || !Array.isArray(apiOrders) || apiOrders.length === 0) {
+    return [];
+  }
   return apiOrders.map(order => ({
     orderCode: order.qrCode,
     status: order.status,
@@ -125,7 +132,6 @@ const ordersSlice = createSlice({
       state.success = false;
     },
   },
-  // In your OrdersSlice.js
     extraReducers: (builder) => {
       builder
         .addCase(fetchOrders.pending, (state) => {
