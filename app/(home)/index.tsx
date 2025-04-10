@@ -9,7 +9,7 @@ import DateFiler from "@/components/DatesFilter/DateFiler"
 import OrdersOfCompany from '@/components/OrdersComponentFromCompany/OrderOfCompany'
 import AddProductManualCompany from '@/components/AddProductManualCompany/AddProductManualCompany'
 import { useSelector, useDispatch } from 'react-redux';
-import OrdersOfClient from "@/components/OrdersOfClient/OrdersOfClient"
+import OrdersManagment from "@/components/OrdersOfClient/OrdersOfClient"
 import getAuthToken from "@/services/api"
 import getUserData from "@/services/api"
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -17,7 +17,6 @@ import {selectUserRole} from "@/store/slices/userSlice";
 
 
 const Home = () => {
-
   const checkStoredData = async () => {
     const token = await AsyncStorage.getItem('token')
     const userData = await AsyncStorage.getItem('user');
@@ -82,14 +81,17 @@ const Home = () => {
           />
         </View>
         <View className='pt-2'>
+        {role === 'company' &&
           <DateFiler
-            onFilterChange={handleDateFilter}
-          />
+          onFilterChange={handleDateFilter}
+        />
+        }
+          
         </View>
       </View>
       <View className='w-full h-full px-2 mt-4 '>
 
-        {role === 'client' && <OrdersOfClient 
+        {role === 'client' && <OrdersManagment 
               SearchCode={searchCode} 
         />}
         {role === 'company' && <OrdersOfCompany 
