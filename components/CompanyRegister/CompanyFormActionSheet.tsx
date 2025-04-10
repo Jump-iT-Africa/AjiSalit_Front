@@ -38,7 +38,7 @@ export default function CombinedCompanyForm() {
     name: "",
     city: "",
     ice: "",
-    field: "",
+    field: "", 
   });
 
   const [errors, setErrors] = useState({
@@ -112,8 +112,14 @@ export default function CombinedCompanyForm() {
       newErrors.ice = "معرف الضريبة مطلوب";
       valid = false;
     } else {
-      if (formData.ice.trim().length <14) {
+      if (!formData.ice || formData.ice.trim() === "") {
+        newErrors.ice = "معرف الضريبة مطلوب";
+        valid = false;
+      } else if (formData.ice.trim().length < 14) {
         newErrors.ice = "معرف الضريبة يجب أن يكون أطول";
+        valid = false;
+      } else if (formData.ice.trim().length > 15) {
+        newErrors.ice = "معرف الضريبة يجب أن لا يتجاوز 15 رقمًا";
         valid = false;
       } else {
         newErrors.ice = "";
@@ -181,6 +187,7 @@ export default function CombinedCompanyForm() {
         ],
         position: "absolute",
         width: "100%",
+        zIndex:9
       }}
     >
       <Text className="text-center text-[#F52525] text-xl font-bold mb-6 font-tajawal">
@@ -256,7 +263,7 @@ export default function CombinedCompanyForm() {
             }),
           },
         ],
-        position: "absolute",
+        position: "relative",
         width: "100%",
       }}
     >
@@ -290,6 +297,7 @@ export default function CombinedCompanyForm() {
           keyboardType="numeric"
           value={formData.ice}
           onChangeText={(text) => setFormData({ ...formData, ice: text })}
+          maxLength={14}
           className={`border ${
             errors.ice ? "border-red-500" : "border-[#2e752f]"
           } rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}

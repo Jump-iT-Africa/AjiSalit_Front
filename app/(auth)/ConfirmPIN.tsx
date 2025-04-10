@@ -92,7 +92,7 @@ const playSuccessSound = async () => {
         }
       });
     } catch (error) {
-      console.error("Error playing success sound:", error);
+      console.log("Error playing success sound:", error);
     }
   };
 
@@ -119,7 +119,7 @@ const playSuccessSound = async () => {
                 
             }
         } catch (err) {
-            console.error('Error validating PIN:', err);
+            console.log('Error validating PIN:', err);
         } finally {
             setIsValidating(false);
         }

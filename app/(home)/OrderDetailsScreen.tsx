@@ -9,7 +9,7 @@ import {
   selectOrderError, 
   selectUserOrders, 
   selectCurrentOrder 
-} from '@/store/slices/OrdersOfClient';
+} from '@/store/slices/OrdersManagment';
 import ClientOrderCards from '@/components/DetialsPage/Client/ClientOrderCards';
 import NoOrdersExists from '@/components/NoOrderExists/NoOrdersExists';
 

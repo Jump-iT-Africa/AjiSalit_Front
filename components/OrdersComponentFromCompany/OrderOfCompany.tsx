@@ -28,10 +28,11 @@ import {
   setStatusFilter,
   markOrderFinished
 } from '@/store/slices/OrdersSlice';
-import {setCurrentOrder} from '@/store/slices/OrdersOfClient'
+import {setCurrentOrder} from '@/store/slices/OrdersManagment'
 import { finishButtonPressed } from '@/store/slices/OrderDetailsSlice';
 import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { updateOrderDate } from '@/store/slices/OrdersManagment';
 
 
 
@@ -47,14 +48,9 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
   const token = useSelector(state => state.user.token);
   const [refreshing, setRefreshing] = useState(false);
   const [ordersLoaded, setOrdersLoaded] = useState(false);
+  const pickupButtonClicked = useSelector(state => state.buttons.pickupButtonClicked);
+  const isPickedUp = pickupButtonClicked;
 
-
-
-  console.log('FilteredOrders length:', filteredOrders?.length);
-  console.log('Search term:', SearchCode);
-  console.log('Status filter:', statusFilter);
-  console.log('Loading state:', loading);
-  console.log('Orders loaded:', ordersLoaded);
 
   useEffect(() => {
     if (SearchCode !== undefined && SearchCode !== null) {
@@ -115,10 +111,6 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
 
 
 
-
-
-  
-
   const OrderItem = ({ item }) => {
 
     console.log('this is item', item);
@@ -143,6 +135,12 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
     const handleConfirm = () => {
       dispatch(finishButtonPressed());
       dispatch(markOrderFinished(item.id));
+      dispatch(updateOrderDate({
+        orderId: item.id,
+        dateData: {
+          isFinished: true
+         } 
+    }));
       setIsGray(!isGray);
       setIsConfirmed(true);
       setShowModal(false);
@@ -167,7 +165,7 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
                 <View className={`px-2 py-0 rounded-full w-auto text-start flex flex-row ${getStatusColor(item.type)}`}>
                   {item.value !== null && (
                     <Text className="font-bold text-white font-tajawalregular text-[9px] flex flex-row-reverse">
-                      {item.value} {item.currency}
+                      {item.advancedAmount} {item.currency}
                     </Text>
                   )}
                   <Text className="text-white text-[9px] font-medium font-tajawalregular">
@@ -239,15 +237,14 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
   };
 
   const renderOrder = useCallback(({ item }) => {
-
-    
     return <OrderItem item={item} />;
   }, []);
 
   if (loading && !refreshing && !ordersLoaded) {
     return (
-      <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" color="#4CAF50" />
+      <View className='flex-1'>
+        <ActivityIndicator size="large" color="#2e752f" />
+        <Text className="text-center p-4 font-tajawalregular">جاري تحميل الطلبات...</Text>
       </View>
     );
   }
@@ -279,7 +276,6 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
     );
   }
   
-  // Show the FlashList when we have orders
   return (
     <SafeAreaView className="flex-1 bg-gray-100 p-4 pb-10">
       <FlashList
