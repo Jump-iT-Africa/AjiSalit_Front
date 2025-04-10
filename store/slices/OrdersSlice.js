@@ -48,6 +48,7 @@ export const fetchOrders = createAsyncThunk(
 );
 
 const transformOrderData = (apiOrders) => {
+  
   return apiOrders.map(order => ({
     orderCode: order.qrCode,
     status: order.status,
@@ -56,13 +57,17 @@ const transformOrderData = (apiOrders) => {
     label: order.situation,
     currency: order.advancedAmount ? "درهم" : null,
     customerDisplayName: order.customerDisplayName || 'عميل غير معروف',
+    customerField: order.customerField,
     date: formatDate(order.deliveryDate),
     id: order._id,
     price: order.price,
     city: order.city,
     pickupDate: formatDate(order.pickupDate),
-    deliveryDate: formatDate(order.deliveryDate)
+    deliveryDate: formatDate(order.deliveryDate),
+    isFinished: order.isFinished,
+    isPickUp: order.isPickUp
   }));
+  
 };
 
 const getAmountType = (situation) => {
@@ -109,28 +114,40 @@ const ordersSlice = createSlice({
       if (orderIndex !== -1) {
         state.items[orderIndex].isFinished = true;
       }
-    }
+    },
+    resetOrdersState: (state) => {
+      state.allOrders = [];
+      state.userOrders = [];
+      state.currentOrder = null;
+      state.loading = false;
+      state.qrCodeSearchTerm = '';
+      state.error = null;
+      state.success = false;
+    },
   },
-  extraReducers: (builder) => {
-    builder
-      .addCase(fetchOrders.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchOrders.fulfilled, (state, action) => {
-        state.loading = false;
-        state.items = transformOrderData(action.payload);
-      })
-      .addCase(fetchOrders.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || 'Failed to fetch orders';
-      });
-  }
-});
+  // In your OrdersSlice.js
+    extraReducers: (builder) => {
+      builder
+        .addCase(fetchOrders.pending, (state) => {
+          state.loading = true;
+          state.error = null;
+          console.log('Fetch orders pending');
+        })
+        .addCase(fetchOrders.fulfilled, (state, action) => {
+          state.loading = false;
+          console.log('Fetch orders fulfilled:', action.payload);
+          state.items = transformOrderData(action.payload);
+        })
+        .addCase(fetchOrders.rejected, (state, action) => {
+          state.loading = false;
+          state.error = action.payload || 'Failed to fetch orders';
+          console.log('Fetch orders rejected:', action.error);
+        });
+    }
+    });
 
-export const { setSearchTerm, setStatusFilter, setDateFilter, markOrderFinished } = ordersSlice.actions;
+export const { setSearchTerm, setStatusFilter, setDateFilter, markOrderFinished, resetOrdersState } = ordersSlice.actions;
 
-// Selectors
 export const selectAllOrders = state => state?.orders?.items || [];
 export const selectOrdersLoading = state => state?.orders?.loading || false;
 export const selectOrdersError = state => state?.orders?.error || null;

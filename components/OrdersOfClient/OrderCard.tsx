@@ -4,7 +4,8 @@ import { Ionicons, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import AjiSalit from "@/assets/images/logo.png";
 import { useRouter } from 'expo-router';
 import { useDispatch } from 'react-redux';
-import { setCurrentOrder } from "@/store/slices/OrdersOfClient";
+import { setCurrentOrder } from "@/store/slices/OrdersManagment";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const OrderCard = ({ item }) => {
   useEffect(() => {
@@ -18,20 +19,16 @@ const OrderCard = ({ item }) => {
     return null;
   }
 
-  const handleNavigateToDetails = () => {
+  const handleNavigateToDetails = async (item) => {
     
-    dispatch(setCurrentOrder(item));
-    
-    
-    console.log("Navigating to details with order:", item);
-    
-    
-    setTimeout(() => {
-      router.push({ 
-        pathname:'/DetailsPage',
-        params: item.id
-      });
-    }, 100); 
+    try {
+      await AsyncStorage.setItem('lastScannedOrder', JSON.stringify(item));
+      
+    } catch (storageError) {
+      console.log("Failed to store order in AsyncStorage:", storageError);
+    }
+   
+      router.push('/DetailsPage');
   };
 
   const customerDisplay = item.customerName || "كليان";
@@ -40,7 +37,7 @@ const OrderCard = ({ item }) => {
     <View className={`bg-white rounded-xl mb-4 overflow-hidden shadow-sm border-t-4 border-[#295f2b] w-[100%]`}>
       <TouchableOpacity 
         activeOpacity={0.7}
-        onPress={handleNavigateToDetails}
+        onPress={()=>handleNavigateToDetails(item)}
         style={{ width: '100%' }}>
         {/* Card content remains the same... */}
         <View className="flex-row items-end justify-end space-x-2 p-4 border-b border-gray-100">
@@ -73,25 +70,26 @@ const OrderCard = ({ item }) => {
             <View className="bg-gray-100 rounded-lg mx-1 p-2 items-center border border-gray-300 border-1">
               <Text className="text-gray-600 mb-1 font-tajawalregular">الحالة</Text>
               <Text className="text-base font-bold font-tajawal text-[12px]">
-                {item.status || "في طور الانجاز"}
+                {item.label || "في طور الانجاز"}
               </Text>
             </View>
           </View>
 
           <View className="flex-1">
             <View className="bg-gray-100 rounded-lg mx-1 p-2 items-center border border-gray-300 border-1">
-              <Text className="text-cyan-500 mb-1 font-tajawalregular font-[12px]">المبلغ</Text>
+              <Text className="text-cyan-500 mb-1 font-tajawalregular font-[13px]">التسبيق</Text>
+              <Text className="text-base font-bold font-tajawal text-[12px]">
+                {item.advancedAmount || ' 0'} درهم
+              </Text>
+            </View>
+          </View>
+
+          <View className="flex-1">
+            <View className="bg-gray-100 rounded-lg mx-1 p-2 items-center border border-gray-300 border-1">
+              <Text className="text-gray-600 mb-1 font-tajawalregular text-[14px]">الإجمالي</Text>
               <Text className="text-base font-bold font-tajawal text-[13px]">
                 {item.price ? `${item.price} درهم` : '-'}
-              </Text>
-            </View>
-          </View>
 
-          <View className="flex-1">
-            <View className="bg-gray-100 rounded-lg mx-1 p-2 items-center border border-gray-300 border-1">
-              <Text className="text-gray-600 mb-1 font-tajawalregular text-[13px]">الدفع</Text>
-              <Text className="text-base font-bold font-tajawal text-[13px]">
-                {item.amount?.label || "-"}
               </Text>
             </View>
           </View>
@@ -100,7 +98,7 @@ const OrderCard = ({ item }) => {
         <View className="flex-row justify-between items-center p-3 mt-1 mx-2 bg-gray-100 border border-gray-300 border-1 rounded-lg mb-2">
           <View className="flex-row items-center space-x-2">
             <Text className="text-cyan-500 mr-1 font-tajawalregular text-[10px] mt-0">
-              {item.pickupDate ? `استلام: ${item.pickupDate}` : ''}
+              {item.deliveryDate ? `استلام: ${item.deliveryDate}` : ''}
             </Text>
           </View>
 

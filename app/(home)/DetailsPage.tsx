@@ -16,7 +16,7 @@ import Viewshot from "react-native-view-shot";
 import { shareAsync } from "expo-sharing";
 import { Image } from "react-native";
 import DetailsOrdersNoImages from "@/assets/images/DetailsOrdersNoImages.png";
-import { selectCurrentOrder, selectUserOrders, setCurrentOrder, fetchORderById } from "@/store/slices/OrdersOfClient";
+import { selectCurrentOrder, selectUserOrders, setCurrentOrder, fetchORderById } from "@/store/slices/OrdersManagment";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSearchParams } from "expo-router/build/hooks";
 
@@ -40,7 +40,7 @@ useEffect(() => {
         setRole(role.role);
       }
     } catch (error) {
-      console.error("Error loading role from AsyncStorage:", error);
+      console.log("Error loading role from AsyncStorage:", error);
     }
   };
   
@@ -99,12 +99,11 @@ useEffect(() => {
               return;
             }
           } catch (fetchError) {
-            console.error("Error fetching order:", fetchError);
+            console.log("Error fetching order:", fetchError);
           }
         }
         
         try {
-
           const storedOrder = await AsyncStorage.getItem('lastScannedOrder');
           if (storedOrder) {
             const parsedOrder = JSON.parse(storedOrder);
@@ -112,13 +111,13 @@ useEffect(() => {
             dispatch(setCurrentOrder(parsedOrder));
             setOrderData(parsedOrder);
           } else {
-            console.error("No order data found anywhere");
+            console.log("No order data found anywhere");
           }
         } catch (storageError) {
-          console.error("Error accessing AsyncStorage:", storageError);
+          console.log("Error accessing AsyncStorage:", storageError);
         }
       } catch (error) {
-        console.error("General error loading order data:", error);
+        console.log("General error loading order data:", error);
       } finally {
         setIsLoading(false);
       }
@@ -138,10 +137,19 @@ useEffect(() => {
     }
   }, [orderData]);
 
-  const handleDateChange = (newDate, reason) => {
-    console.log('New delivery date:', newDate);
-    console.log('Reason for change:', reason);
-  };
+    const handleDateChange = async (newDate, reason) => {
+      console.log('New delivery date:', newDate);
+      console.log('Reason for change:', reason);
+      
+      if (orderData?.id) {
+        try {
+          await dispatch(fetchORderById(orderData.id));
+          console.log('Order data refreshed after date change');
+        } catch (error) {
+          console.log('Failed to refresh order data:', error);
+        }
+      }
+    };
 
   const handleShare = async () => {
     try {
@@ -152,7 +160,7 @@ useEffect(() => {
         UTI: "public.jpeg",
       });
     } catch (error) {
-      console.error("There was an error sharing:", error);
+      console.log("There was an error sharing:", error);
     }
   };
 
@@ -237,9 +245,10 @@ useEffect(() => {
               situation={orderData?.label}
               images={orderData?.images || []}
               onDateChange={handleDateChange}
+              orderId={orderData?.id}
             />
           )}
-          <QrCodeInfo uniqueId={orderData?.orderCode} />
+          <QrCodeInfo uniqueId={orderData?.orderCode || orderData?.qrCode} />
         </Viewshot>
 
         {role === "client" ? (

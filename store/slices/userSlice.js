@@ -64,6 +64,19 @@ export const restoreAuthState = createAsyncThunk(
   }
 );
 
+export const logoutUser = createAsyncThunk(
+  'user/logout',
+  async (_, { dispatch }) => {
+    await AsyncStorage.removeItem('token');
+    await AsyncStorage.removeItem('user');
+    
+    dispatch(logout());
+    dispatch(resetOrdersState());
+    
+    return true;
+  }
+);
+
 const initialState = {
   id: '',
   name: '',

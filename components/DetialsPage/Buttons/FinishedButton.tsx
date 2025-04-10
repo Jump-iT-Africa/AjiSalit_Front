@@ -1,5 +1,5 @@
-// @ts-nocheck
 
+// @ts-nocheck
 import React, { useRef } from "react";
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import Logowhite from "@/assets/images/whiteLogo.png";
@@ -9,42 +9,57 @@ import Colors from "@/constants/Colors";
 import { router } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSelector, useDispatch } from 'react-redux';
-import {finishButtonPressed}  from '@/store/slices/OrderDetailsSlice';
+import { finishButtonPressed } from '@/store/slices/OrderDetailsSlice';
+import { updateOrderDate, setCurrentOrder } from '@/store/slices/OrdersManagment';
 
-
-
-console.log("Action:", finishButtonPressed);
-
-
-export default function FinishedButton() {
+export default function FinishedButton({orderData}) {
     const actionSheetRef = useRef(null);
-    
-    // Get state from Redux
     const dispatch = useDispatch();
-    const finishButtonClicked = useSelector(state => state.buttons.finishButtonClicked);
-
+    
+    
+    const currentOrder = useSelector(state => state.orders.currentOrder || {});
+    const finishBtnClicked = useSelector(state => state.buttons.finishButtonClicked);
+    
+    
+    const orderId = currentOrder?.id || orderData?.id;
+    
+    
+    const isFinished = currentOrder?.isFinished || finishBtnClicked || orderData?.isFinished;
+    
+    console.log('FinishedButton - isFinished combined status:', isFinished);
+    
     const handleSubmit = () => {
-        console.log("Action being dispatched:", finishButtonPressed);
-
-        if (!finishButtonClicked) {
+        if (!isFinished) {
+            
             dispatch(finishButtonPressed());
+            
+            
+            dispatch(updateOrderDate({
+                orderId: orderId,
+                dateData: { isFinished: true }
+            }));
+            
+            
+            dispatch(setCurrentOrder({
+                ...currentOrder,
+                isFinished: true
+            }));
+            
             actionSheetRef.current?.show();
         }
     };
     
+    const buttonColor = isFinished ? 'bg-gray-400' : 'bg-[#F52525]';
+    
     return (
         <>
             <TouchableOpacity
-                className={`${finishButtonClicked ? 'bg-gray-400' : 'bg-[#F52525]'} w-[48%] h-14 rounded-full flex-row justify-center items-center mt-0`}
+                className={`${buttonColor} w-[48%] h-14 rounded-full flex-row justify-center items-center mt-0`}
                 onPress={handleSubmit}
-                disabled={finishButtonClicked}
+                disabled={isFinished}
             >
                 <Text className="text-white text-lg font-bold ml-2 font-tajawalregular pt-2 pr-2">تم الانتهاء</Text>
-                <Image
-                    source={Logowhite}
-                    resizeMode="contain"
-                    className="w-10 h-10 pr-2"
-                />
+                <Image source={Logowhite} resizeMode="contain" className="w-10 h-10 pr-2" />
             </TouchableOpacity>
             
             <ActionSheetComponent

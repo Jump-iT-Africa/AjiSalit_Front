@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Image, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity, Image, TextInput, Pressable } from 'react-native';
 import MoneyIcon from '@/assets/images/money.png';
 import Advance from '@/assets/images/Advanced.png';
 import NoAdvance from '@/assets/images/NoAdvanced.png';
@@ -18,7 +18,7 @@ const PaymentStatus: React.FC<PaymentStatusProps> = ({ onStatusChange, currentPr
   const [AdvanceError , setAdvanceError] = useState('')
   const statusOptions = [
     {
-      id: 3,
+      id: 1,
       label: 'غير خالص',
       color: '#e84a4a',
       icon: NoAdvance
@@ -30,7 +30,7 @@ const PaymentStatus: React.FC<PaymentStatusProps> = ({ onStatusChange, currentPr
       icon: Advance
     },
     {
-      id: 1,
+      id: 3,
       label: 'خالص',
       color: '#43915a',
       icon: MoneyIcon
@@ -67,41 +67,44 @@ const handleAdvanceAmountChange = (text: string) => {
   return (
     <View>
       <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
-        {statusOptions.map((option) => (
-          <TouchableOpacity
-            key={option.id}
-            onPress={() => handleStatusSelect(option.label)}
-            style={{
-              flex: 1,
-              padding: 10,
-              borderRadius: 20,
-              backgroundColor: selectedStatus === option.label ? option.color : "#ffff",
-              borderWidth: 1,
-              borderColor: option.color,
-            }}
-          >
-            <View style={{ 
-              alignItems: 'center', 
-              flexDirection: 'row-reverse', 
-              justifyContent: 'space-evenly'
-            }}>
-              <Text style={{
-                textAlign: 'center',
-                fontFamily: 'TajawalRegular',
-                color: selectedStatus === option.label ? 'white' : option.color,
-                fontSize: 18,
-                marginBottom: 0
-              }}>
-                {option.label}
-              </Text>
-              <Image
-                source={option.icon}
-                resizeMode="contain"
-                style={{ width: 20, height: 20 }}
-              />
-            </View>
-          </TouchableOpacity>
-        ))}
+      {statusOptions.map((option) => (
+      <Pressable
+        key={option.id}
+        onPress={() => handleStatusSelect(option.label)}
+        android_ripple={{ color: option.color }}
+        style={({ pressed }) => [
+          {
+            flex: 1,
+            padding: 10,
+            borderRadius: 20,
+            backgroundColor: selectedStatus === option.label ? option.color : "#ffff",
+            borderWidth: 1,
+            borderColor: option.color,
+            opacity: pressed ? 0.7 : 1
+          }
+        ]}
+      >
+        <View style={{ 
+          alignItems: 'center', 
+          flexDirection: 'row-reverse', 
+          justifyContent: 'center',
+          gap: 8
+        }}>
+          <Text style={{
+            fontFamily: 'TajawalRegular',
+            color: selectedStatus === option.label ? 'white' : option.color,
+            fontSize: 18,
+          }}>
+            {option.label}
+          </Text>
+          <Image
+            source={option.icon}
+            resizeMode="contain"
+            style={{ width: 20, height: 20 }}
+          />
+        </View>
+      </Pressable>
+))}
       </View>
 
       {showAdvanceInput && (

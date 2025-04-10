@@ -9,78 +9,31 @@ import {
   fetchOrderByQrCodeOrId, 
   selectOrderLoading, 
   selectOrderError,
-  selectOrderSuccess,
   selectCurrentOrder
-} from '@/store/slices/OrdersOfClient';
+} from '@/store/slices/OrdersManagment';
 
 export default function Scanner() {
   const [flashEnabled, setFlashEnabled] = useState(false);
   const [hasFlashPermission, setHasFlashPermission] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastScannedCode, setLastScannedCode] = useState(null);
-  const [shouldNavigate, setShouldNavigate] = useState(false);
-  const [navigateParams, setNavigateParams] = useState(null);
   const cameraRef = useRef(null);
   const sound = useRef(null);
   const dispatch = useDispatch();
   
-  
   const reduxLoading = useSelector(selectOrderLoading);
   const reduxError = useSelector(selectOrderError);
-  const reduxSuccess = useSelector(selectOrderSuccess);
   const currentOrder = useSelector(selectCurrentOrder);
   
+  const isDisabled = isProcessing;
+  
   useEffect(() => {
-    
     return () => {
       if (sound.current) {
         sound.current.unloadAsync();
       }
     };
   }, []);
-
-  
-  useEffect(() => {
-    if (shouldNavigate && navigateParams && !isProcessing && !reduxLoading) {
-      console.log("Attempting navigation with params:", navigateParams);
-      
-      try { 
-        
-        setShouldNavigate(false);
-        
-        router.push(navigateParams);
-
-      } catch (error) {
-        console.log("Navigation error:", error);
-        Alert.alert(
-          "خطأ في التنقل",
-          "حدث خطأ أثناء الانتقال إلى صفحة التفاصيل",
-          [{ text: "حسنًا" }]
-        );
-      }
-    }
-  }, [shouldNavigate, navigateParams, isProcessing, reduxLoading]);
-
-  
-  useEffect(() => {
-    if (reduxSuccess && currentOrder && !isProcessing && !reduxLoading) {
-      console.log("Order found successfully:", currentOrder);
-      
-      
-      const orderId = currentOrder._id || currentOrder.id;
-      const qrCodeValue = currentOrder.qrCode || lastScannedCode;
-      
-      
-      setNavigateParams({
-        pathname: '/DetailsPage',
-        params: { 
-          orderId: orderId, 
-          qrCode: qrCodeValue 
-        }
-      });
-      setShouldNavigate(true);
-    }
-  }, [reduxSuccess, currentOrder, isProcessing, reduxLoading, lastScannedCode]);
 
   const playSuccessSound = async () => {
     try {
@@ -90,17 +43,14 @@ export default function Scanner() {
       );
       sound.current = soundObject;
       
-      
-      return new Promise((resolve) => {
-        sound.current.setOnPlaybackStatusUpdate((status) => {
-          if (status.didJustFinish) {
-            resolve();
-          }
-        });
+      // Don't wait for playback completion
+      sound.current.setOnPlaybackStatusUpdate((status) => {
+        if (status.didJustFinish) {
+          sound.current.unloadAsync();
+        }
       });
     } catch (error) {
       console.log("Error playing sound:", error);
-      return Promise.resolve(); 
     }
   };
 
@@ -108,17 +58,20 @@ export default function Scanner() {
     setFlashEnabled(prevState => !prevState);
   };
 
+  // Debounce mechanism
   let lastScanTime = 0;
+  const DEBOUNCE_TIME = 3000; // 3 seconds
 
   const handleBarcodeScanned = ({ data }) => {
-    
-    if (data === lastScannedCode && Date.now() - lastScanTime < 3000) {
+    // Prevent duplicate scans within the debounce period
+    const now = Date.now();
+    if (data === lastScannedCode && now - lastScanTime < DEBOUNCE_TIME) {
       return;
     }
     
     console.log("QR Code scanned:", data);
     setLastScannedCode(data);
-    lastScanTime = Date.now();
+    lastScanTime = now;
     processScannedData(data);
   };
 
@@ -128,7 +81,8 @@ export default function Scanner() {
   };
 
   const processScannedData = async (data) => {
-    if (isProcessing || reduxLoading) {
+    if (isDisabled) {
+      console.log("Processing already in progress. Ignoring scan.");
       return;
     }
     
@@ -142,22 +96,19 @@ export default function Scanner() {
     
     try {
       console.log("Dispatching fetchOrderByQrCodeOrId with:", data);
-      await playSuccessSound();
+      
+      playSuccessSound();
       
       const result = await dispatch(fetchOrderByQrCodeOrId(data));
       
       if (fetchOrderByQrCodeOrId.fulfilled.match(result)) {
         const order = result.payload;
-        console.log("Order fetched directly:", order);
+        console.log("Order fetched successfully:", order);
         
         if (order) {
           setTimeout(() => {
             try {
-              console.log("order ID", order._id);
-              console.log("qrcode", order.qrCode);
-              
-              // This is the correct way to pass params with expo-router
-              router.push({
+              router.replace({
                 pathname: '/DetailsPage',
                 params: { 
                   orderId: order._id || order.id, 
@@ -165,10 +116,22 @@ export default function Scanner() {
                 }
               });
             } catch (navError) {
-              console.log("Direct navigation error:", navError);
+              console.log("Navigation error:", navError);
+              Alert.alert(
+                "خطأ في التنقل",
+                "حدث خطأ أثناء الانتقال إلى صفحة التفاصيل",
+                [{ text: "حسنًا" }]
+              );
             }
-          }, 1000);
+          }, 200);
         }
+      } else if (reduxError) {
+        console.log("Error from Redux:", reduxError);
+        Alert.alert(
+          "خطأ",
+          "لم يتم العثور على الطلب",
+          [{ text: "حسنًا" }]
+        );
       }
     } catch (error) {
       console.log("Error in processScannedData:", error);
@@ -178,7 +141,9 @@ export default function Scanner() {
         [{ text: "موافق" }]
       );
     } finally {
-      setIsProcessing(false);
+      setTimeout(() => {
+        setIsProcessing(false);
+      }, 1000);
     }
   };
 
@@ -195,16 +160,16 @@ export default function Scanner() {
         style={StyleSheet.absoluteFillObject}
         facing="back"
         enableTorch={flashEnabled}
-        onBarcodeScanned={(reduxLoading || isProcessing) ? undefined : handleBarcodeScanned}
+        onBarcodeScanned={isDisabled ? undefined : handleBarcodeScanned}
       />
       <Overlay
         flashEnabled={flashEnabled}
         toggleFlash={toggleFlash}
         hasFlashPermission={hasFlashPermission}
-        onManualIdSubmit={(reduxLoading || isProcessing) ? undefined : handleManualIdSubmit}
+        onManualIdSubmit={isDisabled ? undefined : handleManualIdSubmit}
       />
       
-      {(reduxLoading || isProcessing) && (
+      {isDisabled && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color="#ffffff" />
           <Text style={styles.loadingText}>جاري البحث عن الطلب...</Text>
