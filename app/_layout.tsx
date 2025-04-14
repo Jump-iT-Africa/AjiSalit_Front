@@ -49,13 +49,19 @@ export default function RootLayout() {
     const prepare = async () => {
       if (isReady && isAppFirstLaunched !== null && fontsLoaded) {
         try {
+          console.log("Splash screen countdown starting...");
+          for (let i = 1; i <= 2; i++) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            console.log(`Splash screen: ${i}s`);
+          }
+          console.log("Hiding splash screen now");
           await SplashScreen.hideAsync();
         } catch (error) {
           console.warn('Error hiding splash screen:', error);
         }
       }
     };
-
+  
     prepare();
   }, [isReady, isAppFirstLaunched, fontsLoaded]);
 

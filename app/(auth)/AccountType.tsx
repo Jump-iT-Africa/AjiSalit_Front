@@ -1,5 +1,4 @@
 import AppGradient from "@/components/ui/AppGradient";
-import React, { useState, useRef, useEffect } from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Color from "@/constants/Colors";
@@ -10,6 +9,7 @@ import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
 import PersonalInfoScreen from "@/components/ui/PersonalInfoScreen";
 import { useDispatch } from 'react-redux';
 import {setRole} from "@/store/slices/userSlice"
+import React, { useState, useRef, useEffect } from "react";
 
 
 
@@ -19,17 +19,29 @@ export default function AccountnType() {
     const actionSheetRef = useRef<ActionSheetRef>(null);
     const [selectedAccountType, setSelectedAccountType] = useState('');
     const dispatch = useDispatch();
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    const handleInputFocus = (focused) => {
+        setIsExpanded(focused);
+      };
+    const handleSheetClose = () => {
+        setIsExpanded(false);
+      };
 
     const handleBack = () => {
         setTimeout(() => {
             router.replace("(tabs)");
         }, 100);
+
+        
     };
 
-    const handleAccountTypeSelect = (type: string) => {
+    
+
+      const handleAccountTypeSelect = (type: string) => {
         actionSheetRef.current?.hide();
         setSelectedAccountType(type);
-        
+        setIsExpanded(false);
         setTimeout(() => {
           actionSheetRef.current?.show();
         }, 300);
@@ -93,21 +105,24 @@ export default function AccountnType() {
                 />
             </View>
              
-            <ActionSheet 
+            <ActionSheet
                 ref={actionSheetRef}
                 id="account-type-sheet"
                 containerStyle={{
-                    borderTopLeftRadius: 20,
-                    borderTopRightRadius: 20,
-                    height: '100%', 
+                borderTopLeftRadius: 20,
+                borderTopRightRadius: 20,
+                height: isExpanded ? '90%' : '70%',
                 }}
                 gestureEnabled={true}
                 closable={true}
-                snapPoints={[90]}>
-                <PersonalInfoScreen 
-                    accountType={selectedAccountType}
+                onClose={handleSheetClose}
+                snapPoints={[isExpanded ? 100 :80]}>
+                <PersonalInfoScreen
+                accountType={selectedAccountType}
+                onInputFocus={handleInputFocus}
                 />
             </ActionSheet>
         </AppGradient>
     );
 }
+
