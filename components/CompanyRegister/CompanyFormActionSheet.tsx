@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState, useRef } from "react";
+import React, { useState, useRef,useEffect } from "react";
 import {
   View,
   TextInput,
@@ -10,6 +10,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   ActivityIndicator,
+  Image,
 } from "react-native";
 import CustomButton from "../ui/CustomButton";
 import Divider from "../ui/Devider";
@@ -24,16 +25,22 @@ import CompanyFieldDropDown from "./CompanyFieldDropDown";
 import { useDispatch, useSelector } from 'react-redux';
 import { setCompanyInfo, registerUser, selectLoading, selectError } from '@/store/slices/userSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage'; 
+import  coloredLogo from '@/assets/images/coloredLogo.png'
 
 
 
-export default function CombinedCompanyForm() {
+export default function CombinedCompanyForm({ onInputFocus }) {
   const dispatch = useDispatch();
   const userData = useSelector(state => state.user);
   const isLoading = useSelector(selectLoading);
   const error = useSelector(selectError);
-  
+  const [buttonDisabled, setButtonDisabled] = useState(false);
+  const loadingActionSheetRef = useRef(null);
+  const [isLoadingSheetVisible, setIsLoadingSheetVisible] = useState(false);
   const [isCompanyFieldValid, setIsCompanyFieldValid] = useState(false);
+
+
+
   const [formData, setFormData] = useState({
     name: "",
     city: "",
@@ -55,6 +62,15 @@ export default function CombinedCompanyForm() {
   const step1Animation = useRef(new Animated.Value(1)).current;
   const step2Animation = useRef(new Animated.Value(0)).current;
 
+
+
+  const handleInputFocus = () => {
+    if (onInputFocus) onInputFocus(true);
+  };
+  
+  const handleInputBlur = () => {
+    if (onInputFocus) onInputFocus(false);
+  };
   const animateToNextStep = () => {
     Animated.parallel([
       Animated.timing(step1Animation, {
@@ -135,43 +151,68 @@ export default function CombinedCompanyForm() {
     return valid;
   };
 
-  const handleSubmit = async () => {
-    setIsSubmitted(true);
-  
-    if (validateStep2()) {
-      dispatch(setCompanyInfo(formData));
-      
-      // Make sure phoneNumber is a string and not empty
-      let phoneNum = userData.phoneNumber;
-      if (!phoneNum || phoneNum.trim() === '') {
-        setErrors(prev => ({...prev, phoneNumber: "رقم الهاتف مطلوب"}));
-        return;
-      }
-      
-      // Ensure phoneNumber is a string
-      phoneNum = String(phoneNum).trim();
-      
-      const completeUserData = {
-        name: formData.name, 
-        city: formData.city,
-        field: formData.field,
-        ice: formData.ice,
-        phoneNumber: phoneNum, // Use the validated phone number
-        password: userData.password.replace(/\s/g, ""),
-        role: userData.role
-      };
-      
-      console.log("Submitting user data:", completeUserData); // Add this for debugging
-      
-      const resultAction = await dispatch(registerUser(completeUserData));
-      
-      if (registerUser.fulfilled.match(resultAction)) {
-        setIsSheetVisible(true);
-        await AsyncStorage.setItem("registered", "true"); // Use await here
-        actionSheetRef.current?.show();
-      }
+  useEffect(() => {
+    if (isLoading) {
+      // Show loading action sheet when loading starts
+      setIsLoadingSheetVisible(true);
+      loadingActionSheetRef.current?.show();
+    } else if (isLoadingSheetVisible) {
+      // When loading finishes, hide the loading sheet after 4 seconds
+      setTimeout(() => {
+        loadingActionSheetRef.current?.hide();
+        setIsLoadingSheetVisible(false);
+        
+        // Only show success sheet if registration was successful
+        if (userData.registered) {
+          actionSheetRef.current?.show();
+          setIsSheetVisible(true);
+        }
+      }, 4000); // This is the delay for the loading sheet to stay visible
     }
-  };
+  }, [isLoading, userData.registered]);
+
+const handleSubmit = async () => {
+  setIsSubmitted(true);
+
+  if (validateStep2()) {
+    dispatch(setCompanyInfo(formData));
+    
+    let phoneNum = userData.phoneNumber;
+    if (!phoneNum || phoneNum.trim() === '') {
+      setErrors(prev => ({...prev, phoneNumber: "رقم الهاتف مطلوب"}));
+      return;
+    }
+    
+    phoneNum = String(phoneNum).trim();
+    
+    const completeUserData = {
+      name: formData.name, 
+      city: formData.city,
+      field: formData.field,
+      ice: formData.ice,
+      phoneNumber: phoneNum,
+      password: userData.password.replace(/\s/g, ""),
+      role: userData.role
+    };
+    
+    console.log("Submitting user data:", completeUserData); 
+    
+    // This will trigger isLoading to be true and show the loading sheet
+    const resultAction = await dispatch(registerUser(completeUserData));
+    
+    if (registerUser.fulfilled.match(resultAction)) {
+      await AsyncStorage.setItem("registered", "true");
+      
+      // Don't show success sheet here, it will be handled by the useEffect
+      setButtonDisabled(true);
+      setTimeout(() => {
+        setButtonDisabled(false);
+      }, 3000);
+    }
+  }
+};
+
+  
 
   const Step1Form = (
     <Animated.View
@@ -204,6 +245,8 @@ export default function CombinedCompanyForm() {
         </Text>
         <TextInput
           placeholder="أدخل الاسم و اللقب"
+          onFocus={handleInputFocus}
+          onBlur={handleInputBlur}
           placeholderTextColor="#888"
           value={formData.name}
           onChangeText={(text) => setFormData({ ...formData, name: text })}
@@ -230,6 +273,8 @@ export default function CombinedCompanyForm() {
           placeholderTextColor="#888"
           value={formData.city}
           onChangeText={(text) => setFormData({ ...formData, city: text })}
+          onFocus={handleInputFocus}
+          onBlur={handleInputBlur}
           className={`border border-[#2e752f] rounded-lg p-3 text-black text-right bg--white font-tajawalregular`}
         />
       </View>
@@ -298,8 +343,11 @@ export default function CombinedCompanyForm() {
           value={formData.ice}
           onChangeText={(text) => setFormData({ ...formData, ice: text })}
           maxLength={14}
+           onFocus={handleInputFocus}
+          onBlur={handleInputBlur}
           className={`border ${
             errors.ice ? "border-red-500" : "border-[#2e752f]"
+            
           } rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}
         />
         {errors.ice ? (
@@ -312,25 +360,25 @@ export default function CombinedCompanyForm() {
       <Divider />
 
       <View className="mt-6 flex-row justify-between gap">
-        <CustomButton
-          title="رجوع"
-          onPress={animateToPreviousStep}
-          containerStyles="p-3 bg-gray-500 rounded-full w-2/4 mr-2"
-          textStyles="text-white text-center font-tajawal text-[15px]"
-        />
-        {isLoading ? (
-          <View className="p-3 bg-[#2e752f] rounded-full w-2/4 justify-center items-center">
-            <ActivityIndicator size="small" color="#ffffff" />
-          </View>
-        ) : (
-          <CustomButton
-            title="إنشاء حساب"
-            onPress={handleSubmit}
-            containerStyles="p-3 bg-[#2e752f] rounded-full w-2/4"
-            textStyles="text-white text-center font-tajawal text-[15px]"
-          />
-        )}
-      </View>
+      <CustomButton
+        title="رجوع"
+        onPress={animateToPreviousStep}
+        containerStyles="p-3 bg-gray-500 rounded-full w-2/4 mr-2"
+        textStyles="text-white text-center font-tajawal text-[15px]"
+      />
+      <CustomButton
+        title="إنشاء حساب"
+        onPress={handleSubmit}
+        containerStyles="p-3 bg-[#2e752f] rounded-full w-2/4"
+        textStyles="text-white text-center font-tajawal text-[15px]"
+      />
+    </View>
+    
+    {error && (
+      <Text className="text-red-500 text-center mt-4 font-tajawalregular text-[13px]">
+        {typeof error === 'string' ? error : 'حدث خطأ أثناء التسجيل'}
+      </Text>
+    )}
       
       {error && (
         <Text className="text-red-500 text-center mt-4 font-tajawalregular text-[13px]">
@@ -343,21 +391,51 @@ export default function CombinedCompanyForm() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className={`flex p-4 ${isSheetVisible ? "opacity-50" : "bg-white"}`}
+      className={`flex p-4 ${isSheetVisible || isLoadingSheetVisible ? "opacity-50" : "bg-white"}`}
       style={{ minHeight: 500 }}
     >
-      <TouchableWithoutFeedback
-        onPress={() => {
-          Keyboard.dismiss();
-        }}
-      >
+      <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
         <View>
+          <ActionSheetComponent
+            ref={loadingActionSheetRef}
+            containerStyle={{ backgroundColor: "white" , height:'60%'}}
+            contentStyle={{ backgroundColor: "white" }}
+            closeOnTouchBackdrop={false}
+            closeOnPressBack={false}
+            gestureEnabled={false}
+          >
+            <View className="flex-1 items-center justify-center h-full py-12">
+              <View>
+                <View className="mb-4 items-center">
+                  <Image 
+                    source={coloredLogo}
+                    resizeMode="contain"
+                    className="flex w-32 h-32"
+                  />
+                </View>
+                <View className="my-6">
+                  <ActivityIndicator size="large" color={Colors.green} />
+                </View>
+              </View>
+              <View>
+                <Text className="text-center text-[#2e752f] text-3xl font-tajawal pt-2">
+                  جار إنشاء حسابك
+                </Text>
+                <Text className="text-[#2e752f] text-base text-center p-4 font-tajawalregular">
+                  يرجى الانتظار...
+                </Text>
+              </View>
+            </View>
+          </ActionSheetComponent>
+          
           <ActionSheetComponent
             ref={actionSheetRef}
             containerStyle={{ backgroundColor: Colors.green }}
             contentStyle={{ backgroundColor: Colors.green }}
+            closeOnTouchBackdrop={false}
+            closeOnPressBack={false}
           >
-            <View className="flex-1 items-center justify-center h-full ">
+            <View className="flex-1 items-center justify-center h-full">
               <View>
                 <AntDesign name="checkcircleo" size={190} color="white" />
               </View>
@@ -372,18 +450,21 @@ export default function CombinedCompanyForm() {
               <View className="w-full mt-20">
                 <CustomButton
                   onPress={() => {
-                    setIsSheetVisible(false);
                     actionSheetRef.current?.hide();
-                    router.replace("(home)");
+                    setTimeout(() => {
+                      setIsSheetVisible(false);
+                      router.replace("(home)");
+                    }, 3000);
                   }}
                   title="انتقل للصفحة الرئيسية"
-                  textStyles="text-sm font-tajawal px-2 py-0 text-[#2e752f]"
+                  textStyles={`text-sm font-tajawal px-2 py-0 text-[#2e752f] ${buttonDisabled ? 'opacity-50' : ''}`}
                   containerStyles="w-[90%] m-auto bg-white"
+                  disabled={buttonDisabled}
                 />
               </View>
             </View>
           </ActionSheetComponent>
-
+  
           <View style={{ position: "relative", height: 500 }}>
             {Step1Form}
             {Step2Form}
