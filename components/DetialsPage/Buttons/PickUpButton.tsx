@@ -1,6 +1,4 @@
-// @ts-nocheck
-
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import ActionSheetComponent from "../../ui/ActionSheet";
 import CustomButton from "../../ui/CustomButton";
@@ -10,27 +8,49 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useSelector, useDispatch } from 'react-redux';
 import { pickupButtonPressed } from '@/store/slices/OrderDetailsSlice';
+import { updateOrderDate, setCurrentOrder } from '@/store/slices/OrdersManagment';
 
-export default function PickUpButton() {
+export default function PickUpButton({orderData}) {
     const actionSheetRef = useRef(null);
-    
     const dispatch = useDispatch();
+    
+    const currentOrder = useSelector(state => state.orders.currentOrder || {});
     const finishButtonClicked = useSelector(state => state.buttons.finishButtonClicked);
     const pickupButtonClicked = useSelector(state => state.buttons.pickupButtonClicked);
     
+    const orderId = currentOrder?.id || orderData?.id;
+    
+    const orderIsFinished = currentOrder?.isFinished || finishButtonClicked || orderData?.isFinished;
+    const isPickedUp = currentOrder?.isPickUp || pickupButtonClicked || orderData?.isPickUp;
+    
+    console.log('PickUpButton - Order is finished:', orderIsFinished);
+    console.log('PickUpButton - Order is picked up:', isPickedUp);
+    
     const handleSubmit = () => {
-        if (finishButtonClicked && !pickupButtonClicked) {
+        if (orderIsFinished && !isPickedUp) {
             dispatch(pickupButtonPressed());
+            
+            dispatch(updateOrderDate({
+                orderId: orderId,
+                dateData: { isPickUp: true }
+            }));
+            
+            dispatch(setCurrentOrder({
+                ...currentOrder,
+                isPickUp: true
+            }));
+            
             actionSheetRef.current?.show();
         }
     };
     
-    const isEnabled = finishButtonClicked && !pickupButtonClicked;
+    const isEnabled = orderIsFinished && !isPickedUp;
+    const buttonColor = isEnabled ? 'bg-green-700' : 'bg-gray-400';
     
     return (
         <>
             <TouchableOpacity
-                className={`${isEnabled ? 'bg-green-700' : 'bg-gray-400'} w-[48%] h-14 rounded-full flex-row justify-center items-center`}
+                className={`${buttonColor} w-[48%] h-14 rounded-full flex-row justify-center items-center`}
                 onPress={handleSubmit}
                 disabled={!isEnabled}
             >

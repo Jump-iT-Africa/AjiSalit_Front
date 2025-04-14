@@ -9,17 +9,17 @@ import DateFiler from "@/components/DatesFilter/DateFiler"
 import OrdersOfCompany from '@/components/OrdersComponentFromCompany/OrderOfCompany'
 import AddProductManualCompany from '@/components/AddProductManualCompany/AddProductManualCompany'
 import { useSelector, useDispatch } from 'react-redux';
-import OrdersOfClient from "@/components/OrdersOfClient/OrdersOfClient"
+import OrdersManagment from "@/components/OrdersOfClient/OrdersOfClient"
 import getAuthToken from "@/services/api"
 import getUserData from "@/services/api"
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {selectUserRole} from "@/store/slices/userSlice";
+
 
 const Home = () => {
-
   const checkStoredData = async () => {
     const token = await AsyncStorage.getItem('token')
     const userData = await AsyncStorage.getItem('user');
-    // console.log("this is user data", userData);
   };
   
   checkStoredData();
@@ -40,7 +40,9 @@ const Home = () => {
   };
 
 
-  const role = useSelector((state) => state.role.role); 
+
+  const role = useSelector(selectUserRole);
+  
   const dispatch = useDispatch();
 
   console.log(role);
@@ -54,9 +56,19 @@ const Home = () => {
             {role === 'client' && <AddProductManualClient/>}
             {role === 'company' && <AddProductManualCompany />}
           </View>
-          <View className='mt-8  w-full flex items-end'>
+          {role === 'client' ? (
+
+          <View className='mt-20  w-full flex items-end'>
+          <Text className='text-end text-xl font-tajawal'>الطلبات المتوفرة</Text>
+          </View>
+          ):(
+            <View className='mt-8  w-full flex items-end'>
             <Text className='text-end text-xl font-tajawal'>الطلبات المتوفرة</Text>
           </View>
+          )
+
+        }
+         
         </View>
         <View className='px-4'>
           <SearchBar
@@ -69,14 +81,17 @@ const Home = () => {
           />
         </View>
         <View className='pt-2'>
+        {role === 'company' &&
           <DateFiler
-            onFilterChange={handleDateFilter}
-          />
+          onFilterChange={handleDateFilter}
+        />
+        }
+          
         </View>
       </View>
       <View className='w-full h-full px-2 mt-4 '>
 
-        {role === 'client' && <OrdersOfClient 
+        {role === 'client' && <OrdersManagment 
               SearchCode={searchCode} 
         />}
         {role === 'company' && <OrdersOfCompany 

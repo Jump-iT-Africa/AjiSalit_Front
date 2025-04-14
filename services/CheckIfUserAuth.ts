@@ -11,7 +11,7 @@ const AuthCheck = () => {
       try {
         await dispatch(restoreAuthState());
       } catch (error) {
-        console.error('Auth check failed:', error);
+        console.log('Auth check failed:', error);
       }
     };
 

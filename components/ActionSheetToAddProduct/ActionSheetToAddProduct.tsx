@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { forwardRef, useState, useRef, useImperativeHandle, useEffect } from 'react';
 import {
   View,
@@ -29,6 +28,7 @@ import Noimages from "@/assets/images/noImages.png"
 import UniqueIdModal from '../QrCodeGeneration/GenerateQrCode';
 import PaymentStatus from './PaymenStatus';
 
+
 const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) => {
   const actionSheetRef = useRef(null);
   const dispatch = useDispatch();
@@ -42,6 +42,8 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
     situation: '',
     advancedAmount: '', 
     pickupDate: '',
+    isFinished:false,
+    isPickUp: false
   });
 
   const [errors, setErrors] = useState({
@@ -125,6 +127,8 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
         status: '',
         situation: '',
         pickupDate: '',
+        isFinished:false,
+        isPickUp: false
       });
       setErrors({
         price: '',
@@ -227,18 +231,20 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
     // Prepare order data
 
 
-    const orderData = {
-      price: parseFloat(formData.price),
-      situation: formData.situation || "خالص",
-      status: "في طور الانجاز",
-      advancedAmount: formData.situation === 'تسبيق' ? formData.advancedAmount : null,
-      deliveryDate: formatDateToIso(deliveryDate),
-      pickupDate: formatDateToIso(pickupDate),
-      qrCode: newUniqueId
-    };
+    // In your component, before dispatch:
+const orderData = {
+  price: parseFloat(formData.price),
+  situation: formData.situation || "خالص",
+  status: "في طور الانجاز",
+  advancedAmount: formData.situation === 'تسبيق' ? formData.advancedAmount : null,
+  deliveryDate: formatDateToIso(deliveryDate),
+  pickupDate: formatDateToIso(pickupDate),
+  qrCode: newUniqueId,
+  isFinished: false,
+  isPickUp: false
+};
 
-
-    console.log("info order",orderData);
+console.log("Component - Order data before dispatch:", JSON.stringify(orderData));
     
     dispatch(createOrder(orderData));
     
@@ -309,6 +315,7 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
           }],
           position: 'absolute',
           width: '100%',
+          zIndex:9
         }}
       >
         <Text className="text-center text-[#F52525] text-xl font-bold mb-6 font-tajawal">
@@ -563,7 +570,7 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
         :
 
         <UniqueIdModal
-        vis0697042868ible={showIdModal} 
+        visible={showIdModal} 
         onClose={handleModalClose} 
         uniqueId={uniqueId} 
         />

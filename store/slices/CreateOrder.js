@@ -34,6 +34,7 @@ const initialState = {
   loading: false,
   error: null,
   success: false,
+  currentOrder: { isFinished: false }
 };
 
 const orderSlice = createSlice({
