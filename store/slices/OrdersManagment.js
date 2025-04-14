@@ -57,6 +57,7 @@ export const fetchOrderByQrCodeOrId = createAsyncThunk(
           Authorization: `Bearer ${token}`
         }
       });
+      
       console.log('data retured from scan',result.data);
 
       const userDataStr = await AsyncStorage.getItem('user');
@@ -149,13 +150,14 @@ export const fetchORderById = createAsyncThunk(
         }
 
         const sanitizedId = OrderMainId.trim();
-        console.log('this is the id of the clicked command');
+        console.log('this is sanitizedId', sanitizedId);
         const response = await axios.get(`${API_BASE_URL}/order/${sanitizedId}`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
         });
         
+
         console.log('order id response:', response.data);
 
         // //nstori l order f local storage bach ila dkhel fl offline ibarno lih fine

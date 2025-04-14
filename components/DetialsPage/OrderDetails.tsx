@@ -7,6 +7,7 @@ import Feather from '@expo/vector-icons/Feather';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateOrderDate, selectOrderLoading,fetchORderById } from '@/store/slices/OrdersManagment'; 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const OrderDetailsCard = ({ 
   totalAmount = 150, 
@@ -69,6 +70,13 @@ const saveChanges = async () => {
         reason: reason 
       }
     })).unwrap();
+
+    useEffect(async() =>
+    {
+        const localStoragValuue=  await AsyncStorage.getItem('lastScannedOrder');
+        const parsedOrder = JSON.parse(localStoragValuue);
+        console.log("last scanned order from order details", parsedOrder);
+    },[])
     
     console.log('Date updated successfully:', result);
     setUpdateStatus('تم تحديث التاريخ بنجاح');
