@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 
 import React, { useState } from 'react';
 import { View, Text, Modal, TouchableOpacity, StyleSheet, Image } from 'react-native';

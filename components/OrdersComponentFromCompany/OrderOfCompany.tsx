@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 import React, { useEffect, useCallback } from 'react';
 import { 
@@ -27,8 +28,14 @@ import {
   setStatusFilter,
   markOrderFinished
 } from '@/store/slices/OrdersSlice';
+import {setCurrentOrder} from '@/store/slices/OrdersManagment'
 import { finishButtonPressed } from '@/store/slices/OrderDetailsSlice';
 import { useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { updateOrderDate } from '@/store/slices/OrdersManagment';
+
+
+
 
 const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
   const router = useRouter();
@@ -41,12 +48,9 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
   const token = useSelector(state => state.user.token);
   const [refreshing, setRefreshing] = useState(false);
   const [ordersLoaded, setOrdersLoaded] = useState(false);
+  const pickupButtonClicked = useSelector(state => state.buttons.pickupButtonClicked);
+  const isPickedUp = pickupButtonClicked;
 
-  console.log('FilteredOrders length:', filteredOrders?.length);
-  console.log('Search term:', SearchCode);
-  console.log('Status filter:', statusFilter);
-  console.log('Loading state:', loading);
-  console.log('Orders loaded:', ordersLoaded);
 
   useEffect(() => {
     if (SearchCode !== undefined && SearchCode !== null) {
@@ -66,14 +70,13 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
       dispatch(fetchOrders())
         .then(() => {
           setOrdersLoaded(true);
-          console.log("Orders fetched successfully");
         })
         .catch(err => {
-          console.log("Error fetching orders:", err);
           setOrdersLoaded(true);
         });
     } else {
       console.log("User is not authenticated, cannot fetch orders");
+      setOrdersLoaded(true); 
     }
   }, [dispatch, isAuthenticated, token]);
 
@@ -90,7 +93,27 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
       });
   }, [dispatch]);
 
+
+  
+  const handleItemPress = async (item) => {
+    console.log('items pressed',item);
+    try {
+      const saved = await AsyncStorage.setItem('lastScannedOrder', JSON.stringify(item));
+      console.log('this is saved data', saved);
+      
+    } catch (storageError) {
+      console.log("Failed to store order in AsyncStorage:", storageError);
+    }
+    // dispatch(setCurrentOrder(item));
+    router.push('/DetailsPage');
+  };
+
+
+
   const OrderItem = ({ item }) => {
+
+    console.log('this is item', item);
+    
     const [isGray, setIsGray] = useState(true);
     const [isConfirmed, setIsConfirmed] = useState(false);
     const [showModal, setShowModal] = useState(false);
@@ -111,6 +134,12 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
     const handleConfirm = () => {
       dispatch(finishButtonPressed());
       dispatch(markOrderFinished(item.id));
+      dispatch(updateOrderDate({
+        orderId: item.id,
+        dateData: {
+          isFinished: true
+         } 
+    }));
       setIsGray(!isGray);
       setIsConfirmed(true);
       setShowModal(false);
@@ -120,12 +149,7 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
       <View>
         <TouchableOpacity 
           activeOpacity={0.7}
-          onPress={() => {
-            router.push({
-              pathname: '/DetailsPage',
-              params: { id: item.id }
-            });
-          }}
+          onPress={() => handleItemPress(item)}
           style={{ width: '100%' }}>
           <View className="bg-white rounded-3xl p-4 mb-3 shadow-md border border-[#295f2b] flex-row-reverse justify-between items-center">
             <View>
@@ -137,14 +161,14 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
               </View>
               <View className='w-full flex-row-reverse items-center mb-1'>
                 <Text className="text-black mr-2 font-tajawalregular text-[14px] ml-1">المبلغ:</Text>
-                <View className={`px-2 py-0 rounded-full w-auto text-start flex flex-row ${getStatusColor(item.amount.type)}`}>
-                  {item.amount.value !== null && (
+                <View className={`px-2 py-0 rounded-full w-auto text-start flex flex-row ${getStatusColor(item.type)}`}>
+                  {item.value !== null && (
                     <Text className="font-bold text-white font-tajawalregular text-[9px] flex flex-row-reverse">
-                      {item.amount.value} {item.amount.currency}
+                      {item.advancedAmount} {item.currency}
                     </Text>
                   )}
                   <Text className="text-white text-[9px] font-medium font-tajawalregular">
-                    {item.amount.label}
+                    {item.label}
                   </Text>
                 </View>
               </View>
@@ -152,7 +176,7 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
                 <View className="flex flex-col items-end">
                   <View className='flex-row-reverse mb-1 gap-1'>
                     <Text className="text-black mr-2 font-tajawalregular text-[14px]">صاحب(ة) الطلب:</Text>
-                    <Text className="text-gray-900 font-tajawalregular text-[#295f2b]">{item.customerName}</Text>
+                    <Text className="text-gray-900 font-tajawalregular text-[#295f2b]">{item.customerDisplayName}</Text>
                   </View>
                   <View className='flex flex-row gap-1 mr-2'>
                     <Text className="text-black">{item.date}</Text>
@@ -215,16 +239,15 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
     return <OrderItem item={item} />;
   }, []);
 
-  // Show loading only when initially loading and not refreshing
   if (loading && !refreshing && !ordersLoaded) {
     return (
-      <View className="flex-1 justify-center items-center">
-        <ActivityIndicator size="large" color="#4CAF50" />
+      <View className='flex-1'>
+        <ActivityIndicator size="large" color="#2e752f" />
+        <Text className="text-center p-4 font-tajawalregular">جاري تحميل الطلبات...</Text>
       </View>
     );
   }
 
-  // Show error message if there's an error and not refreshing
   if (error && !refreshing) {
     const errorMessage = typeof error === 'object' 
       ? error.message || JSON.stringify(error) 
@@ -252,7 +275,6 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
     );
   }
   
-  // Show the FlashList when we have orders
   return (
     <SafeAreaView className="flex-1 bg-gray-100 p-4 pb-10">
       <FlashList

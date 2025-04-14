@@ -9,7 +9,15 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 
 export default function QrCodeInfo({uniqueId})
 {
+
+    
+
     console.log(uniqueId);
+
+    const copyToClipboard = async () => {
+        await Clipboard.setStringAsync(uniqueId);
+    }
+
     return(
         <View className="bg-white w-[95%] mx-auto mb-6 pb-6" style={styles.qrContainer}> 
             <View >
