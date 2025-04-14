@@ -14,16 +14,14 @@
       "resizeMode": "contain",
       "backgroundColor": "#fff"
     },
-    "assetBundlePatterns": [
-      "**/*",
-      "assets/fonts/*"
-    ],
+    "assetBundlePatterns": ["**/*", "assets/fonts/*"],
     "ios": {
       "googleServicesFile": "./google-services.json",
       "supportsTablet": false,
       "bundleIdentifier": "com.app.ajisalit",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "UIBackgroundModes": ["remote-notification"]
       }
     },
     "android": {
@@ -40,7 +38,6 @@
       ],
       "config": {
         "usesCleartextTraffic": true
-
       }
     },
     "plugins": [
@@ -56,8 +53,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/logo.png",
-          "color": "#ffffff"
+          "icon": "./assets/images/logo-notification.jpg"
         }
       ]
     ],
