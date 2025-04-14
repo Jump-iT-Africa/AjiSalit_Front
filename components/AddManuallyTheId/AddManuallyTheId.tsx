@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -10,9 +10,15 @@ import {
   Keyboard,
   KeyboardAvoidingView
 } from "react-native";
-import { BlurView } from 'expo-blur'; // Import BlurView
+import { BlurView } from 'expo-blur';
 import Colors from "@/constants/Colors";
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import {fetchOrderByQrCodeOrId,selectCurrentOrder} from '@/store/slices/OrdersManagment';
+import { useDispatch, useSelector } from "react-redux";
+import { router } from "expo-router";
+
+
+
 
 export default function AddManuallyTheId({ 
   visible, 
@@ -24,11 +30,43 @@ export default function AddManuallyTheId({
   blurTint = "light" 
 }) {
   const [idValue, setIdValue] = useState("");
+  const [error, setError] = useState('');
+  const currentOrder = useSelector(selectCurrentOrder);
 
-  const handleSubmit = () => {
-    if (idValue.trim()) {
-      onSubmit(idValue);
-      setIdValue("");
+  console.log(idValue);
+
+  const dispatch = useDispatch();
+  
+  const handleSubmit = async () => {
+    try{
+      if (idValue.trim()) {
+        if(idValue.length === 12 || idValue.length === 11)
+          {
+            const response = await dispatch(fetchOrderByQrCodeOrId(idValue))
+            console.log('this is response',response.payload)
+            
+            if(response)
+            {
+              onClose()
+              router.push('/DetailsPage')
+            }
+
+            setError('')
+          }
+          else{
+            setError('الكود مكملش 😢')
+          }
+      }
+    }catch (error) {
+      if (typeof error === 'string') {
+        console.log(error);
+        setError('وقع مشكل حاول مرة خرى');
+      } else if (error instanceof Error) {
+        console.log(error.message);
+        setError('وقع مشكل حاول مرة خرى');
+      } else {
+        setError('An unknown error occurred');
+      }
     }
   };
 
@@ -79,6 +117,8 @@ export default function AddManuallyTheId({
                     onSubmitEditing={handleSubmit}
                     className="font-tajawalregular"
                   />
+
+                  <Text className="text-red-500 font-tajawalregular text-sm">{error}</Text>
                   
                   <TouchableOpacity
                     style={styles.submitButton}

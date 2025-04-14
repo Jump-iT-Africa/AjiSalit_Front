@@ -1,27 +1,43 @@
 // @ts-nocheck
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform, Modal, TextInput } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Feather from '@expo/vector-icons/Feather';
 import DateTimePicker from '@react-native-community/datetimepicker';
-
+import { useDispatch, useSelector } from 'react-redux';
+import { updateOrderDate, selectOrderLoading,fetchORderById } from '@/store/slices/OrdersManagment'; 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const OrderDetailsCard = ({ 
   totalAmount = 150, 
   paidAmount = 50, 
   remainingAmount = 100, 
-  deliveryDate = "11/02/2025",
+  deliveryDate,
   currency = "درهم",
+  situation,
+  orderId, 
   onDateChange = (newDate, reason) => {}
 }) => {
+
+  console.log(orderId);
+  
+  console.log('delivey date', deliveryDate);
+  useEffect(() => {
+    console.log('Delivery date prop updated:', deliveryDate);
+    setSelectedDate(deliveryDate);
+  }, [deliveryDate]);
+  
+  const dispatch = useDispatch();
+  const isLoading = useSelector(selectOrderLoading);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [reason, setReason] = useState('');
   const [selectedDate, setSelectedDate] = useState(deliveryDate);
-
+  const [currentColor, setCurrentColor] = useState('#2e752f');
+  const [updateStatus, setUpdateStatus] = useState(''); 
 
   const openDatePicker = () => {
     setShowDatePicker(true);
@@ -40,21 +56,72 @@ const OrderDetailsCard = ({
     setSelectedDate(formattedDate);
   };
   
-  const saveChanges = () => {
-    onDateChange(selectedDate, reason);
-    setModalVisible(false);
-    setReason('');
-  };
+const saveChanges = async () => {
+  const dateParts = selectedDate.split('/');
+  const formattedForAPI = dateParts.length === 3 
+    ? `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}` 
+    : selectedDate;
   
+  try {
+    const result = await dispatch(updateOrderDate({
+      orderId: orderId,
+      dateData: {
+        deliveryDate: formattedForAPI,
+        reason: reason 
+      }
+    })).unwrap();
+
+    useEffect(async() =>
+    {
+        const localStoragValuue=  await AsyncStorage.getItem('lastScannedOrder');
+        const parsedOrder = JSON.parse(localStoragValuue);
+        console.log("last scanned order from order details", parsedOrder);
+    },[])
+    
+    console.log('Date updated successfully:', result);
+    setUpdateStatus('تم تحديث التاريخ بنجاح');
+    
+    // Call the parent function to notify about the change
+    onDateChange(selectedDate, reason);
+    
+    setTimeout(() => {
+      setUpdateStatus('');
+      setModalVisible(false);
+      setReason('');
+    }, 1500);
+  } catch (error) {
+    console.log('Failed to update date:', error);
+    setUpdateStatus(`فشل في تحديث التاريخ ${error}` );
+    
+    setTimeout(() => {
+      setUpdateStatus('');
+    }, 3000);
+  }
+};
+
+  
+
+  console.log("this is situation", situation);
+
+  useEffect(() => {
+    if (situation === "تسبيق") {
+      setCurrentColor("#FAD513");
+    } else if (situation === "غير خالص") {
+      setCurrentColor("#F52525");
+    } else {
+      setCurrentColor("#2F752F");
+    }
+  }, [situation]);
+
   return (
     <View className="border-4 border-[#2e752f] border-l-0 border-r-0 border-b-0 rounded-lg p-4 bg-white my-3 w-[95%] mx-auto" style={styles.detailscontainer}>
       <View className="flex-row-reverse justify-between items-center border-b border-gray-200 pb-2 mb-4">
         <Text className="font-bold text-green-700 text-right font-tajawalregular text-smt">تفاصيل الطلب:</Text>
-        <TouchableOpacity className="bg-yellow-400 px-5 pt-2 pb-1 rounded-full">
-          <Text className="text-gray-800 font-bold text-center font-tajawalregular text-xs">تسبيق</Text>
+        <TouchableOpacity style={{ backgroundColor: currentColor, paddingHorizontal: 20, paddingVertical: 8, borderRadius: 50 }}>
+          <Text className=" font-bold text-center font-tajawalregular text-xs text-white">{situation}</Text>
         </TouchableOpacity>
       </View>
-      
+
       <View className="flex-row-reverse justify-between border border-gray-200 rounded-lg mb-4 overflow-hidden">
         <View className="flex-1 p-3 items-center bg-gray-100">
           <Text className="mb-1.5 text-center font-bold font-tajawalregular text-xs">المبلغ الإجمالي</Text>
@@ -82,7 +149,7 @@ const OrderDetailsCard = ({
         </View>
         <View className="flex-1 mx-3 items-end justify-between">
           <Text className="text-gray-800 text-right font-tajawalregular text-xs">تاريخ التسليم:</Text>
-          <Text className="font-bold text-green-700 text-right font-tajawalregular text-xs">{selectedDate ? selectedDate :deliveryDate} </Text>
+          <Text className="font-bold text-green-700 text-right font-tajawalregular text-xs">{deliveryDate} </Text>
         </View>
         <TouchableOpacity className="ml-2" onPress={() => setModalVisible(true)}>
           <Feather name="edit" size={21} color="#2e752f"/>
@@ -133,24 +200,38 @@ const OrderDetailsCard = ({
                 onChangeText={setReason}
               />
             </View>
+            
+            {updateStatus ? (
+              <Text style={[
+                styles.statusMessage, 
+                updateStatus.includes('فشل') ? styles.errorStatus : styles.successStatus
+              ]}>
+                {updateStatus}
+              </Text>
+            ) : null}
                        
             <View style={styles.buttonContainer}>
               <TouchableOpacity
                 style={[styles.button, styles.buttonCancel]}
                 onPress={() => setModalVisible(false)}
+                disabled={isLoading}
               >
                 <Text style={styles.buttonCancelText}>إلغاء</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.button, styles.buttonSave]}
                 onPress={saveChanges}
+                disabled={isLoading}
               >
-                <Text style={styles.buttonSaveText}>حفظ</Text>
+                <Text style={styles.buttonSaveText}>
+                  {isLoading ? 'جاري التحديث...' : 'حفظ'}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
+
     </View>
   );
 };
@@ -263,6 +344,21 @@ const styles = StyleSheet.create({
     fontFamily: 'TajawalRegular',
     textAlign: 'center',
   },
+  statusMessage: {
+    textAlign: 'center',
+    marginBottom: 15,
+    padding: 8,
+    borderRadius: 4,
+    fontFamily: 'TajawalRegular',
+  },
+  successStatus: {
+    backgroundColor: '#e6f7e9',
+    color: '#2e752f',
+  },
+  errorStatus: {
+    backgroundColor: '#ffeeee',
+    color: '#F52525',
+  }
 });
 
 export default OrderDetailsCard;
