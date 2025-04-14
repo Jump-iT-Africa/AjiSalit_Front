@@ -5,10 +5,18 @@ import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import AppGradient from "@/components/ui/AppGradient";
 import CustomButton from "@/components/ui/CustomButton";
+import { useNotification } from "@/context/NotificationContext";
+import { useEffect } from "react";
 
 const App = () => {
   const router = useRouter();
+  const { notification } = useNotification();
 
+  useEffect(() => {
+    if (notification) {
+      alert("You received a notification!");
+    }
+  }, [notification]);
   return (
     <View className="flex-1">
       <ImageBackground source={HeroImage} resizeMode="cover" className="flex-1">

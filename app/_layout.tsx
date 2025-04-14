@@ -9,6 +9,7 @@ import store from '@/store/actions/Store';
 import AuthCheck from "@/services/CheckIfUserAuth";
 import NavigationHandler from "@/services/NavigationHandler"; // Create this component
 import * as Notifications from "expo-notifications";
+import {NotificationProvider} from '../context/NotificationContext'
 
 
 
@@ -46,7 +47,7 @@ export default function RootLayout() {
           setIsAppFirstLaunched(false);
         }
       } catch (error) {
-        console.log('Error checking first launch:', error);
+        // console.log('Error checking first launch:', error);
         setIsAppFirstLaunched(false);
       } finally {
         setIsReady(true);
@@ -60,15 +61,15 @@ export default function RootLayout() {
     const prepare = async () => {
       if (isReady && isAppFirstLaunched !== null && fontsLoaded) {
         try {
-          console.log("Splash screen countdown starting...");
+          // console.log("Splash screen countdown starting...");
           for (let i = 1; i <= 2; i++) {
             await new Promise(resolve => setTimeout(resolve, 1000));
-            console.log(`Splash screen: ${i}s`);
+            // console.log(`Splash screen: ${i}s`);
           }
-          console.log("Hiding splash screen now");
+          // console.log("Hiding splash screen now");
           await SplashScreen.hideAsync();
         } catch (error) {
-          console.warn('Error hiding splash screen:', error);
+          // console.warn('Error hiding splash screen:', error);
         }
       }
     };
@@ -81,6 +82,7 @@ export default function RootLayout() {
   }
 
   return (
+    <NotificationProvider>
     <Provider store={store}>
       <AuthCheck />
       <NavigationHandler firstLaunch={isAppFirstLaunched} />
@@ -90,5 +92,6 @@ export default function RootLayout() {
         <Stack.Screen name="(home)" options={{ headerShown: false }} />
       </Stack>
     </Provider>
+    </NotificationProvider>
   );
 }
