@@ -2,16 +2,16 @@
   "expo": {
     "name": "Aji Salit",
     "slug": "aji-salit",
-    
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo.png",
+    "icon": "./assets/images/coloredLogo.png",
     "scheme": "aji-salit",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/images/logo.png",
+      "image": "./assets/images/coloredLogo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#fff"
+      "backgroundColor": "#fff",
+
     },
     "assetBundlePatterns": [
       "**/*",
@@ -19,18 +19,18 @@
     ],
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.app.ajisalit",
+      "bundleIdentifier": "com.ajisalit.app",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/logo.png",
+        "foregroundImage": "./assets/images/coloredLogo.png",
         "backgroundColor": "#ffffff",
         "userInterfaceStyle": "light"
       },
-      "package": "com.app.ajisalit",
+      "package": "com.ajisalit.app",
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
@@ -53,8 +53,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "030d5d7e-44ce-495d-8b8e-93b299a138b2"
+        "projectId": "c7a7d86d-eaee-4ae9-b83f-80c994dfe970"
       }
-    }
+    },
+    "owner": "samawi"
   }
 }

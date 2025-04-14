@@ -20,7 +20,7 @@ const NavigationHandler = ({ firstLaunch }) => {
           }
         }
       } catch (error) {
-        console.error('Navigation error:', error);
+        console.log('Navigation error:', error);
         router.replace('/(auth)');
       }
     };

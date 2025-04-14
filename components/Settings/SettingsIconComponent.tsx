@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Colors from '@/constants/Colors';
 import { logout } from '@/store/slices/userSlice'; 
-
+import { logoutUser } from '@/store/slices/userSlice';
 const SettingsIconComponent = () => {
   const dispatch = useDispatch();
 
@@ -19,7 +19,7 @@ const SettingsIconComponent = () => {
         },
         { 
           text: "تسجيل الخروج", 
-          onPress: () => dispatch(logout()),
+          onPress: () => dispatch(logoutUser()),
           style: "destructive"
         }
       ]

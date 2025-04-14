@@ -30,13 +30,6 @@ const HeaderWithBack: React.FC<HeaderWithBackProps> = ({
           <Feather name="chevron-left" size={22} color="white" />
         </View>
       </TouchableOpacity>
-      <TooltipComponent
-        isVisible={tooltipVisible}
-        onClose={() => setTooltipVisible(false)}
-        onOpen={() => setTooltipVisible(true)}
-        content={content}
-        placement="bottom"
-      />
     </View>
   );
 };
