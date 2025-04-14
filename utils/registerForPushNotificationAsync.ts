@@ -2,8 +2,23 @@ import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import Constants from "expo-constants";
 import { Platform } from "react-native";
+import { useState, useEffect } from "react";
+import axios from "axios";
 
 export async function registerForPushNotificationsAsync() {
+  const [expoPushToken, setExpoPushToken] = useState("");
+
+  useEffect(()=>{
+    async function UpdateProfilToken(){
+      try{
+        
+      }catch(e){
+        console.log("ops smth went bad", e)
+      }
+    }
+
+  })
+
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync("default", {
       name: "default",
@@ -12,8 +27,9 @@ export async function registerForPushNotificationsAsync() {
       lightColor: "#FF231F7C",
     });
   }
-  if(Platform.OS === 'ios'){
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  if (Platform.OS === "ios") {
+    const { status: existingStatus } =
+      await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
   }
 
@@ -30,19 +46,24 @@ export async function registerForPushNotificationsAsync() {
         "Permission not granted to get push token for push notification!"
       );
     }
-    const projectId =Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
+    const projectId =
+      Constants?.expoConfig?.extra?.eas?.projectId ??
+      Constants?.easConfig?.projectId;
     if (!projectId) {
       throw new Error("Project ID not found");
     }
-    // console.log("+++++++",projectId)
+    console.log("+++++++", projectId);
     try {
-    console.log("+++++++ Project id i'm hereee",projectId)
+      console.log("+++++++ Project id i'm hereee", projectId);
       const pushTokenString = (
         await Notifications.getExpoPushTokenAsync({
           projectId,
         })
       ).data;
-      console.log("+++++++ pushtokeeen",pushTokenString,  {tag: 'specificccc'});
+      console.log("+++++++ pushtokeeen", pushTokenString, {
+        tag: "specificccc",
+      });
+      setExpoPushToken(pushTokenString)
       return pushTokenString;
     } catch (e) {
       throw new Error(`${e}`);
