@@ -21,6 +21,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSearchParams } from "expo-router/build/hooks";
 
 export default function DetailsPage() {
+
   const [remaining, setRemaining] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [orderData, setOrderData] = useState(null);
@@ -46,6 +47,8 @@ useEffect(() => {
   
   loadRole();
 }, []);
+
+
   
   console.log('role from details is', role);
   
@@ -89,9 +92,10 @@ useEffect(() => {
             return;
           }
           
-          console.log("Fetching order from API");
           try {
             const result = await dispatch(fetchORderById(ItemID)).unwrap();
+            console.log('this is result from details page', result);
+            
             if (result) {
               dispatch(setCurrentOrder(result)); 
               setOrderData(result);
@@ -102,6 +106,7 @@ useEffect(() => {
             console.log("Error fetching order:", fetchError);
           }
         }
+        
         
         try {
           const storedOrder = await AsyncStorage.getItem('lastScannedOrder');
@@ -201,6 +206,9 @@ useEffect(() => {
       </View>
     );
   }
+
+
+  
 
   return (
     <>

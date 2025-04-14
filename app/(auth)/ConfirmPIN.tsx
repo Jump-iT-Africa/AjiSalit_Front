@@ -7,10 +7,10 @@ import {
   Text,
   TouchableOpacity,
   Image,
-  TextInput,
   Platform,
   ActivityIndicator,
   Vibration,
+  Dimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useSelector, useDispatch } from "react-redux"; 
@@ -20,18 +20,15 @@ import HeaderWithBack from "@/components/ui/HeaderWithToolTipAndback";
 import Whitelogo from "@/assets/images/whiteLogo.png";
 import { useToast } from "react-native-toast-notifications";
 import { Audio } from 'expo-av';
-import soundEffect from "@/assets/sounds/success.mp3"
-
+import { Feather } from "@expo/vector-icons";
 
 export default function ConfirmPIN() {
   const { pin } = useLocalSearchParams();
   const router = useRouter();
-  const dispatch = useDispatch(); // Add this
+  const dispatch = useDispatch();
   const [code, setCode] = useState("");
-
   const [lastVisibleIndex, setLastVisibleIndex] = useState(-1);
   const [tooltipVisible, setTooltipVisible] = useState(false);
-  const inputRef = useRef(null);
   const timeoutRef = useRef(null);
   const toast = useToast();
   const [isValidating, setIsValidating] = useState(false);
@@ -46,11 +43,11 @@ export default function ConfirmPIN() {
 
   const PIN_LENGTH = 6;
 
-  const handlePinChange = (value) => {
-    const newValue = value.replace(/[^0-9]/g, "").slice(0, PIN_LENGTH);
-    setCode(newValue);
-
-    if (newValue.length > 0) {
+  const handleDigitPress = (digit) => {
+    if (code.length < PIN_LENGTH && !isValidating) {
+      const newValue = code + digit;
+      setCode(newValue);
+      
       setLastVisibleIndex(newValue.length - 1);
 
       if (timeoutRef.current) {
@@ -60,6 +57,25 @@ export default function ConfirmPIN() {
       timeoutRef.current = setTimeout(() => {
         setLastVisibleIndex(-1);
       }, 1000);
+    }
+  };
+
+  const handleBackspace = () => {
+    if (code.length > 0 && !isValidating) {
+      const newValue = code.slice(0, -1);
+      setCode(newValue);
+      
+      if (newValue.length > 0) {
+        setLastVisibleIndex(newValue.length - 1);
+        
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+        }
+        
+        timeoutRef.current = setTimeout(() => {
+          setLastVisibleIndex(-1);
+        }, 1000);
+      }
     }
   };
 
@@ -77,9 +93,7 @@ export default function ConfirmPIN() {
     }
   }, [code]);
 
-
-
-const playSuccessSound = async () => {
+  const playSuccessSound = async () => {
     try {
       const { sound } = await Audio.Sound.createAsync(
         require('@/assets/sounds/success.mp3'), 
@@ -98,33 +112,77 @@ const playSuccessSound = async () => {
 
   const validateAndStorePin = async () => {
     if (code.length === PIN_LENGTH) {
-        setIsValidating(true);
-        try {
-            if (code === createdPin) {
-                await playSuccessSound();
-                
-                setTimeout(() => {
-                    router.replace("AccountType");
-                }, 500);
-            } else {
-                Vibration.vibrate([0, 400]);
-                
-                setIsError(true);
-                
-                setTimeout(() => {
-                    setIsError(false);
-                    setCode(''); 
-                }, 1000);
-                
-                
-            }
-        } catch (err) {
-            console.log('Error validating PIN:', err);
-        } finally {
-            setIsValidating(false);
+      setIsValidating(true);
+      try {
+        if (code === createdPin) {
+          await playSuccessSound();
+          
+          setTimeout(() => {
+            router.replace("AccountType");
+          }, 500);
+        } else {
+          Vibration.vibrate([0, 400]);
+          
+          setIsError(true);
+          
+          setTimeout(() => {
+            setIsError(false);
+            setCode(''); 
+          }, 1000);
         }
+      } catch (err) {
+        console.log('Error validating PIN:', err);
+      } finally {
+        setIsValidating(false);
+      }
     }
-};
+  };
+
+  // Custom keypad rendering
+  const renderKeypad = () => {
+    const keys = [
+      ['1', '2', '3'],
+      ['4', '5', '6'],
+      ['7', '8', '9'],
+      ['', '0', 'backspace']
+    ];
+
+    return (
+      <View className="w-full px-8">
+        {keys.map((row, rowIndex) => (
+          <View key={`row-${rowIndex}`} className="flex-row justify-around my-2">
+            {row.map((key, keyIndex) => {
+              if (key === '') {
+                return <View key={`key-${rowIndex}-${keyIndex}`} className="w-16 h-16" />;
+              } else if (key === 'backspace') {
+                return (
+                  <TouchableOpacity
+                    key={`key-${rowIndex}-${keyIndex}`}
+                    onPress={handleBackspace}
+                    disabled={isValidating}
+                    className="w-16 h-16 rounded-full justify-center items-center"
+                  >
+                    <Feather name="delete" size={24} color="white" />
+                  </TouchableOpacity>
+                );
+              } else {
+                return (
+                  <TouchableOpacity
+                    key={`key-${rowIndex}-${keyIndex}`}
+                    onPress={() => handleDigitPress(key)}
+                    disabled={isValidating}
+                    className="w-16 h-16 rounded-full justify-center items-center"
+                  >
+                    <Text className="text-white text-2xl font-bold">{key}</Text>
+                  </TouchableOpacity>
+                );
+              }
+            })}
+          </View>
+        ))}
+      </View>
+    );
+  };
 
   return (
     <AppGradient colors={[Color.red, Color.red]} className="flex-1">
@@ -149,50 +207,42 @@ const playSuccessSound = async () => {
         <Text className="text-white font-tajawal text-center mb-8 text-xl px-10 ">
           أكد الكود السري ديالك للتطبيق باش تكمل.
         </Text>
-        <TouchableOpacity
-          onPress={() => inputRef.current?.focus()}
-          activeOpacity={1}
-        >
-          <View className="flex-row justify-center items-center space-x-5 ">
-            {[...Array(PIN_LENGTH)].map((_, index) => (
-              <View key={index} className="w-5 h-5 justify-center items-center">
-                {index === lastVisibleIndex ? (
-                  <Text className="text-white font-tajawal text-xl">
-                    {code[index]}
-                  </Text>
-                ) : (
-                  <View
-                    className={`w-5 h-5 rounded-full ${
-                      isError
-                        ? "bg-red-400" 
-                        : code.length > index
-                        ? "bg-white"
-                        : "bg-white/30"
-                    }`}
-                    style={isError ? { transform: [{ scale: 1.3 }] } : {}}
-                  />
-                )}
-              </View>
-            ))}
-          </View>
-        </TouchableOpacity>
-
-        <TextInput
-          ref={inputRef}
-          value={code}
-          onChangeText={handlePinChange}
-          keyboardType="numeric"
-          maxLength={PIN_LENGTH}
-          className="absolute opacity-0 w-px h-px"
-          autoFocus={true}
-        />
+        
+        {/* PIN Dots */}
+        <View className="flex-row justify-center items-center space-x-5 mb-12">
+          {[...Array(PIN_LENGTH)].map((_, index) => (
+            <View key={index} className="w-5 h-5 justify-center items-center">
+              {index === lastVisibleIndex ? (
+                <Text className="text-white font-tajawal text-xl">
+                  {code[index]}
+                </Text>
+              ) : (
+                <View
+                  className={`w-5 h-5 rounded-full ${
+                    isError
+                      ? "bg-red-400" 
+                      : code.length > index
+                      ? "bg-white"
+                      : "bg-white/30"
+                  }`}
+                  style={isError ? { transform: [{ scale: 1.3 }] } : {}}
+                />
+              )}
+            </View>
+          ))}
+        </View>
 
         {isValidating && (
-          <View className="mt-8">
+          <View className="mb-8">
             <ActivityIndicator size="large" color="white" />
             <Text className="text-white text-center mt-2 font-tajawal">جاري التحقق...</Text>
           </View>
         )}
+        
+        {/* Custom Numeric Keypad */}
+        <View className="flex-1 justify-end pb-0 w-full">
+          {renderKeypad()}
+        </View>
       </View>
     </AppGradient>
   );

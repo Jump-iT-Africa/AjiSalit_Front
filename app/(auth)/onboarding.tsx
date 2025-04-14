@@ -98,7 +98,7 @@ const OnboardingScreen = () => {
                   لا تمتلك حساب؟{' '}
                   <Text 
                     style={{ textDecorationLine: 'underline', fontFamily: 'Tajawal' }}
-                    onPress={() => router.push('login')}>
+                    onPress={() => router.push('register')}>
                     قم بإنشاء حساب
                   </Text>
                 </Text>

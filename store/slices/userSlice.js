@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { saveUserToDB, loginUser, getAuthToken, getUserData } from '@/services/api';
+import { saveUserToDB, loginUser, getAuthToken, getUserData, verifyNumber } from '@/services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {clearCurrentOrder} from "@/store/slices/OrdersManagment"
 
@@ -25,10 +25,11 @@ export const registerUser = createAsyncThunk(
 
 export const login = createAsyncThunk(
   'user/login',
+
   async (credentials, { rejectWithValue }) => {
     try {
+      console.log('password is', credentials.password);
       const response = await loginUser(credentials);
-      
       
       await AsyncStorage.setItem('token', response.token);
       await AsyncStorage.setItem('user', JSON.stringify(response.user || response));
@@ -37,6 +38,7 @@ export const login = createAsyncThunk(
         token: response.token,
         user: response.user || response 
       };
+
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }
@@ -61,6 +63,38 @@ export const restoreAuthState = createAsyncThunk(
       };
     } catch (error) {
       return rejectWithValue(error.message);
+    }
+  }
+);
+
+
+export const verifyPhoneNumber = createAsyncThunk(
+  'user/verify',
+  async(phoneNumber, {rejectWithValue, dispatch}) => {
+    try {
+      const formattedNumber = phoneNumber.startsWith('+') ? phoneNumber : `+${phoneNumber}`;
+      
+      const phoneData = { 
+        phoneNumber: formattedNumber 
+      };
+      
+      console.log('Sending verification request with phone:', phoneNumber);
+      console.log('Formatted as:', phoneData);
+      
+      const response = await verifyNumber(phoneData);
+      console.log('Verification response:', response);
+      
+      if (response.statusCode === 409 && response.isExist === false) {
+        dispatch(setUserInfo({
+          name: response.UserName,
+          role: response.role
+        }));
+      }
+      
+      return response;
+    } catch(error) {
+      console.log('Verification error:', error);
+      return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
@@ -98,6 +132,9 @@ const initialState = {
   password: '',
   
   loading: false,
+  verificationLoading: false,
+  verificationSuccess: false,
+  verificationData: null,
   error: null
 };
 
@@ -133,11 +170,9 @@ const userSlice = createSlice({
       state.refBy = refBy;
     },
     
-    // Manual auth actions
     logout: (state) => {
       Object.assign(state, initialState);
       
-      // Clear AsyncStorage
       AsyncStorage.removeItem('token');
       AsyncStorage.removeItem('user');
     },
@@ -151,10 +186,22 @@ const userSlice = createSlice({
       state.success = false;
     },
     
-    resetUserState: () => initialState
+    resetUserState: () => initialState,
+    
+    // Reset verification state (useful when navigating away from the verification screen)
+    resetVerificationState: (state) => {
+      state.verificationLoading = false;
+      state.verificationSuccess = false;
+      state.verificationData = null;
+      state.error = null;
+    },
+    setUserInfo: (state, action) => {
+      const { name, role } = action.payload;
+      state.name = name || state.name;
+      state.role = role || state.role;
+    },
   },
   extraReducers: (builder) => {
-    // Registration
     builder.addCase(registerUser.pending, (state) => {
       state.loading = true;
       state.error = null;
@@ -162,12 +209,10 @@ const userSlice = createSlice({
     builder.addCase(registerUser.fulfilled, (state, action) => {
       const { token, user } = action.payload;
       
-      // Update auth state
       state.token = token;
       state.isAuthenticated = true;
       state.loading = false;
       
-      // Update user data
       state.id = user.id;
       state.name = user.name;
       state.phoneNumber = user.phoneNumber;
@@ -183,7 +228,8 @@ const userSlice = createSlice({
       state.error = action.payload;
       state.isAuthenticated = false;
     });
-    
+
+
     // Login
     builder.addCase(login.pending, (state) => {
       state.loading = true;
@@ -196,15 +242,15 @@ const userSlice = createSlice({
       state.isAuthenticated = true;
       state.loading = false;
       
-      state.id = user.id;
-      state.name = user.name;
-      state.phoneNumber = user.phoneNumber;
-      state.role = user.role;
-      state.city = user.city;
-      state.field = user.field || null;
-      state.ice = user.ice || null;
-      state.ownRef = user.ownRef || '';
-      state.listRefs = user.listRefs || [];
+      state.id = user?.id || user?._id;
+      state.name = user?.name || user?.username;
+      state.phoneNumber = user?.phoneNumber;
+      state.role = user?.role;
+      state.city = user?.city;
+      state.field = user?.field || null;
+      state.ice = user?.ice || null;
+      state.ownRef = user?.ownRef || '';
+      state.listRefs = user?.listRefs || [];
     });
     builder.addCase(login.rejected, (state, action) => {
       state.loading = false;
@@ -236,6 +282,27 @@ const userSlice = createSlice({
       state.loading = false;
       state.isAuthenticated = false;
     });
+    
+    // Phone verification cases
+    builder.addCase(verifyPhoneNumber.pending, (state) => {
+      state.verificationLoading = true;
+      state.verificationSuccess = false;
+      state.verificationData = null;
+      state.error = null;
+    });
+    builder.addCase(verifyPhoneNumber.fulfilled, (state, action) => {
+      state.verificationLoading = false;
+      state.verificationSuccess = true;
+      state.verificationData = action.payload;
+      state.error = null;
+    });
+    builder.addCase(verifyPhoneNumber.rejected, (state, action) => {
+      state.verificationLoading = false;
+      state.verificationSuccess = false;
+      state.verificationData = null;
+      state.error = action.payload;
+    });
+    
   }
 });
 
@@ -248,7 +315,9 @@ export const {
   setReferralInfo,
   logout,
   resetOrdersState,
-  resetUserState
+  resetUserState,
+  resetVerificationState,
+  setUserInfo
 } = userSlice.actions;
 
 export default userSlice.reducer;
@@ -262,3 +331,6 @@ export const selectUserData = (state) => {
 export const selectUserRole = (state) => state.user.role;
 export const selectLoading = (state) => state.user.loading;
 export const selectError = (state) => state.user.error;
+export const selectVerificationLoading = (state) => state.user.verificationLoading;
+export const selectVerificationSuccess = (state) => state.user.verificationSuccess;
+export const selectVerificationData = (state) => state.user.verificationData;

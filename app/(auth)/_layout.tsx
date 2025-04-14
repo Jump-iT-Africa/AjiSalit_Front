@@ -11,6 +11,7 @@ export default function AuthLayout() {
       <Stack.Screen name="ConfirmPIN" />
       <Stack.Screen name="OtpVerification" />
       <Stack.Screen name="onboarding" />
+      <Stack.Screen name="IntePassword" />
     </Stack>
   );
 }
