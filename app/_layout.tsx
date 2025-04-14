@@ -8,7 +8,6 @@ import { Provider } from 'react-redux';
 import store from '@/store/actions/Store';
 import AuthCheck from "@/services/CheckIfUserAuth";
 import NavigationHandler from "@/services/NavigationHandler"; // Create this component
-import { NotificationProvider } from "@/context/NotificationContext";
 import * as Notifications from "expo-notifications";
 
 
@@ -75,7 +74,6 @@ export default function RootLayout() {
   }
 
   return (
-    <NotificationProvider>
     <Provider store={store}>
       <AuthCheck />
       <NavigationHandler firstLaunch={isAppFirstLaunched} />
@@ -85,6 +83,5 @@ export default function RootLayout() {
         <Stack.Screen name="(home)" options={{ headerShown: false }} />
       </Stack>
     </Provider>
-    </NotificationProvider>
   );
 }
