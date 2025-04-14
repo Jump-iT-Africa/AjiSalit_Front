@@ -12,6 +12,10 @@ export async function registerForPushNotificationsAsync() {
       lightColor: "#FF231F7C",
     });
   }
+  if(Platform.OS === 'ios'){
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+  }
 
   if (Device.isDevice) {
     const { status: existingStatus } =
