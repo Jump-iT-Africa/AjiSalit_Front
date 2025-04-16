@@ -111,7 +111,7 @@ export default function AccountnType() {
                 containerStyle={{
                 borderTopLeftRadius: 20,
                 borderTopRightRadius: 20,
-                height: isExpanded ? '90%' : '70%',
+                height: isExpanded ? '90%' : '90%',
                 }}
                 gestureEnabled={true}
                 closable={true}

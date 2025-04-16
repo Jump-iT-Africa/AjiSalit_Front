@@ -77,6 +77,8 @@ export default function RootLayout() {
     prepare();
   }, [isReady, isAppFirstLaunched, fontsLoaded]);
 
+
+
   if (!fontsLoaded || isAppFirstLaunched === null || !isReady) {
     return <View style={{ flex: 1 }} />;
   }

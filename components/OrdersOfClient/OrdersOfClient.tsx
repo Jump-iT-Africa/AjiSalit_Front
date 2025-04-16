@@ -23,11 +23,11 @@ const OrdersOfClient = ({ SearchCode }) => {
   const [lastRefreshTime, setLastRefreshTime] = useState(Date.now());
 
   // Debug logging
-  console.log('Orders length:', orders?.length);
-  console.log('Search term:', searchTerm);
-  console.log('Loading state:', loading);
-  console.log('Orders loaded:', ordersLoaded);
-  console.log('Last refresh time:', new Date(lastRefreshTime).toLocaleTimeString());
+  // console.log('Orders length:', orders?.length);
+  // console.log('Search term:', searchTerm);
+  // console.log('Loading state:', loading);
+  // console.log('Orders loaded:', ordersLoaded);
+  // console.log('Last refresh time:', new Date(lastRefreshTime).toLocaleTimeString());
 
   useEffect(() => {
     setSearchTerm(SearchCode);
