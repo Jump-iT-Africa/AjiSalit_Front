@@ -1,7 +1,5 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from "expo-router";
-import { useSelector } from 'react-redux';
-import { selectIsAuthenticated } from '@/store/slices/userSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface NavigationHandlerProps {
@@ -10,25 +8,19 @@ interface NavigationHandlerProps {
 
 const NavigationHandler = ({ firstLaunch }: NavigationHandlerProps) => {
   const router = useRouter();
-  const isAuthenticated = useSelector(selectIsAuthenticated);
+  // const isAuthenticated = useSelector(selectIsAuthenticated);
 
   useEffect(() => {
     const handleNavigation = async () => {
       try {
-        const isRegistering = await AsyncStorage.getItem('isRegistering');
-        const registered = await AsyncStorage.getItem('registered');
-
-        if (isRegistering === 'true') {
-          return;
-        }
-
-        if (registered === 'true' && !isAuthenticated) {
-          return;
-        }
-
-        if (isAuthenticated) {
+        const isAuthenticated = await AsyncStorage.getItem('isAuthenticated');
+        console.log('NavigationHandler - Auth status check:', isAuthenticated);
+        
+        if (isAuthenticated === 'true') {
+          console.log('NavigationHandler - Navigating to home');
           router.replace('/(home)');
         } else {
+          console.log('NavigationHandler - Navigating to auth flow');
           if (firstLaunch) {
             router.replace('/(auth)/onboarding');
           } else {
@@ -39,13 +31,14 @@ const NavigationHandler = ({ firstLaunch }: NavigationHandlerProps) => {
         console.log('Navigation error:', error);
       }
     };
-
+    
+    // Add a slightly longer delay to ensure AsyncStorage has time to initialize
     const timer = setTimeout(() => {
       handleNavigation();
-    }, 1000);
-
+    }, 1500);
+    
     return () => clearTimeout(timer);
-  }, [isAuthenticated, firstLaunch, router]);
+  }, [firstLaunch, router]);
 
   return null;
 };
