@@ -26,7 +26,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setCompanyInfo, registerUser, selectLoading, selectError } from '@/store/slices/userSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage'; 
 import  coloredLogo from '@/assets/images/coloredLogo.png'
-
+import CitySelector from "./CitySelector";
+import regionsAndCitiesData from "@/constants/Cities/Cities.json"
 
 
 export default function CombinedCompanyForm({ onInputFocus }) {
@@ -42,15 +43,19 @@ export default function CombinedCompanyForm({ onInputFocus }) {
 
 
   const [formData, setFormData] = useState({
-    name: "",
+    Fname: "",
+    Lname: "",
     city: "",
-    ice: "",
+    cityObject: null,
+    companyName: "",
     field: "", 
   });
 
   const [errors, setErrors] = useState({
-    name: "",
-    ice: "",
+    Fname: "",
+    Lname: "",
+    city: "", 
+    companyName: "",
     field: "",
   });
 
@@ -109,11 +114,24 @@ export default function CombinedCompanyForm({ onInputFocus }) {
     let valid = true;
     let newErrors = { ...errors };
 
-    if (!formData.name.trim()) {
-      newErrors.name = "الاسم و اللقب مطلوب";
+    if (!formData.Fname.trim()) {
+      newErrors.Fname = "الاسم مطلوب";
       valid = false;
     } else {
-      newErrors.name = "";
+      newErrors.Fname = "";
+    }
+
+    if (!formData.Lname.trim()) {
+      newErrors.Lname = "اللقب مطلوب";
+      valid = false;
+    } else {
+      newErrors.Lname = "";
+    }
+    if (!formData.city.trim()) {
+      newErrors.city = "المدينة مطلوبة";
+      valid = false;
+    } else {
+      newErrors.city = "";
     }
 
     setErrors(newErrors);
@@ -124,23 +142,7 @@ export default function CombinedCompanyForm({ onInputFocus }) {
     let valid = true;
     let newErrors = { ...errors };
 
-    if (!formData.ice || formData.ice.trim() === "" ) {
-      newErrors.ice = "معرف الضريبة مطلوب";
-      valid = false;
-    } else {
-      if (!formData.ice || formData.ice.trim() === "") {
-        newErrors.ice = "معرف الضريبة مطلوب";
-        valid = false;
-      } else if (formData.ice.trim().length < 14) {
-        newErrors.ice = "معرف الضريبة يجب أن يكون أطول";
-        valid = false;
-      } else if (formData.ice.trim().length > 15) {
-        newErrors.ice = "معرف الضريبة يجب أن لا يتجاوز 15 رقمًا";
-        valid = false;
-      } else {
-        newErrors.ice = "";
-      }
-    }
+    
 
     if (!formData.field.trim()) {
       newErrors.field = "مجال الشركة مطلوب";
@@ -153,66 +155,98 @@ export default function CombinedCompanyForm({ onInputFocus }) {
 
   useEffect(() => {
     if (isLoading) {
-      // Show loading action sheet when loading starts
       setIsLoadingSheetVisible(true);
       loadingActionSheetRef.current?.show();
-    } else if (isLoadingSheetVisible) {
-      // When loading finishes, hide the loading sheet after 4 seconds
+    } else if (isLoadingSheetVisible && userData.registered) {
+      const minLoadingTime = 2000;
+      
       setTimeout(() => {
+        // First hide the loading sheet
         loadingActionSheetRef.current?.hide();
         setIsLoadingSheetVisible(false);
         
-        // Only show success sheet if registration was successful
-        if (userData.registered) {
+        // Short delay before showing success sheet
+        setTimeout(() => {
           actionSheetRef.current?.show();
           setIsSheetVisible(true);
-        }
-      }, 4000); // This is the delay for the loading sheet to stay visible
+          
+          setTimeout(() => {
+            actionSheetRef.current?.hide();
+            setIsSheetVisible(false);
+          }, 5000);
+        }, 300);
+      }, minLoadingTime);
     }
-  }, [isLoading, userData.registered]);
+  }, [isLoading, userData.registered, isLoadingSheetVisible]);
 
 const handleSubmit = async () => {
   setIsSubmitted(true);
 
   if (validateStep2()) {
-    dispatch(setCompanyInfo(formData));
-    
-    let phoneNum = userData.phoneNumber;
-    if (!phoneNum || phoneNum.trim() === '') {
-      setErrors(prev => ({...prev, phoneNumber: "رقم الهاتف مطلوب"}));
-      return;
-    }
-    
-    phoneNum = String(phoneNum).trim();
-    
-    const completeUserData = {
-      name: formData.name, 
-      city: formData.city,
-      field: formData.field,
-      ice: formData.ice,
-      phoneNumber: phoneNum,
-      password: userData.password.replace(/\s/g, ""),
-      role: userData.role
-    };
-    
-    console.log("Submitting user data:", completeUserData); 
-    
-    // This will trigger isLoading to be true and show the loading sheet
-    const resultAction = await dispatch(registerUser(completeUserData));
-    
-    if (registerUser.fulfilled.match(resultAction)) {
-      await AsyncStorage.setItem("registered", "true");
+    try {
+      // Set registration flag to prevent navigation
+      await AsyncStorage.setItem('isRegistering', 'true');
       
-      // Don't show success sheet here, it will be handled by the useEffect
+      dispatch(setCompanyInfo(formData));
+      
+      let phoneNum = userData.phoneNumber;
+      if (!phoneNum || phoneNum.trim() === '') {
+        setErrors(prev => ({...prev, phoneNumber: "رقم الهاتف مطلوب"}));
+        return;
+      }
+      
+      phoneNum = String(phoneNum).trim();
+      
+      const completeUserData = {
+        Fname: formData.Fname, 
+        Lname: formData.Lname, 
+        city: formData.city,
+        field: formData.field,
+        companyName: formData.companyName,
+        phoneNumber: phoneNum,
+        password: userData.password.replace(/\s/g, ""),
+        role: userData.role
+      };
+      
+      console.log("Submitting user data:", completeUserData); 
+      
+      // Disable button while submitting
       setButtonDisabled(true);
-      setTimeout(() => {
-        setButtonDisabled(false);
-      }, 3000);
+      
+      // Show loading action sheet
+      loadingActionSheetRef.current?.show();
+      setIsLoadingSheetVisible(true);
+      
+      const resultAction = await dispatch(registerUser(completeUserData));
+      
+      if (registerUser.fulfilled.match(resultAction)) {
+        // Wait for 2 seconds
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Hide loading sheet
+        loadingActionSheetRef.current?.hide();
+        setIsLoadingSheetVisible(false);
+        
+        // Show success message in action sheet
+        if (actionSheetRef.current) {
+          actionSheetRef.current.show();
+          setIsSheetVisible(true);
+        }
+        
+        // Set registration status
+        await AsyncStorage.setItem("registered", "true");
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      // Hide loading sheet
+      loadingActionSheetRef.current?.hide();
+      setIsLoadingSheetVisible(false);
+      // Clear registration flag in case of error
+      await AsyncStorage.removeItem('isRegistering');
+      setButtonDisabled(false);
     }
   }
 };
-
-  
 
   const Step1Form = (
     <Animated.View
@@ -231,54 +265,74 @@ const handleSubmit = async () => {
         zIndex:9
       }}
     >
-      <Text className="text-center text-[#F52525] text-xl font-bold mb-6 font-tajawal">
+      <Text className="text-center text-[#F52525] text-lg font-bold mb-6 font-tajawal">
         أدخل معلومات شركتك
       </Text>
       <Divider />
 
-      <View className="mb-4 mt-4">
+      <View className="mb-2 mt-2">
         <Text
-          className="text-right text-gray-700 mb-2 font-tajawal"
+          className="text-right text-gray-700 mb-2 font-tajawal text-[12px]"
           style={{ color: Color.green }}
         >
-          الاسم و اللقب: <Text className="text-red-500">*</Text>
+          الاسم: <Text className="text-red-500">*</Text>
         </Text>
         <TextInput
-          placeholder="أدخل الاسم و اللقب"
+          placeholder="أدخل الاسم "
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}
           placeholderTextColor="#888"
-          value={formData.name}
-          onChangeText={(text) => setFormData({ ...formData, name: text })}
+          value={formData.Fname}
+          onChangeText={(text) => setFormData({ ...formData, Fname: text })}
           className={`border ${
-            errors.name ? "border-red-500" : "border-[#2e752f]"
+            errors.Fname ? "border-red-500" : "border-[#2e752f]"
           } rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}
         />
-        {errors.name ? (
-          <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[13px]">
-            {errors.name}
+        {errors.Fname ? (
+          <Text className="text-red-500 text-right mt-0 -mb-1 font-tajawalregular text-[10px]">
+            {errors.Fname}
+          </Text>
+        ) : null}
+      </View>
+      <View className="mb-2 mt-2">
+        <Text
+          className="text-right text-gray-700 mb-2 font-tajawal text-[12px]"
+          style={{ color: Color.green }}
+        >
+          اللقب : <Text className="text-red-500">*</Text>
+        </Text>
+        <TextInput
+          placeholder="أدخل اللقب  "
+          onFocus={handleInputFocus}
+          onBlur={handleInputBlur}
+          placeholderTextColor="#888"
+          value={formData.Lname}
+          onChangeText={(text) => setFormData({ ...formData, Lname: text })}
+          className={`border ${
+            errors.Lname ? "border-red-500" : "border-[#2e752f]"
+          } rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}
+        />
+        {errors.Lname ? (
+          <Text className="text-red-500 text-right mt-0 -mb-1 font-tajawalregular text-[10px]">
+            {errors.Lname}
           </Text>
         ) : null}
       </View>
 
-      <View className="mt-4 mb-6">
-        <Text
-          className="text-right text-gray-700 mb-2 font-tajawal"
-          style={{ color: Color.green }}
-        >
-          العنوان و المدينة (الموقع):
-        </Text>
-        <TextInput
-          placeholder="أدخل العنوان، المدينة"
-          placeholderTextColor="#888"
-          value={formData.city}
-          onChangeText={(text) => setFormData({ ...formData, city: text })}
-          onFocus={handleInputFocus}
-          onBlur={handleInputBlur}
-          className={`border border-[#2e752f] rounded-lg p-3 text-black text-right bg--white font-tajawalregular`}
-        />
-      </View>
-
+      <CitySelector
+        onCitySelect={(cityObj) => {
+          setFormData({
+            ...formData,
+            city: cityObj.names.ar,
+            cityObject: cityObj
+          });
+          setErrors((prev) => ({ ...prev, city: "" }));
+        }}
+        initialValue={formData.city}
+        errors={errors}
+        isSubmitted={isSubmitted}
+        regionsAndCities={regionsAndCitiesData}
+      />
       <Divider />
 
       <View className="mt-6">
@@ -312,7 +366,7 @@ const handleSubmit = async () => {
         width: "100%",
       }}
     >
-      <Text className="text-center text-[#F52525] text-xl font-bold mb-6 font-tajawal">
+      <Text className="text-center text-[#F52525] text-lg font-bold mb-6 font-tajawal">
         أدخل تفاصيل الشركة
       </Text>
       <Divider />
@@ -331,30 +385,22 @@ const handleSubmit = async () => {
 
       <View className="mb-4">
         <Text
-          className="text-right text-gray-700 mb-2 font-tajawal"
+          className="text-right text-gray-700 mb-2 font-tajawal text-[12px]"
           style={{ color: Color.green }}
         >
-          معرف الضريبة: <Text className="text-red-500">*</Text>
+          اسم شركتك
         </Text>
         <TextInput
-          placeholder="أدخل معرف الضريبة"
+          placeholder="أدخل اسم شركتك (إذا كان متوفر)"
           placeholderTextColor="#888"
-          keyboardType="numeric"
-          value={formData.ice}
-          onChangeText={(text) => setFormData({ ...formData, ice: text })}
+          value={formData.companyName}
+          onChangeText={(text) => setFormData({ ...formData, companyName: text })}
           maxLength={14}
            onFocus={handleInputFocus}
           onBlur={handleInputBlur}
-          className={`border ${
-            errors.ice ? "border-red-500" : "border-[#2e752f]"
-            
-          } rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}
+          className={`border border-[#2e752f] rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}
         />
-        {errors.ice ? (
-          <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[13px]">
-            {errors.ice}
-          </Text>
-        ) : null}
+        
       </View>
 
       <Divider />
@@ -392,7 +438,7 @@ const handleSubmit = async () => {
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       className={`flex p-4 ${isSheetVisible || isLoadingSheetVisible ? "opacity-50" : "bg-white"}`}
-      style={{ minHeight: 500 }}
+      style={{ minHeight: 300 }}
     >
       <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
         <View>
@@ -413,12 +459,9 @@ const handleSubmit = async () => {
                     className="flex w-32 h-32"
                   />
                 </View>
-                <View className="my-6">
-                  <ActivityIndicator size="large" color={Colors.green} />
-                </View>
               </View>
               <View>
-                <Text className="text-center text-[#2e752f] text-3xl font-tajawal pt-2">
+                <Text className="text-center text-[#000000] text-3xl font-tajawal pt-2">
                   جار إنشاء حسابك
                 </Text>
                 <Text className="text-[#2e752f] text-base text-center p-4 font-tajawalregular">
@@ -430,36 +473,32 @@ const handleSubmit = async () => {
           
           <ActionSheetComponent
             ref={actionSheetRef}
-            containerStyle={{ backgroundColor: Colors.green }}
-            contentStyle={{ backgroundColor: Colors.green }}
+            containerStyle={{ backgroundColor: "white" }}
+            contentStyle={{ backgroundColor: "white" }}
             closeOnTouchBackdrop={false}
             closeOnPressBack={false}
           >
-            <View className="flex-1 items-center justify-center h-full">
-              <View>
-                <AntDesign name="checkcircleo" size={190} color="white" />
-              </View>
-              <View>
-                <Text className="text-center text-white text-6xl font-tajawal pt-7 mt-4">
-                  مبروك!
-                </Text>
-                <Text className="text-white text-lg font-bold text-center p-4 font-tajawalregular">
-                  تم إنشاء حسابك بنجاح.
-                </Text>
-              </View>
-              <View className="w-full mt-20">
+            <View className="flex-1 items-center justify-center h-full py-8">
+              <Image 
+                source={coloredLogo}
+                resizeMode="contain"
+                className="flex w-40 h-40 mb-4"
+              />
+              <Text className="text-center text-black text-2xl font-tajawal font-bold">
+                مبروك!
+              </Text>
+              <Text className="text-gray-700 text-base text-center p-2 font-tajawalregular">
+                تم إنشاء حسابك بنجاح.
+              </Text>
+              <View className="w-full mt-8">
                 <CustomButton
                   onPress={() => {
-                    actionSheetRef.current?.hide();
-                    setTimeout(() => {
-                      setIsSheetVisible(false);
-                      router.replace("(home)");
-                    }, 3000);
+                    router.replace("/(tabs)");
                   }}
                   title="انتقل للصفحة الرئيسية"
-                  textStyles={`text-sm font-tajawal px-2 py-0 text-[#2e752f] ${buttonDisabled ? 'opacity-50' : ''}`}
-                  containerStyles="w-[90%] m-auto bg-white"
-                  disabled={buttonDisabled}
+                  textStyles="text-sm font-tajawal px-2 py-0 text-white"
+                  containerStyles="w-[90%] m-auto bg-[#F52525] rounded-full p-3"
+                  disabled={false}
                 />
               </View>
             </View>

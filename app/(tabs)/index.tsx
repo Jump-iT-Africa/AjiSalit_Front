@@ -1,5 +1,5 @@
 import { View, Text, Image, ImageBackground, SafeAreaView, StyleSheet } from "react-native";
-import HeroImage from "@/assets/images/hassan.png";
+import HeroImage from "@/assets/images/register1.jpg";
 import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
