@@ -199,8 +199,6 @@ const CitySelector = ({
       <ActionSheetComponent
         ref={actionSheetRef}
         containerStyle={{ height: "70%", backgroundColor: "white" }}
-        gestureEnabled={true}
-        closeOnTouchBackdrop={true}
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View className="flex-1">
