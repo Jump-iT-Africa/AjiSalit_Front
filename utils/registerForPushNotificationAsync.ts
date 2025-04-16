@@ -4,20 +4,11 @@ import Constants from "expo-constants";
 import { Platform } from "react-native";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useDispatch, useSelector } from "react-redux";
 
 export async function registerForPushNotificationsAsync() {
-  const [expoPushToken, setExpoPushToken] = useState("");
-
-  useEffect(()=>{
-    async function UpdateProfilToken(){
-      try{
-        
-      }catch(e){
-        console.log("ops smth went bad", e)
-      }
-    }
-
-  })
+  // const [expoPushToken, setExpoPushToken] = useState("");
 
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync("default", {
@@ -52,20 +43,25 @@ export async function registerForPushNotificationsAsync() {
     if (!projectId) {
       throw new Error("Project ID not found");
     }
-    console.log("+++++++", projectId);
     try {
-      console.log("+++++++ Project id i'm hereee", projectId);
+      console.log("Project id ", projectId);
       const pushTokenString = (
         await Notifications.getExpoPushTokenAsync({
           projectId,
         })
       ).data;
-      console.log("+++++++ pushtokeeen", pushTokenString, {
-        tag: "specificccc",
+      console.log("Pushtokeeen", pushTokenString, {
+        tag: "Notification-Push",
       });
-      setExpoPushToken(pushTokenString)
+
+      if (pushTokenString) {
+        AsyncStorage.setItem("notification-push", pushTokenString);
+        console.log("++++++++++", AsyncStorage.getItem("user"));
+      }
       return pushTokenString;
     } catch (e) {
+      AsyncStorage.setItem("notification-push", "null");
+
       throw new Error(`${e}`);
     }
   } else {

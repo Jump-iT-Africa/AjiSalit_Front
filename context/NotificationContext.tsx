@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useRef,ReactNode} from "react";
 import * as Notifications from "expo-notifications";
 import { registerForPushNotificationsAsync } from "../utils/registerForPushNotificationAsync";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useSelector } from "react-redux";
 
 interface NotificationContextType {
   expoPushToken: string | null;
@@ -43,11 +45,13 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
       .catch(setError);
 
 
+
     notificationListener.current =
       Notifications.addNotificationReceivedListener((notification) => {
-        console.log("Notification Received: ", notification,{tag: 'specificccc'});
+        console.log("Notification Received: ", notification,{tag: 'Notification-Push'});
         setNotification(notification);
       });
+
 
     responseListener.current =
       Notifications.addNotificationResponseReceivedListener((response) => {
@@ -70,10 +74,10 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
   }, []);
   useEffect(() => {
     if (expoPushToken) {
-      console.log("token ", expoPushToken, { tag: 'specificccc' });
+      console.log("token ", expoPushToken, { tag: 'Notification-Push' });
     }
     if (error) {
-      console.log("errorrrr ", error, { tag: 'specificccc' });
+      console.log("error in provider ", error, { tag: 'Notification-Push' });
     }
   }, [expoPushToken, error]);
 
