@@ -1,21 +1,21 @@
 {
   "expo": {
     "name": "Aji Salit",
-    "slug": "aji-salit",
     "slug": "ajisalit",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/coloredLogo.png",
+    "icon": "./assets/images/icon.png",
     "scheme": "aji-salit",
     "userInterfaceStyle": "light",
-    "development": true,
-    "debugger": true,
+    "assetBundlePatterns": [
+      "**/*",
+      "assets/fonts/*"
+    ],
     "splash": {
-      "image": "./assets/images/coloredLogo.png",
-      "resizeMode": "contain",
+      "image": "./assets/images/splashs.png",
+      "resizeMode": "cover",
       "backgroundColor": "#fff"
     },
-    "assetBundlePatterns": ["**/*", "assets/fonts/*"],
     "ios": {
       "googleServicesFile": "./google-services.json",
       "supportsTablet": false,
@@ -28,7 +28,7 @@
     "android": {
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/coloredLogo.png",
+        "foregroundImage": "./assets/images/splashs.png",
         "backgroundColor": "#ffffff",
         "userInterfaceStyle": "light"
       },
