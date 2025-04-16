@@ -473,7 +473,7 @@ const handleSubmit = async () => {
           
           <ActionSheetComponent
             ref={actionSheetRef}
-            containerStyle={{ backgroundColor: "white" }}
+            containerStyle={{ backgroundColor: "white" , height:'70%'}}
             contentStyle={{ backgroundColor: "white" }}
             closeOnTouchBackdrop={false}
             closeOnPressBack={false}
@@ -493,11 +493,11 @@ const handleSubmit = async () => {
               <View className="w-full mt-8">
                 <CustomButton
                   onPress={() => {
-                    router.replace("/(tabs)");
+                    router.replace("/(home)");
                   }}
                   title="انتقل للصفحة الرئيسية"
                   textStyles="text-sm font-tajawal px-2 py-0 text-white"
-                  containerStyles="w-[90%] m-auto bg-[#F52525] rounded-full p-3"
+                  containerStyles="w-[70%] m-auto bg-[#F52525] rounded-full p-3"
                   disabled={false}
                 />
               </View>
