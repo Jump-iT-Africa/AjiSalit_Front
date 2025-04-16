@@ -105,6 +105,7 @@ export const logoutUser = createAsyncThunk(
     await AsyncStorage.removeItem('token');
     await AsyncStorage.removeItem('user');
     await AsyncStorage.removeItem('lastScannedOrder');
+    await AsyncStorage.setItem('isAuthenticated', 'false');
 
     dispatch(logout());
     dispatch(resetOrdersState());

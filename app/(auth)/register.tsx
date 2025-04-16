@@ -186,6 +186,12 @@ const Register: React.FC = () => {
               resizeMode="cover"
               className="flex-1"
             />
+            <LinearGradient
+                colors={['#25000B', '#390000']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+                style={{ position: 'absolute', width: '100%', height: '100%', opacity: 0.40 }}
+              />
           </View>
           
           <Animated.View 
@@ -215,10 +221,11 @@ const Register: React.FC = () => {
                   content="فهاد الصفحة تقدر تزيد رقم الهاتف تاعك 😊"
                   onPress={()=>router.push('(tabs)')}
                 /> 
-                <View className="flex-1 justify-center px-0">
-                  <Text className="text-white text-center text-[20px] leading-[24px] font-tajawal mb-8 pt-4">
+                <View className="flex-1 justify-center px-0 lg:px-10">
+                  <Text className="text-white text-center text-[20px] leading-[24px] font-tajawal mb-8 pt-4 px-4 sm:px-6 md:px-8">
                     دخل رقم الهاتف ديالك باش تسجل فالطبيق.
                   </Text>
+
                   <View className="flex-row items-center mb-4 justify-center">
                     <View
                       className={`flex-row items-center bg-[#ffffff5f] rounded-full ${
