@@ -1,88 +1,112 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard } from 'react-native';
-import ActionSheet from 'react-native-actions-sheet';
+import React, { useState, useRef } from 'react';
+import { View, Text, TouchableOpacity, FlatList } from 'react-native';
+import ActionSheetComponent from '@/components/ui/ActionSheet';
 import Color from '@/constants/Colors';
 
 const COMPANY_FIELDS = [
-  'الخياطة',
-  'غسيل السيارات',
-  'غسيل الملابس/التنظيف الجاف',
-  'مخبزة',
-  'صيدلية',
+  {
+    id: '1',
+    name: 'الخياطة',
+    icon: '🧵',
+  },
+  {
+    id: '2',
+    name: 'غسيل السيارات',
+    icon: '🚗',
+  },
+  {
+    id: '3',
+    name: 'غسيل الملابس/التنظيف الجاف',
+    icon: '👕',
+  },
+  {
+    id: '4',
+    name: 'مخبزة',
+    icon: '🍞',
+  },
+  {
+    id: '5',
+    name: 'صيدلية',
+    icon: '💊',
+  },
 ];
 
-const CompanyFieldDropDown = ({ 
-  onFieldSelect,  
-  initialValue,  
-  errors,         
-  isSubmitted    
+const CompanyFieldDropDown = ({
+  onFieldSelect,
+  initialValue,
+  errors,
+  isSubmitted,
 }) => {
   const [selectedField, setSelectedField] = useState(initialValue || '');
-  const [searchTerm, setSearchTerm] = useState('');
   const actionSheetRef = useRef(null);
 
-  const filteredFields = COMPANY_FIELDS.filter(field => 
-    field.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   const handleFieldSelection = (field) => {
-    setSelectedField(field);
-    onFieldSelect(field);  // Update parent's form data
+    setSelectedField(field.name);
+    onFieldSelect(field.name);
     actionSheetRef.current?.hide();
   };
 
   return (
-    
     <View className="mt-4 mb-6 w-full">
-      <Text className="text-right text-gray-700 mb-2 font-tajawal" style={{ color: Color.green }}>
-        مجال الشركة: <Text className="text-red-600">*</Text>
-      </Text>
-      
-      <TouchableOpacity 
-        onPress={() => actionSheetRef.current?.show()}
-        className={`border ${isSubmitted && !selectedField ? 'border-red-500' : 'border-[#2e752f]'} rounded-lg p-3 bg-white`}
+      <Text
+        className="text-right text-gray-700 mb-2 font-tajawal text-xs"
+        style={{ color: Color.green }}
       >
-        <Text className={`text-right font-tajawalregular ${selectedField ? 'text-black' : 'text-gray-400'}`}>
+        أدخل تفاصيل الشركة <Text className="text-red-600">*</Text>
+      </Text>
+
+      <TouchableOpacity
+        onPress={() => actionSheetRef.current?.show()}
+        className={`border ${
+          isSubmitted && !selectedField ? 'border-red-500' : 'border-[#2e752f]'
+        } rounded-lg p-3 bg-white`}
+      >
+        <Text
+          className={`text-right font-tajawalregular ${
+            selectedField ? 'text-black' : 'text-gray-400'
+          }`}
+        >
           {selectedField || 'اختر مجال الشركة'}
         </Text>
       </TouchableOpacity>
 
       {isSubmitted && !selectedField ? (
-        <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[13px]">
+        <Text className="text-red-500 text-right mt-1 font-tajawalregular text-xs">
           مجال الشركة مطلوب
         </Text>
       ) : null}
 
-      <ActionSheet
+      <ActionSheetComponent
         ref={actionSheetRef}
         id="company-field-sheet"
         containerStyle={{
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
-          height: '90%',
+          height: '50%',
+          backgroundColor: 'white',
+          borderTopLeftRadius: 16,
+          borderTopRightRadius: 16,
+        }}
+        contentStyle={{
+          padding: 0,
         }}
         gestureEnabled={true}
-        closable={true}
-        snapPoints={[90]}
+        closeOnTouchBackdrop={true}
       >
-        <View className="p-4">
-          {/* <TextInput
-            placeholder="ابحث عن مجال الشركة"
-            placeholderTextColor="#888"
-            value={searchTerm}
-            onChangeText={setSearchTerm}
-            className="border border-gray-300 rounded-lg p-3 mb-4 text-right bg-white font-tajawalregular"
-          /> */}
-
+        <View className="flex-1">
           <FlatList
-            data={filteredFields}
-            keyExtractor={(item) => item}
-            renderItem={({ item }) => (
-              <TouchableOpacity 
+            data={COMPANY_FIELDS}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item, index }) => (
+              <TouchableOpacity
                 onPress={() => handleFieldSelection(item)}
-                className="p-3 border-b border-gray-200"
+                className={`p-4 flex-row-reverse justify-between items-center ${
+                  index % 2 === 0 ? 'bg-white' : 'bg-[#F5F6F7]'
+                }`}
+                activeOpacity={0.7}
               >
-                <Text className="text-right font-tajawalregular">{item}</Text>
+                <Text className="text-right font-tajawalregular">
+                  {item.name}
+                </Text>
+                <Text className="text-2xl">{item.icon}</Text>
               </TouchableOpacity>
             )}
             ListEmptyComponent={() => (
@@ -94,9 +118,8 @@ const CompanyFieldDropDown = ({
             )}
           />
         </View>
-      </ActionSheet>
+      </ActionSheetComponent>
     </View>
-    
   );
 };
 

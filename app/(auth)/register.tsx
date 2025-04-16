@@ -19,8 +19,8 @@ import {
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Feather } from "@expo/vector-icons";
-import RegisterBackImage from "@/assets/images/home.jpg";
-import RegisterFocusBackImage from "@/assets/images/focus_image.png";
+import RegisterBackImage from "@/assets/images/register2.jpeg";
+import RegisterFocusBackImage from "@/assets/images/register3.jpeg";
 import AppGradient from "../../components/ui/AppGradient";
 import HeaderWithBack from "@/components/ui/HeaderWithToolTipAndback";
 import { useDispatch, useSelector } from 'react-redux';
@@ -117,10 +117,8 @@ const Register: React.FC = () => {
       return;
     }
     
-    // Save the formatted phone number to Redux
     dispatch(setPhoneNumber(phone));
     
-    // Use the formatted phone directly - no cleaning
     console.log('Submitting phone number with format:', phone);
     
     dispatch(verifyPhoneNumber(phone))
@@ -134,7 +132,7 @@ const Register: React.FC = () => {
           router.navigate({
             pathname: '/interPassword',
             params: { 
-              phoneNumber: phone,  // Pass the formatted phone number
+              phoneNumber: phone, 
               userName: response.UserName
             }
           });

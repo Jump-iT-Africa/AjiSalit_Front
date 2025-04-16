@@ -82,7 +82,7 @@ export default function UserFormActionSheet() {
         city: formData.city,
         phoneNumber: phoneNum,
         password: userData.password.replace(/\s/g, ""),
-        role: 'client' // Make sure role is set to 'client'
+        role: 'client' 
       };
       
       console.log("Submitting user data:", completeUserData);
