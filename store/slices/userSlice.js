@@ -116,7 +116,9 @@ export const logoutUser = createAsyncThunk(
 
 const initialState = {
   id: '',
-  name: '',
+  Fname: '',
+  Lname: '',
+  companyName: '',
   role: '', 
   phoneNumber: '',
   city: '',
@@ -153,13 +155,13 @@ const userSlice = createSlice({
       AsyncStorage.setItem('role', state.role);
     },
     setPersonalInfo: (state, action) => {
-      const { name, city } = action.payload;
-      state.name = name;
+      const { Fname, city } = action.payload;
+      state.Fname = Fname;
       state.city = city;
     },
     setCompanyInfo: (state, action) => {
-      const { name, city, field, ice } = action.payload;
-      state.name = name;
+      const { companyName, city, field, ice } = action.payload;
+      state.companyName = companyName;
       state.city = city;
       state.field = field;
       state.ice = ice;
@@ -196,8 +198,8 @@ const userSlice = createSlice({
       state.error = null;
     },
     setUserInfo: (state, action) => {
-      const { name, role } = action.payload;
-      state.name = name || state.name;
+      const { Fname, role } = action.payload;
+      state.Fname = Fname || state.Fname;
       state.role = role || state.role;
     },
   },
@@ -208,13 +210,15 @@ const userSlice = createSlice({
     });
     builder.addCase(registerUser.fulfilled, (state, action) => {
       const { token, user } = action.payload;
-      
+
       state.token = token;
       state.isAuthenticated = true;
       state.loading = false;
-      
+
       state.id = user.id;
-      state.name = user.name;
+      state.Fname = user.Fname;
+      state.Lname = user.Lname;
+      state.companyName = user.companyName;
       state.phoneNumber = user.phoneNumber;
       state.role = user.role;
       state.city = user.city;
@@ -223,6 +227,7 @@ const userSlice = createSlice({
       state.ownRef = user.ownRef || '';
       state.listRefs = user.listRefs || [];
     });
+
     builder.addCase(registerUser.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload;
@@ -243,7 +248,9 @@ const userSlice = createSlice({
       state.loading = false;
       
       state.id = user?.id || user?._id;
-      state.name = user?.name || user?.username;
+      state.Fname = user?.Fname || user?.username;
+      state.Lname = user.Lname;
+      state.companyName = user.companyName;
       state.phoneNumber = user?.phoneNumber;
       state.role = user?.role;
       state.city = user?.city;
@@ -269,8 +276,10 @@ const userSlice = createSlice({
       state.loading = false;
       
       state.id = user.id;
-      state.name = user.name;
+      state.Fname = user.Fname;
       state.phoneNumber = user.phoneNumber;
+      state.Lname = user.Lname;
+      state.companyName = user.companyName;
       state.role = user.role;
       state.city = user.city;
       state.field = user.field || null;
@@ -325,8 +334,8 @@ export default userSlice.reducer;
 export const selectIsAuthenticated = (state) => state.user.isAuthenticated;
 export const selectToken = (state) => state.user.token;
 export const selectUserData = (state) => {
-  const { id, name, phoneNumber, role, city, field, ice, ownRef, listRefs } = state.user;
-  return { id, name, phoneNumber, role, city, field, ice, ownRef, listRefs };
+  const { id, Fname,Lname,companyName, phoneNumber, role, city, field, ice, ownRef, listRefs } = state.user;
+  return { id, Fname,Lname,companyName, phoneNumber, role, city, field, ice, ownRef, listRefs };
 };
 export const selectUserRole = (state) => state.user.role;
 export const selectLoading = (state) => state.user.loading;
