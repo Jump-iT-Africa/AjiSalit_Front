@@ -9,20 +9,21 @@ import store from '@/store/actions/Store';
 import AuthCheck from "@/services/CheckIfUserAuth";
 import NavigationHandler from "@/services/NavigationHandler"; // Create this component
 import * as Notifications from "expo-notifications";
-import {NotificationProvider} from '../context/NotificationContext'
+import { NotificationProvider } from '../context/NotificationContext'
+import HandleNotification from "./(home)/HandleNotification";
 
 
 
 SplashScreen.preventAutoHideAsync()
   .catch(console.warn);
 
-  Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowAlert: true,
-      shouldPlaySound: true,
-      shouldSetBadge: true,
-    }),
-  });
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
 
 export default function RootLayout() {
 
@@ -34,12 +35,12 @@ export default function RootLayout() {
     'TajawalRegular': require('../assets/fonts/TajawalRegular.ttf'),
   });
 
-  
+
   useEffect(() => {
     const initializeApp = async () => {
       try {
         const appData = await AsyncStorage.getItem('isAppFirstLaunched');
-        
+
         if (appData === null) {
           setIsAppFirstLaunched(true);
           await AsyncStorage.setItem('isAppFirstLaunched', 'false');
@@ -55,7 +56,7 @@ export default function RootLayout() {
     };
 
     initializeApp();
-  }, []); 
+  }, []);
 
   useEffect(() => {
     const prepare = async () => {
@@ -73,7 +74,7 @@ export default function RootLayout() {
         }
       }
     };
-  
+
     prepare();
   }, [isReady, isAppFirstLaunched, fontsLoaded]);
 
@@ -84,16 +85,17 @@ export default function RootLayout() {
   }
 
   return (
-    <NotificationProvider>
-    <Provider store={store}>
-      <AuthCheck />
-      <NavigationHandler firstLaunch={isAppFirstLaunched} />
-      <Stack>
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="(home)" options={{ headerShown: false }} />
-      </Stack>
-    </Provider>
-    </NotificationProvider>
+      <NotificationProvider>
+        <Provider store={store}>
+        <AuthCheck />
+        <HandleNotification />
+        <NavigationHandler firstLaunch={isAppFirstLaunched} />
+        <Stack>
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="(home)" options={{ headerShown: false }} />
+        </Stack>
+        </Provider>
+      </NotificationProvider>
   );
 }

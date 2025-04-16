@@ -56,7 +56,7 @@ export async function registerForPushNotificationsAsync() {
 
       if (pushTokenString) {
         AsyncStorage.setItem("notification-push", pushTokenString);
-        console.log("++++++++++", AsyncStorage.getItem("user"));
+        // console.log("++++++++++", AsyncStorage.getItem("user"));
       }
       return pushTokenString;
     } catch (e) {

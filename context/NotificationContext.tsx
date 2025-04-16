@@ -3,6 +3,7 @@ import * as Notifications from "expo-notifications";
 import { registerForPushNotificationsAsync } from "../utils/registerForPushNotificationAsync";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSelector } from "react-redux";
+import { selectUserData } from "@/store/slices/userSlice";
 
 interface NotificationContextType {
   expoPushToken: string | null;
@@ -31,6 +32,8 @@ interface NotificationProviderProps {
 export const NotificationProvider: React.FC<NotificationProviderProps> = ({
   children,
 }) => {
+    // const userData = useSelector(selectUserData);
+    // console.log('user data is', userData);
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const [notification, setNotification] =
     useState<Notifications.Notification | null>(null);
@@ -38,6 +41,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
 
   const notificationListener = useRef<Notifications.Subscription | null>(null);
   const responseListener = useRef<Notifications.Subscription | null>(null);
+  
 
   useEffect(() => {
     registerForPushNotificationsAsync()
