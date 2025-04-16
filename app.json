@@ -4,19 +4,18 @@
     "slug": "aji-salit",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/coloredLogo.png",
+    "icon": "./assets/images/icon.png",
     "scheme": "aji-salit",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/images/coloredLogo.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#fff",
-
-    },
     "assetBundlePatterns": [
       "**/*",
       "assets/fonts/*"
     ],
+    "splash": {
+      "image": "./assets/images/splashs.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#fff"
+    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.ajisalit.app",
@@ -26,7 +25,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/coloredLogo.png",
+        "foregroundImage": "./assets/images/splashs.png",
         "backgroundColor": "#ffffff",
         "userInterfaceStyle": "light"
       },

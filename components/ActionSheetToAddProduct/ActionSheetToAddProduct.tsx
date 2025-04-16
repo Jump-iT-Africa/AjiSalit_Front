@@ -228,10 +228,9 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
     const pickupDate = new Date(deliveryDate);
     pickupDate.setDate(pickupDate.getDate() + 2);
     
-    // Prepare order data
+    // Prepare orderdata
 
 
-    // In your component, before dispatch:
 const orderData = {
   price: parseFloat(formData.price),
   situation: formData.situation || "خالص",

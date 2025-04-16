@@ -111,12 +111,12 @@ export default function AccountnType() {
                 containerStyle={{
                 borderTopLeftRadius: 20,
                 borderTopRightRadius: 20,
-                height: isExpanded ? '90%' : '70%',
+                height: isExpanded ? '93%' : '60%',
                 }}
                 gestureEnabled={true}
                 closable={true}
                 onClose={handleSheetClose}
-                snapPoints={[isExpanded ? 100 :80]}>
+                >
                 <PersonalInfoScreen
                 accountType={selectedAccountType}
                 onInputFocus={handleInputFocus}

@@ -11,6 +11,7 @@ export default function PersonalInfoScreen({ accountType, onInputFocus }) {
       {accountType === "شخص عادي" ? (
         <UserFormActionSheet onInputFocus={onInputFocus} />
       ) : (
+        
         <CombinedCompanyForm onInputFocus={onInputFocus} />
       )}
     </View>
