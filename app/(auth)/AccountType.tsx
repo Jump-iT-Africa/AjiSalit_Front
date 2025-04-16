@@ -116,7 +116,7 @@ export default function AccountnType() {
                 gestureEnabled={true}
                 closable={true}
                 onClose={handleSheetClose}
-                snapPoints={[isExpanded ? 100 :80]}>
+                >
                 <PersonalInfoScreen
                 accountType={selectedAccountType}
                 onInputFocus={handleInputFocus}

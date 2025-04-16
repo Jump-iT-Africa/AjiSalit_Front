@@ -15,7 +15,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Feather } from "@expo/vector-icons";
 import { useToast } from "react-native-toast-notifications";
-import RegisterBackImage from "@/assets/images/home.jpg";
+import RegisterBackImage from "@/assets/images/register2.jpeg";
 import AppGradient from "../../components/ui/AppGradient";
 import TooltipComponent from "@/components/ui/TooltipComponent";
 import HeaderWithBack from "@/components/ui/HeaderWithToolTipAndback";
