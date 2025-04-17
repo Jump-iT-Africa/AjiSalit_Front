@@ -1,20 +1,22 @@
 import { Tabs } from "expo-router";
 import Colors from "@/constants/Colors";
+import { Stack } from "expo-router";
 
 export default function TabsLayout() {
   return (
-    <Tabs
+    <Stack
       screenOptions={{
         headerShown: false,
+        animation: 'fade',
         tabBarStyle:{display:"none"}
       }}
     >
-      <Tabs.Screen 
+      <Stack.Screen 
         name="index"
         options={{
           tabBarLabel: 'Home',
         }}
       />
-    </Tabs>
+    </Stack>
   );
 }
