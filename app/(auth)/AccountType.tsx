@@ -1,5 +1,5 @@
 import AppGradient from "@/components/ui/AppGradient";
-import { View, Text, TouchableOpacity, Image } from "react-native";
+import { View, Text, TouchableOpacity, Image, KeyboardAvoidingView } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Color from "@/constants/Colors";
 import HeaderWithBack from "@/components/ui/HeaderWithToolTipAndback";
@@ -10,6 +10,7 @@ import { useDispatch } from 'react-redux';
 import { setRole } from "@/store/slices/userSlice";
 import React, { useState, useRef, useEffect } from "react";
 import BottomSheetComponent from "@/components/ui/BottomSheetComponent";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export default function AccountnType() {
     const router = useRouter();
@@ -55,6 +56,8 @@ export default function AccountnType() {
     }, [selectedAccountType]);
 
     return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+         
         <AppGradient colors={[Color.red, Color.red]} className="flex-1">
             <TouchableOpacity onPress={handleBack}>
                 <HeaderWithBack
@@ -93,7 +96,6 @@ export default function AccountnType() {
                     textStyles="text-[#2e752f] font-tajawal text-[15px] pt-0 bg-white"
                 />
             </View>
-             
             <BottomSheetComponent
                 ref={bottomSheetRef}
                 containerStyle={{
@@ -115,5 +117,7 @@ export default function AccountnType() {
                 />
             </BottomSheetComponent>
         </AppGradient>
+    </GestureHandlerRootView>
+
     );
 }

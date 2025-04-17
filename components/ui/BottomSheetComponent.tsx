@@ -1,10 +1,8 @@
 import React, { forwardRef, useImperativeHandle, useRef, useCallback, useMemo, useState } from 'react';
-import { View, StyleSheet, Dimensions, BackHandler } from 'react-native';
+import { View, StyleSheet, Dimensions, BackHandler, KeyboardAvoidingView, Platform } from 'react-native';
 import { BottomSheetModal, BottomSheetModalProvider, BottomSheetScrollView, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import { useFocusEffect } from '@react-navigation/native';
 import Color from '@/constants/Colors';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-
 export interface BottomSheetComponentProps {
   children: React.ReactNode;
   containerStyle?: any;
@@ -14,7 +12,6 @@ export interface BottomSheetComponentProps {
   gestureEnabled?: boolean;
   customHeight?: number | string;
   scrollable?: boolean;
-  onDismiss?: () => void; // New prop for dismiss callback
 }
 
 export interface BottomSheetComponentRef {
@@ -31,8 +28,7 @@ const BottomSheetComponent = forwardRef<BottomSheetComponentRef, BottomSheetComp
     closeOnPressBack = true, 
     gestureEnabled = true, 
     customHeight,
-    scrollable = true,
-    onDismiss
+    scrollable = true
   }, ref) => {
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
     const windowHeight = Dimensions.get('window').height;
@@ -67,7 +63,6 @@ const BottomSheetComponent = forwardRef<BottomSheetComponentRef, BottomSheetComp
       hide: () => {
         bottomSheetModalRef.current?.dismiss();
         setIsOpen(false);
-        if (onDismiss) onDismiss(); // Call onDismiss when hiding
       }
     }));
 
@@ -78,7 +73,6 @@ const BottomSheetComponent = forwardRef<BottomSheetComponentRef, BottomSheetComp
           if (closeOnPressBack && isOpen) {
             bottomSheetModalRef.current?.dismiss();
             setIsOpen(false);
-            if (onDismiss) onDismiss(); // Call onDismiss when back button is pressed
             return true;
           }
           return false;
@@ -86,7 +80,7 @@ const BottomSheetComponent = forwardRef<BottomSheetComponentRef, BottomSheetComp
 
         BackHandler.addEventListener('hardwareBackPress', onBackPress);
         return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-      }, [closeOnPressBack, isOpen, onDismiss])
+      }, [closeOnPressBack, isOpen])
     );
 
     
@@ -107,9 +101,8 @@ const BottomSheetComponent = forwardRef<BottomSheetComponentRef, BottomSheetComp
     const handleSheetChanges = useCallback((index: number) => {
       if (index === -1) {
         setIsOpen(false);
-        if (onDismiss) onDismiss(); // Call onDismiss when sheet is closed
       }
-    }, [onDismiss]);
+    }, []);
 
     const ContentComponent = scrollable ? BottomSheetScrollView : View;
 
@@ -130,13 +123,16 @@ const BottomSheetComponent = forwardRef<BottomSheetComponentRef, BottomSheetComp
             android_keyboardInputMode="adjustResize"
             enableHandlePanningGesture={gestureEnabled}
             enableOverDrag={false}
+
             enableContentPanningGesture={gestureEnabled}
+            
           >
             <ContentComponent 
               style={[styles.contentContainer, contentStyle]}
               contentContainerStyle={scrollable ? styles.scrollContent : undefined}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
+              
             >
               {children}
             </ContentComponent>
@@ -156,13 +152,16 @@ const styles = StyleSheet.create({
     backgroundColor: Color.green,
     width: 60,
     height: 5,
+    
   },
   contentContainer: {
     flex: 1,
+   
   },
   scrollContent: {
     flexGrow: 1,
     padding: 20,
+   
   }
 });
 

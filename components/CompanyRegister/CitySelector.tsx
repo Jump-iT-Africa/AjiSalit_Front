@@ -7,9 +7,10 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
-  Keyboard
+  Keyboard,
+  Modal,
+  ScrollView
 } from "react-native";
-import BottomSheetComponent from "@/components/ui/BottomSheetComponent";
 import Color from "@/constants/Colors";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Feather from '@expo/vector-icons/Feather';
@@ -19,36 +20,32 @@ const CitySelector = ({
   initialValue = "", 
   errors = {}, 
   isSubmitted = false,
-  regionsAndCities,
-  onBottomSheetOpen, // New prop to notify parent component
-  onBottomSheetClose // New prop to notify parent component
+  regionsAndCities 
 }) => {
   const [searchText, setSearchText] = useState("");
   const [filteredCities, setFilteredCities] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasStartedTyping, setHasStartedTyping] = useState(false);
   const [notFound, setNotFound] = useState(false);
-  const [selectedCity, setSelectedCity] = useState(initialValue);
   const [minimumCharsReached, setMinimumCharsReached] = useState(false);
-  
-  const bottomSheetRef = useRef(null);
+  const [selectedCity, setSelectedCity] = useState(initialValue);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
   const searchTimeout = useRef(null);
   const MIN_CHARS = 4;
 
   const openBottomSheet = () => {
-    console.log("Opening bottom sheet");
-    bottomSheetRef.current?.show();
+    console.log("Opening modal");
+    setIsModalVisible(true);
     setSearchText("");
     setFilteredCities([]);
     setNotFound(false);
     setHasStartedTyping(false);
     setMinimumCharsReached(false);
-    if (onBottomSheetOpen) onBottomSheetOpen(); // Notify parent to hide main view
-    console.log("Bottom sheet opened");
   };
 
-  const handleBottomSheetClose = () => {
-    if (onBottomSheetClose) onBottomSheetClose(); // Notify parent to show main view
+  const closeBottomSheet = () => {
+    setIsModalVisible(false);
   };
 
   const handleSearch = (text) => {
@@ -114,8 +111,7 @@ const CitySelector = ({
     Keyboard.dismiss();
     setSelectedCity(city.names.ar);
     onCitySelect(city);
-    bottomSheetRef.current?.hide();
-    if (onBottomSheetClose) onBottomSheetClose(); // Notify parent when selection is done
+    setIsModalVisible(false);  // Close the modal after selection
   };
 
   const renderCityItem = ({ item }) => (
@@ -134,7 +130,7 @@ const CitySelector = ({
   );
 
   const SearchStateDisplay = ({ message, showImage = true }) => (
-    <View className="flex-1 items-center justify-center py-4">
+    <View className="flex-1 items-center  py-4">
       <Text className="text-center font-tajawalregular text-[#2e752f] mb-4">
         {message}
       </Text>
@@ -174,7 +170,7 @@ const CitySelector = ({
         data={filteredCities}
         renderItem={renderCityItem}
         keyExtractor={(item, index) => `city-${index}`}
-        contentContainerStyle={{ paddingBottom: 20, height: 300, width: '100%' }}
+        contentContainerStyle={{ paddingBottom: 20, minHeight: 200, width: '100%' }}
         keyboardShouldPersistTaps="handled"
         ListEmptyComponent={
           hasStartedTyping && minimumCharsReached && !isSearching ? (
@@ -189,7 +185,7 @@ const CitySelector = ({
     );
   };
 
-  return (
+  return ( 
     <View className="mb-3">
       <Text
         className="text-right text-gray-700 mb-2 font-tajawal text-[12px]"
@@ -220,45 +216,61 @@ const CitySelector = ({
         </Text>
       ) : null}
 
-      <BottomSheetComponent
-        ref={bottomSheetRef}
-        containerStyle={{ backgroundColor: "white" }}
-        contentStyle={{ padding: 16 }}
-        customHeight="100%" // Make it full height
-        scrollable={true}
-        closeOnTouchBackdrop={true}
-        closeOnPressBack={true}
-        onDismiss={handleBottomSheetClose} // Handle dismiss event
+      <Modal
+        visible={isModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={closeBottomSheet}
       >
-        <View className="flex-1">
-          <View className="flex-row items-center mb-4 rounded-full border-gray-300 p-2 bg-[#2e752f]">
-            <TouchableOpacity 
-              onPress={() => {
-                bottomSheetRef.current?.hide();
-                if (onBottomSheetClose) onBottomSheetClose();
-              }}
-              className="mr-2"
-            >
-              <AntDesign name="close" size={24} color="white" />
-            </TouchableOpacity>
+        <TouchableOpacity 
+          style={{ flex: 1, backgroundColor: 'rgba(7, 114, 9, 0.44)' }}
+          activeOpacity={1}
+          onPress={closeBottomSheet}
+        >
+          <TouchableOpacity 
+            activeOpacity={1}
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              backgroundColor: 'white',
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+              height: '80%',
+              padding: 16
+            }}
+          >
+            <View style={{ 
+              width: 60, 
+              height: 5, 
+              backgroundColor: Color.green, 
+              borderRadius: 5, 
+              alignSelf: 'center',
+              marginBottom: 10
+            }} />
+            
+            <View className="flex-1">
+              <View className="flex-row items-center mb-4 rounded-full border-gray-300 p-2 bg-[#2e752f]">
+                <View className="ml-2">
+                  <Feather name="search" size={24} color="white" />
+                </View>
 
-            <View className="ml-2">
-              <Feather name="search" size={24} color="white" />
+                <TextInput
+                  className="flex-1 text-right font-tajawal pr-2 text-white"
+                  placeholder="ابحث..."
+                  placeholderTextColor="white"
+                  value={searchText}
+                  onChangeText={handleSearch}
+                  autoFocus={true}
+                />
+              </View>
+
+              {getContentToDisplay()}
             </View>
-
-            <TextInput
-              className="flex-1 text-right font-tajawal pr-2 text-white"
-              placeholder="ابحث..."
-              placeholderTextColor="white"
-              value={searchText}
-              onChangeText={handleSearch}
-              autoFocus={true}
-            />
-          </View>
-
-          {getContentToDisplay()}
-        </View>
-      </BottomSheetComponent>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 };

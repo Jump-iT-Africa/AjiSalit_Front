@@ -75,7 +75,6 @@ export default function RootLayout() {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
       <Provider store={store}>
         <AuthCheck />
         <NavigationHandler firstLaunch={isAppFirstLaunched} />
@@ -84,8 +83,6 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="(home)" options={{ headerShown: false }} />
         </Stack>
-      </Provider>
-    </GestureHandlerRootView>
-    
+      </Provider>    
   );
 }
