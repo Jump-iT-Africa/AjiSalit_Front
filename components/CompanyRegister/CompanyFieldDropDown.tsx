@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, TouchableOpacity, FlatList } from 'react-native';
-import ActionSheetComponent from '@/components/ui/ActionSheet';
+import BottomSheetComponent from '@/components/ui/BottomSheetComponent';
 import Color from '@/constants/Colors';
 
 const COMPANY_FIELDS = [
@@ -76,7 +76,7 @@ const CompanyFieldDropDown = ({
         </Text>
       ) : null}
 
-      <ActionSheetComponent
+      <BottomSheetComponent
         ref={actionSheetRef}
         id="company-field-sheet"
         containerStyle={{
@@ -118,7 +118,7 @@ const CompanyFieldDropDown = ({
             )}
           />
         </View>
-      </ActionSheetComponent>
+      </BottomSheetComponent>
     </View>
   );
 };

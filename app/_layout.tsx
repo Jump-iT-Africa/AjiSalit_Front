@@ -8,6 +8,7 @@ import { Provider } from 'react-redux';
 import store from '@/store/actions/Store';
 import AuthCheck from "@/services/CheckIfUserAuth";
 import NavigationHandler from "@/services/NavigationHandler";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 
 SplashScreen.preventAutoHideAsync()
@@ -74,14 +75,17 @@ export default function RootLayout() {
   }
 
   return (
-    <Provider store={store}>
-      <AuthCheck />
-      <NavigationHandler firstLaunch={isAppFirstLaunched} />
-      <Stack>
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="(home)" options={{ headerShown: false }} />
-      </Stack>
-    </Provider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Provider store={store}>
+        <AuthCheck />
+        <NavigationHandler firstLaunch={isAppFirstLaunched} />
+        <Stack>
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="(home)" options={{ headerShown: false }} />
+        </Stack>
+      </Provider>
+    </GestureHandlerRootView>
+    
   );
 }

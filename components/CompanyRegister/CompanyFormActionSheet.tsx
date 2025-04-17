@@ -10,7 +10,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   ActivityIndicator,
-  Image,
+  StyleSheet
 } from "react-native";
 import CustomButton from "../ui/CustomButton";
 import Divider from "../ui/Devider";
@@ -28,6 +28,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import  coloredLogo from '@/assets/images/coloredLogo.png'
 import CitySelector from "./CitySelector";
 import regionsAndCitiesData from "@/constants/Cities/Cities.json"
+import Loader from "@/assets/images/loader.gif"
+import HappyLeon from "@/assets/images/happyLeon.png"
+import { Image } from 'expo-image';
+import BottomSheetComponent from "@/components/ui/BottomSheetComponent";
 
 
 export default function CombinedCompanyForm({ onInputFocus }) {
@@ -258,7 +262,7 @@ const handleSubmit = async () => {
         zIndex:9
       }}
     >
-      <Text className="text-center text-[#F52525] text-lg font-bold mb-6 font-tajawal">
+      <Text className="text-center text-[#F52525] text-lg font-bold mb-6 font-tajawal" style={styles.textConfig}>
         أدخل معلومات شركتك
       </Text>
       <Divider />
@@ -435,7 +439,7 @@ const handleSubmit = async () => {
     >
       <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
         <View>
-          <ActionSheetComponent
+          <BottomSheetComponent
             ref={loadingActionSheetRef}
             containerStyle={{ backgroundColor: "white" , height:'60%'}}
             contentStyle={{ backgroundColor: "white" }}
@@ -447,9 +451,8 @@ const handleSubmit = async () => {
               <View>
                 <View className="mb-4 items-center">
                   <Image 
-                    source={coloredLogo}
-                    resizeMode="contain"
-                    className="flex w-32 h-32"
+                    source={Loader}
+                    className="flex w-40 h-40 rounded-full"
                   />
                 </View>
               </View>
@@ -462,22 +465,22 @@ const handleSubmit = async () => {
                 </Text>
               </View>
             </View>
-          </ActionSheetComponent>
+          </BottomSheetComponent>
           
-          <ActionSheetComponent
+          <BottomSheetComponent
             ref={actionSheetRef}
-            containerStyle={{ backgroundColor: "white" }}
+            containerStyle={{ backgroundColor: "white" , height:"60%"}}
             contentStyle={{ backgroundColor: "white" }}
             closeOnTouchBackdrop={false}
             closeOnPressBack={false}
           >
             <View className="flex-1 items-center justify-center h-full py-8">
               <Image 
-                source={coloredLogo}
+                source={HappyLeon}
                 resizeMode="contain"
-                className="flex w-40 h-40 mb-4"
+                className="flex w-60 h-60 mb-4"
               />
-              <Text className="text-center text-black text-2xl font-tajawal font-bold">
+              <Text className="text-center text-black text-2xl font-tajawal font-bold" style={styles.FontText}>
                 مبروك!
               </Text>
               <Text className="text-gray-700 text-base text-center p-2 font-tajawalregular">
@@ -495,7 +498,7 @@ const handleSubmit = async () => {
                 />
               </View>
             </View>
-          </ActionSheetComponent>
+          </BottomSheetComponent>
   
           <View style={{ position: "relative", height: 500 }}>
             {Step1Form}
@@ -506,3 +509,11 @@ const handleSubmit = async () => {
     </KeyboardAvoidingView>
   );
 }
+
+
+const styles = StyleSheet.create({
+
+  FontText: {
+    fontFamily: 'Tajawal',
+  },
+})
