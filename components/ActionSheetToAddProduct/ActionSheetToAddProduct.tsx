@@ -19,7 +19,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { createOrder, resetOrderState } from '@/store/slices/CreateOrder';
 import Color from '@/constants/Colors';
 import CustomButton from '../ui/CustomButton';
-import ActionSheetComponent from '../ui/ActionSheet';
+import ActionSheetComponent from '../ui/BottomSheetComponent';
 import Divider from '../ui/Devider';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AntDesign from '@expo/vector-icons/AntDesign';

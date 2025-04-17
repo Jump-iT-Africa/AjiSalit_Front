@@ -13,7 +13,7 @@ import {
 import CustomButton from "../ui/CustomButton";
 import Divider from "../ui/Devider";
 import Color from "@/constants/Colors";
-import ActionSheetComponent from "@/components/ui/ActionSheet";
+import BottomSheetComponent from "@/components/ui/BottomSheetComponent";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { router } from "expo-router";
 import Colors from "@/constants/Colors";
@@ -178,7 +178,7 @@ export default function UserFormActionSheet() {
             </Text>
           )}
 
-          <ActionSheetComponent
+          <BottomSheetComponent
             ref={actionSheetRef}
             containerStyle={{ backgroundColor: Colors.green }}
             contentStyle={{ backgroundColor: Colors.green }}
@@ -208,7 +208,7 @@ export default function UserFormActionSheet() {
                 />
               </View>
             </View>
-          </ActionSheetComponent>
+          </BottomSheetComponent>
         </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>

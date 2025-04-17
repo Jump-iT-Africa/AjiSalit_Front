@@ -3,7 +3,7 @@
 import React, { useRef } from "react";
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import Logowhite from "@/assets/images/whiteLogo.png";
-import ActionSheetComponent from "../../ui/ActionSheet";
+import ActionSheetComponent from "../../ui/BottomSheetComponent";
 import CustomButton from "../../ui/CustomButton";
 import Colors from "@/constants/Colors";
 import { router } from 'expo-router';
