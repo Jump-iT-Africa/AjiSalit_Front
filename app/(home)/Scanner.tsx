@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import { CameraView } from "expo-camera";
+import { CameraView, useCameraPermissions } from "expo-camera";
 import { Stack, router } from "expo-router";
-import { SafeAreaView, StyleSheet, Alert, View, Text, ActivityIndicator } from "react-native";
+import { SafeAreaView, StyleSheet, Alert, View, Text, ActivityIndicator, TouchableOpacity } from "react-native";
 import { Audio } from 'expo-av';
 import { Overlay } from "./Overlay";
 import { useDispatch, useSelector } from 'react-redux';
@@ -14,9 +14,10 @@ import {
 
 export default function Scanner() {
   const [flashEnabled, setFlashEnabled] = useState(false);
-  const [hasFlashPermission, setHasFlashPermission] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastScannedCode, setLastScannedCode] = useState(null);
+  const [cameraReady, setCameraReady] = useState(false);
+  const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef(null);
   const sound = useRef(null);
   const dispatch = useDispatch();
@@ -26,8 +27,21 @@ export default function Scanner() {
   const currentOrder = useSelector(selectCurrentOrder);
   
   const isDisabled = isProcessing;
-  
+
   useEffect(() => {
+    (async () => {
+      if (!permission?.granted) {
+        const permissionResult = await requestPermission();
+        if (!permissionResult.granted) {
+          Alert.alert(
+            "خطأ في الإذن",
+            "يرجى السماح للتطبيق باستخدام الكاميرا لمسح رمز QR",
+            [{ text: "موافق", onPress: () => router.back() }]
+          );
+        }
+      }
+    })();
+    
     return () => {
       if (sound.current) {
         sound.current.unloadAsync();
@@ -38,12 +52,11 @@ export default function Scanner() {
   const playSuccessSound = async () => {
     try {
       const { sound: soundObject } = await Audio.Sound.createAsync(
-        require('@/assets/sounds/success.mp3'),
+        require('../../assets/sounds/pip.mp3'),
         { shouldPlay: true }
       );
       sound.current = soundObject;
       
-      // Don't wait for playback completion
       sound.current.setOnPlaybackStatusUpdate((status) => {
         if (status.didJustFinish) {
           sound.current.unloadAsync();
@@ -58,12 +71,10 @@ export default function Scanner() {
     setFlashEnabled(prevState => !prevState);
   };
 
-  // Debounce mechanism
   let lastScanTime = 0;
-  const DEBOUNCE_TIME = 3000; // 3 seconds
+  const DEBOUNCE_TIME = 3000;
 
   const handleBarcodeScanned = ({ data }) => {
-    // Prevent duplicate scans within the debounce period
     const now = Date.now();
     if (data === lastScannedCode && now - lastScanTime < DEBOUNCE_TIME) {
       return;
@@ -78,6 +89,11 @@ export default function Scanner() {
   const handleManualIdSubmit = (id) => {
     console.log("Manual ID entered:", id);
     processScannedData(id);
+  };
+  
+  const handleCameraReady = () => {
+    console.log("Camera is ready");
+    setCameraReady(true);
   };
 
   const processScannedData = async (data) => {
@@ -96,8 +112,8 @@ export default function Scanner() {
     
     try {
       console.log("Dispatching fetchOrderByQrCodeOrId with:", data);
+      await playSuccessSound();
       
-      playSuccessSound();
       
       const result = await dispatch(fetchOrderByQrCodeOrId(data));
       
@@ -147,6 +163,27 @@ export default function Scanner() {
     }
   };
 
+  if (!permission) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#2e752f" />
+      </View>
+    );
+  }
+
+  if (!permission.granted) {
+    return (
+      <View style={styles.permissionContainer}>
+        <Text style={styles.permissionText}>لا يمكن الوصول إلى الكاميرا</Text>
+        <TouchableOpacity 
+          style={styles.permissionButton}
+          onPress={() => requestPermission()}>
+          <Text style={styles.permissionButtonText}>السماح بالوصول</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={StyleSheet.absoluteFillObject}>
       <Stack.Screen
@@ -160,19 +197,31 @@ export default function Scanner() {
         style={StyleSheet.absoluteFillObject}
         facing="back"
         enableTorch={flashEnabled}
+        onCameraReady={handleCameraReady}
         onBarcodeScanned={isDisabled ? undefined : handleBarcodeScanned}
+        barcodeScannerSettings={{
+          barcodeTypes: ['qr', 'ean13', 'code128'], 
+        }}
       />
       <Overlay
         flashEnabled={flashEnabled}
         toggleFlash={toggleFlash}
-        hasFlashPermission={hasFlashPermission}
+        hasFlashPermission={true}
         onManualIdSubmit={isDisabled ? undefined : handleManualIdSubmit}
+        cameraReady={cameraReady}
       />
       
       {isDisabled && (
         <View style={styles.loadingOverlay}>
           <ActivityIndicator size="large" color="#ffffff" />
           <Text style={styles.loadingText}>جاري البحث عن الطلب...</Text>
+        </View>
+      )}
+      
+      {!cameraReady && !isDisabled && (
+        <View style={styles.cameraInitOverlay}>
+          <ActivityIndicator size="large" color="#ffffff" />
+          <Text style={styles.loadingText}>جاري تهيئة الكاميرا...</Text>
         </View>
       )}
     </SafeAreaView>
@@ -186,9 +235,45 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  cameraInitOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   loadingText: {
     color: '#ffffff',
     marginTop: 10,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#2e752f',
+  },
+  permissionContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#2e752f',
+    padding: 20,
+  },
+  permissionText: {
+    color: 'white',
+    fontSize: 18,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  permissionButton: {
+    backgroundColor: '#F52525',
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+  },
+  permissionButtonText: {
+    color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
   }

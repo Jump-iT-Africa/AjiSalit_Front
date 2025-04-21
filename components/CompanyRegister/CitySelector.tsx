@@ -223,7 +223,7 @@ const CitySelector = ({
         onRequestClose={closeBottomSheet}
       >
         <TouchableOpacity 
-          style={{ flex: 1, backgroundColor: 'rgba(7, 114, 9, 0.44)' }}
+          style={{ flex: 1, backgroundColor: 'rgba(47, 117, 47, 0.48)' }}
           activeOpacity={1}
           onPress={closeBottomSheet}
         >
@@ -237,7 +237,7 @@ const CitySelector = ({
               backgroundColor: 'white',
               borderTopLeftRadius: 20,
               borderTopRightRadius: 20,
-              height: '80%',
+              height: '75%',
               padding: 16
             }}
           >

@@ -9,9 +9,10 @@ export const registerUser = createAsyncThunk(
     try {
       const response = await saveUserToDB(userData);
       
-    
       await AsyncStorage.setItem('token', response.token);
       await AsyncStorage.setItem('user', JSON.stringify(response.user || response));
+      
+      console.log('this is response from register', response);
       
       return {
         token: response.token,
@@ -31,12 +32,16 @@ export const login = createAsyncThunk(
       console.log('password is', credentials.password);
       const response = await loginUser(credentials);
       
+      console.log('Login response form login method:', response);
+      
       await AsyncStorage.setItem('token', response.token);
-      await AsyncStorage.setItem('user', JSON.stringify(response.user || response));
+      await AsyncStorage.setItem('user', JSON.stringify(response.user));
+      
+
       
       return {
         token: response.token,
-        user: response.user || response 
+        user: response.user || response.data ||  response.data.user
       };
 
     } catch (error) {
