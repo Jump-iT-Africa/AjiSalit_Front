@@ -4,33 +4,33 @@
     "slug": "aji-salit",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/coloredLogo.png",
+    "icon": "./assets/images/icon.png",
     "scheme": "aji-salit",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/images/coloredLogo.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#fff",
-
-    },
     "assetBundlePatterns": [
       "**/*",
       "assets/fonts/*"
     ],
+    "splash": {
+      "image": "./assets/images/splashs.png",
+      "resizeMode": "cover",
+      "backgroundColor": "#fff"
+    },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.ajisalit.app",
+      "bundleIdentifier": "app.ajisalit.com",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSCameraUsageDescription": "This app uses the camera to scan QR codes"
       }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/coloredLogo.png",
+        "foregroundImage": "./assets/images/splashs.png",
         "backgroundColor": "#ffffff",
         "userInterfaceStyle": "light"
       },
-      "package": "com.ajisalit.app",
+      "package": "app.ajisalit.com",
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
@@ -45,7 +45,8 @@
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
           "recordAudioAndroid": true
         }
-      ]
+      ],
+      "expo-font"
     ],
     "newArchEnabled": true,
     "extra": {
@@ -53,9 +54,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "c7a7d86d-eaee-4ae9-b83f-80c994dfe970"
+        "projectId": "8b052de7-9062-4642-945e-feb3ad08c341"
       }
     },
-    "owner": "samawi"
+    "owner": "oussamabenm"
   }
 }

@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity } from 'react-native'
 import React, { useRef } from 'react'
-import ActionSheetComponent from '@/components/ui/ActionSheet';
+import BottomSheetComponent from '@/components/ui/BottomSheetComponent';
 import CustomButton from '@/components/ui/CustomButton';
 import { pickupButtonPressed } from '@/store/slices/OrderDetailsSlice';
 import { AntDesign, Ionicons } from '@expo/vector-icons';
@@ -34,7 +34,7 @@ const ClientPikUpButton = () => {
                 <AntDesign name="checkcircle" size={24} color="white" />
             </TouchableOpacity>
             
-            <ActionSheetComponent
+            <BottomSheetComponent
                 ref={actionSheetRef}
                 containerStyle={{ backgroundColor: Colors.green, height: 700 }}
                 contentStyle={{ backgroundColor: Colors.green }}
@@ -64,7 +64,7 @@ const ClientPikUpButton = () => {
                         />
                     </View>
                 </View>
-            </ActionSheetComponent>
+            </BottomSheetComponent>
         </>
     );
 }

@@ -1,4 +1,4 @@
-import { Stack } from "expo-router";
+import { Stack, router } from "expo-router";
 import React, { useState, useEffect } from "react";
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
@@ -8,6 +8,7 @@ import { Provider } from 'react-redux';
 import store from '@/store/actions/Store';
 import AuthCheck from "@/services/CheckIfUserAuth";
 import NavigationHandler from "@/services/NavigationHandler";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 
 SplashScreen.preventAutoHideAsync()
@@ -27,6 +28,9 @@ export default function RootLayout() {
     const initializeApp = async () => {
       try {
         const appData = await AsyncStorage.getItem('isAppFirstLaunched');
+        const isAuthenticated = await AsyncStorage.getItem('isAuthenticated');
+        
+        console.log("App initialization - Auth status:", isAuthenticated);
         
         if (appData === null) {
           setIsAppFirstLaunched(true);
@@ -34,16 +38,17 @@ export default function RootLayout() {
         } else {
           setIsAppFirstLaunched(false);
         }
+        
       } catch (error) {
-        console.log('Error checking first launch:', error);
+        console.log('Error checking app state:', error);
         setIsAppFirstLaunched(false);
       } finally {
         setIsReady(true);
       }
     };
-
+    
     initializeApp();
-  }, []); 
+  }, []);
 
   useEffect(() => {
     const prepare = async () => {
@@ -70,14 +75,14 @@ export default function RootLayout() {
   }
 
   return (
-    <Provider store={store}>
-      <AuthCheck />
-      <NavigationHandler firstLaunch={isAppFirstLaunched} />
-      <Stack>
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="(home)" options={{ headerShown: false }} />
-      </Stack>
-    </Provider>
+      <Provider store={store}>
+        <AuthCheck />
+        <NavigationHandler firstLaunch={isAppFirstLaunched} />
+        <Stack>
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="(home)" options={{ headerShown: false }} />
+        </Stack>
+      </Provider>    
   );
 }

@@ -18,12 +18,14 @@ export const saveUserToDB = async (userData) => {
         await AsyncStorage.setItem("token", response.data.token);
       }
       
-      if (response.data && response.data.user) {
-        await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
-      } else if (response.data && !response.data.user) {
+      if (response.data) {
         await AsyncStorage.setItem("user", JSON.stringify(response.data));
+        // Add to loginUser function
+        console.log('Setting auth state after login');
+        await AsyncStorage.setItem("isAuthenticated", "true");
+        console.log('Auth state set');
       }
-      console.log('bigresponse', response);
+      console.log('bigresponse', response.data);
       
       return response.data;
     } catch (error) {
@@ -35,16 +37,24 @@ export const saveUserToDB = async (userData) => {
 
   export const loginUser = async (credentials) => {
     try {
-      console.log('Login attempt with this password:', credentials);
+      console.log('Login attempt with this info:', credentials);
       console.log('Password length:', credentials.password?.length || 0);
           
       const response = await axios.post(`${API_BASE_URL}/user/login`, credentials);
-      console.log('Login response:', response.data);
-          
+     
+
+      if (response.data) {
+        await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
+        console.log('Setting auth state after login');
+        await AsyncStorage.setItem("isAuthenticated", "true");
+        console.log('Auth state set');
+      }
+      
       return {
         token: response.data.token,
-        user: response.data.user || response.data.userinfo || response.data
+        user: response.data.user
       };
+
     } catch (error) {
       console.log('Error in loginUser:', error.response?.data || error.message);
       throw error;

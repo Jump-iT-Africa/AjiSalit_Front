@@ -20,15 +20,15 @@ import ScannerPage from "./Scanner";
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { router } from 'expo-router';
 import ActionSheetToAddProduct from '@/components/ActionSheetToAddProduct/ActionSheetToAddProduct';
-import { createStackNavigator } from '@react-navigation/stack';
 import DetailsPage from './DetailsPage';
 import { useSelector } from 'react-redux';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import {selectUserRole} from "@/store/slices/userSlice";
 // import OrderDetailsScreen from './OrderDetailsScreen'
+import { Stack } from "expo-router";
+import { createStackNavigator } from '@react-navigation/stack';
+const AppStack = createStackNavigator();
 
-
-const Stack = createStackNavigator();
 
 function MainTabs() {
   const role = useSelector(selectUserRole);
@@ -160,13 +160,15 @@ function IndexWithBottomNav({ navigation, route }) {
 
 export default function HomeLayouts() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="MainTabs" component={MainTabs} />
-      <Stack.Screen name="Scanner" component={ScannerPage} />
-      <Stack.Screen name="DetailsPage" component={DetailsPage} />
-      <Stack.Screen name="index" component={IndexWithBottomNav} />
-      {/* <Stack.Screen name="OrderDetailsScreen" component={OrderDetailsScreen} /> */}
-    </Stack.Navigator>
+    <AppStack.Navigator screenOptions={{ headerShown: false,
+      animation: 'fade'
+
+     }}>
+      <AppStack.Screen name="MainTabs" component={MainTabs} />
+      <AppStack.Screen name="Scanner" component={ScannerPage} />
+      <AppStack.Screen name="DetailsPage" component={DetailsPage} />
+      <AppStack.Screen name="index" component={IndexWithBottomNav} />
+    </AppStack.Navigator>
   );
 }
 

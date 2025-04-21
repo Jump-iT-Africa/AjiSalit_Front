@@ -19,8 +19,8 @@ import {
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Feather } from "@expo/vector-icons";
-import RegisterBackImage from "@/assets/images/home.jpg";
-import RegisterFocusBackImage from "@/assets/images/focus_image.png";
+import RegisterBackImage from "@/assets/images/register2.jpeg";
+import RegisterFocusBackImage from "@/assets/images/register3.jpeg";
 import AppGradient from "../../components/ui/AppGradient";
 import HeaderWithBack from "@/components/ui/HeaderWithToolTipAndback";
 import { useDispatch, useSelector } from 'react-redux';
@@ -117,10 +117,8 @@ const Register: React.FC = () => {
       return;
     }
     
-    // Save the formatted phone number to Redux
     dispatch(setPhoneNumber(phone));
     
-    // Use the formatted phone directly - no cleaning
     console.log('Submitting phone number with format:', phone);
     
     dispatch(verifyPhoneNumber(phone))
@@ -134,7 +132,7 @@ const Register: React.FC = () => {
           router.navigate({
             pathname: '/interPassword',
             params: { 
-              phoneNumber: phone,  // Pass the formatted phone number
+              phoneNumber: phone, 
               userName: response.UserName
             }
           });
@@ -188,6 +186,12 @@ const Register: React.FC = () => {
               resizeMode="cover"
               className="flex-1"
             />
+            <LinearGradient
+                colors={['#25000B', '#390000']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+                style={{ position: 'absolute', width: '100%', height: '100%', opacity: 0.30 }}
+              />
           </View>
           
           <Animated.View 
@@ -217,10 +221,11 @@ const Register: React.FC = () => {
                   content="فهاد الصفحة تقدر تزيد رقم الهاتف تاعك 😊"
                   onPress={()=>router.push('(tabs)')}
                 /> 
-                <View className="flex-1 justify-center px-0">
-                  <Text className="text-white text-center text-[20px] leading-[24px] font-tajawal mb-8 pt-4">
+                <View className="flex-1 justify-center px-0 lg:px-10">
+                  <Text className="text-white text-center text-[20px] leading-[24px] font-tajawal mb-8 pt-4 px-4 sm:px-6 md:px-8">
                     دخل رقم الهاتف ديالك باش تسجل فالطبيق.
                   </Text>
+
                   <View className="flex-row items-center mb-4 justify-center">
                     <View
                       className={`flex-row items-center bg-[#ffffff5f] rounded-full ${
