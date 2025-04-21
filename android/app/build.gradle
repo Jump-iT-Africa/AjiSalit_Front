@@ -86,9 +86,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.ajisalit.it'
+    namespace 'app.ajisalit.com'
     defaultConfig {
-        applicationId 'com.ajisalit.it'
+        applicationId 'app.ajisalit.com'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

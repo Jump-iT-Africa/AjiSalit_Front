@@ -1,5 +1,7 @@
+
+
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Image, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, Image, Platform, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import AppGradient from '@/components/ui/AppGradient';
 import Color from '@/constants/Colors';
@@ -22,7 +24,7 @@ export default function CreatePIN() {
 
   const handleBack = () => {
     setTimeout(() => {
-      router.replace('(tabs)');
+      router.back();
     }, 100);
   };
 
@@ -129,7 +131,7 @@ export default function CreatePIN() {
     <AppGradient colors={[Color.red, Color.red]} className="flex-1">
       <TouchableOpacity onPress={handleBack}>
         <HeaderWithBack
-          onPress={() => router.replace('(tabs)')}
+          onPress={() => router.back()}
           tooltipVisible={tooltipVisible}
           setTooltipVisible={setTooltipVisible}
           content="فهد الصفحة زيد الكود ديال التطبيق"

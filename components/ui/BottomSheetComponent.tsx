@@ -1,5 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useRef, useCallback, useMemo, useState } from 'react';
-import { View, StyleSheet, Dimensions, BackHandler, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, StyleSheet, Dimensions, BackHandler, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { BottomSheetModal, BottomSheetModalProvider, BottomSheetScrollView, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import { useFocusEffect } from '@react-navigation/native';
 import Color from '@/constants/Colors';
@@ -106,9 +106,8 @@ const BottomSheetComponent = forwardRef<BottomSheetComponentRef, BottomSheetComp
 
     const ContentComponent = scrollable ? BottomSheetScrollView : View;
 
-
     return (
-        <BottomSheetModalProvider>
+      <BottomSheetModalProvider>
           <BottomSheetModal
             ref={bottomSheetModalRef}
             index={0}
@@ -118,26 +117,25 @@ const BottomSheetComponent = forwardRef<BottomSheetComponentRef, BottomSheetComp
             backdropComponent={renderBackdrop}
             handleIndicatorStyle={styles.indicator}
             backgroundStyle={[styles.container, containerStyle]}
-            keyboardBehavior="interactive"
-            keyboardBlurBehavior="restore"
+            keyboardBehavior="extend"
+            keyboardBlurBehavior="none"
             android_keyboardInputMode="adjustResize"
             enableHandlePanningGesture={gestureEnabled}
             enableOverDrag={false}
-
             enableContentPanningGesture={gestureEnabled}
-            
           >
-            <ContentComponent 
+            <ContentComponent
               style={[styles.contentContainer, contentStyle]}
               contentContainerStyle={scrollable ? styles.scrollContent : undefined}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
-              
             >
-              {children}
+             <ScrollView style={{ flex: 1 }}>
+               {children}
+             </ScrollView>
             </ContentComponent>
           </BottomSheetModal>
-        </BottomSheetModalProvider>
+      </BottomSheetModalProvider>
     );
   }
 );

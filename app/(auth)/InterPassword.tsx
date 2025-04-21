@@ -84,7 +84,7 @@ export default function interPassword() {
     
     const loginPayload = {
       phoneNumber: phoneNumber,
-      password: pinCode || code // Use provided pinCode or fallback to state
+      password: pinCode || code 
     };
     
     console.log('Dispatching login with data:', loginPayload);
