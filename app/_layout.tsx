@@ -1,4 +1,4 @@
-import { Stack } from "expo-router";
+import { Stack, router } from "expo-router";
 import React, { useState, useEffect } from "react";
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
@@ -40,6 +40,10 @@ export default function RootLayout() {
     const initializeApp = async () => {
       try {
         const appData = await AsyncStorage.getItem('isAppFirstLaunched');
+        const isAuthenticated = await AsyncStorage.getItem('isAuthenticated');
+        
+        console.log("App initialization - Auth status:", isAuthenticated);
+        
 
         if (appData === null) {
           setIsAppFirstLaunched(true);
@@ -47,6 +51,7 @@ export default function RootLayout() {
         } else {
           setIsAppFirstLaunched(false);
         }
+        
       } catch (error) {
         // console.log('Error checking first launch:', error);
         setIsAppFirstLaunched(false);
@@ -54,8 +59,9 @@ export default function RootLayout() {
         setIsReady(true);
       }
     };
-
+    
     initializeApp();
+  }, []);
   }, []);
 
   useEffect(() => {

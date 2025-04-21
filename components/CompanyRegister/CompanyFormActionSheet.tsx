@@ -161,11 +161,9 @@ export default function CombinedCompanyForm({ onInputFocus }) {
       const minLoadingTime = 2000;
       
       setTimeout(() => {
-        // First hide the loading sheet
         loadingActionSheetRef.current?.hide();
         setIsLoadingSheetVisible(false);
         
-        // Short delay before showing success sheet
         setTimeout(() => {
           actionSheetRef.current?.show();
           setIsSheetVisible(true);
@@ -184,7 +182,6 @@ const handleSubmit = async () => {
 
   if (validateStep2()) {
     try {
-      // Set registration flag to prevent navigation
       await AsyncStorage.setItem('isRegistering', 'true');
       
       dispatch(setCompanyInfo(formData));
@@ -220,28 +217,24 @@ const handleSubmit = async () => {
       const resultAction = await dispatch(registerUser(completeUserData));
       
       if (registerUser.fulfilled.match(resultAction)) {
-        // Wait for 2 seconds
         await new Promise(resolve => setTimeout(resolve, 2000));
         
-        // Hide loading sheet
         loadingActionSheetRef.current?.hide();
         setIsLoadingSheetVisible(false);
         
-        // Show success message in action sheet
         if (actionSheetRef.current) {
           actionSheetRef.current.show();
           setIsSheetVisible(true);
         }
         
-        // Set registration status
+        await AsyncStorage.setItem("isAuthenticated", "true");
+        await AsyncStorage.setItem("user", JSON.stringify(completeUserData));
         await AsyncStorage.setItem("registered", "true");
       }
     } catch (error) {
       console.error('Registration error:', error);
-      // Hide loading sheet
       loadingActionSheetRef.current?.hide();
       setIsLoadingSheetVisible(false);
-      // Clear registration flag in case of error
       await AsyncStorage.removeItem('isRegistering');
       setButtonDisabled(false);
     }
