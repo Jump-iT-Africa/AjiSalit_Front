@@ -27,8 +27,8 @@ const App = () => {
                 onPress={() => router.push("register")}
                 title="باغي تسجل" textStyles="font-tajawal text-[14] "
               />
-              <Text className="text-white text-center mt-3  font-tajawal font-[700]" 
-              onPress={()=>router.push('register')}>
+              <Text className="text-white text-center mt-3font-[700] text-tajawal mt-3" 
+              onPress={()=>router.push('register')}  style={styles.textConfig}>
                 عندي حساب 
               </Text>
             </View>
@@ -39,5 +39,10 @@ const App = () => {
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  textConfig: {
+    fontFamily: 'TajawalRegular',  }
+});
 
 export default App;

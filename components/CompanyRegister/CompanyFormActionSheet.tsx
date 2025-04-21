@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState, useRef,useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   TextInput,
@@ -8,27 +8,26 @@ import {
   Animated,
   Platform,
   TouchableWithoutFeedback,
+  TouchableOpacity,
   Keyboard,
   ActivityIndicator,
-  Image,
+  StyleSheet,
+  Modal,
+  ScrollView,
+  Image
 } from "react-native";
 import CustomButton from "../ui/CustomButton";
 import Divider from "../ui/Devider";
 import Color from "@/constants/Colors";
-import ActionSheetComponent from "@/components/ui/ActionSheet";
-import { ActionSheetRef } from "react-native-actions-sheet";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import { router } from "expo-router";
-import SuccessActionSheetComponent from "../ui/SuccessActionSheet";
 import Colors from "@/constants/Colors";
 import CompanyFieldDropDown from "./CompanyFieldDropDown";
 import { useDispatch, useSelector } from 'react-redux';
 import { setCompanyInfo, registerUser, selectLoading, selectError } from '@/store/slices/userSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage'; 
-import  coloredLogo from '@/assets/images/coloredLogo.png'
 import CitySelector from "./CitySelector";
-import regionsAndCitiesData from "@/constants/Cities/Cities.json"
-
+import regionsAndCitiesData from "@/constants/Cities/Cities.json";
 
 export default function CombinedCompanyForm({ onInputFocus }) {
   const dispatch = useDispatch();
@@ -36,11 +35,9 @@ export default function CombinedCompanyForm({ onInputFocus }) {
   const isLoading = useSelector(selectLoading);
   const error = useSelector(selectError);
   const [buttonDisabled, setButtonDisabled] = useState(false);
-  const loadingActionSheetRef = useRef(null);
-  const [isLoadingSheetVisible, setIsLoadingSheetVisible] = useState(false);
+  const [isLoadingModalVisible, setIsLoadingModalVisible] = useState(false);
+  const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
   const [isCompanyFieldValid, setIsCompanyFieldValid] = useState(false);
-
-
 
   const [formData, setFormData] = useState({
     Fname: "",
@@ -48,34 +45,31 @@ export default function CombinedCompanyForm({ onInputFocus }) {
     city: "",
     cityObject: null,
     companyName: "",
-    field: "", 
+    field: "",
   });
 
   const [errors, setErrors] = useState({
     Fname: "",
     Lname: "",
-    city: "", 
+    city: "",
     companyName: "",
     field: "",
   });
 
   const [step, setStep] = useState(1);
-  const [isSheetVisible, setIsSheetVisible] = useState(false);
-  const actionSheetRef = useRef(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const step1Animation = useRef(new Animated.Value(1)).current;
   const step2Animation = useRef(new Animated.Value(0)).current;
 
-
-
   const handleInputFocus = () => {
     if (onInputFocus) onInputFocus(true);
   };
-  
+
   const handleInputBlur = () => {
     if (onInputFocus) onInputFocus(false);
   };
+
   const animateToNextStep = () => {
     Animated.parallel([
       Animated.timing(step1Animation, {
@@ -142,8 +136,6 @@ export default function CombinedCompanyForm({ onInputFocus }) {
     let valid = true;
     let newErrors = { ...errors };
 
-    
-
     if (!formData.field.trim()) {
       newErrors.field = "مجال الشركة مطلوب";
       valid = false;
@@ -155,91 +147,81 @@ export default function CombinedCompanyForm({ onInputFocus }) {
 
   useEffect(() => {
     if (isLoading) {
-      setIsLoadingSheetVisible(true);
-      loadingActionSheetRef.current?.show();
-    } else if (isLoadingSheetVisible && userData.registered) {
+      setIsLoadingModalVisible(true);
+    } else if (isLoadingModalVisible && userData.registered) {
       const minLoadingTime = 2000;
-      
+
       setTimeout(() => {
-        loadingActionSheetRef.current?.hide();
-        setIsLoadingSheetVisible(false);
+        setIsLoadingModalVisible(false);
         
         setTimeout(() => {
-          actionSheetRef.current?.show();
-          setIsSheetVisible(true);
+          setIsSuccessModalVisible(true);
           
           setTimeout(() => {
-            actionSheetRef.current?.hide();
-            setIsSheetVisible(false);
+            setIsSuccessModalVisible(false);
           }, 5000);
         }, 300);
       }, minLoadingTime);
     }
-  }, [isLoading, userData.registered, isLoadingSheetVisible]);
+  }, [isLoading, userData.registered, isLoadingModalVisible]);
 
-const handleSubmit = async () => {
-  setIsSubmitted(true);
+  const handleSubmit = async () => {
+    setIsSubmitted(true);
 
-  if (validateStep2()) {
-    try {
-      await AsyncStorage.setItem('isRegistering', 'true');
-      
-      dispatch(setCompanyInfo(formData));
-      
-      let phoneNum = userData.phoneNumber;
-      if (!phoneNum || phoneNum.trim() === '') {
-        setErrors(prev => ({...prev, phoneNumber: "رقم الهاتف مطلوب"}));
-        return;
-      }
-      
-      phoneNum = String(phoneNum).trim();
-      
-      const completeUserData = {
-        Fname: formData.Fname, 
-        Lname: formData.Lname, 
-        city: formData.city,
-        field: formData.field,
-        companyName: formData.companyName,
-        phoneNumber: phoneNum,
-        password: userData.password.replace(/\s/g, ""),
-        role: userData.role
-      };
-      
-      console.log("Submitting user data:", completeUserData); 
-      
-      // Disable button while submitting
-      setButtonDisabled(true);
-      
-      // Show loading action sheet
-      loadingActionSheetRef.current?.show();
-      setIsLoadingSheetVisible(true);
-      
-      const resultAction = await dispatch(registerUser(completeUserData));
-      
-      if (registerUser.fulfilled.match(resultAction)) {
-        await new Promise(resolve => setTimeout(resolve, 2000));
+    if (validateStep2()) {
+      try {
+        await AsyncStorage.setItem('isRegistering', 'true');
         
-        loadingActionSheetRef.current?.hide();
-        setIsLoadingSheetVisible(false);
+        dispatch(setCompanyInfo(formData));
         
-        if (actionSheetRef.current) {
-          actionSheetRef.current.show();
-          setIsSheetVisible(true);
+        let phoneNum = userData.phoneNumber;
+        if (!phoneNum || phoneNum.trim() === '') {
+          setErrors(prev => ({...prev, phoneNumber: "رقم الهاتف مطلوب"}));
+          return;
         }
         
-        await AsyncStorage.setItem("isAuthenticated", "true");
-        await AsyncStorage.setItem("user", JSON.stringify(completeUserData));
-        await AsyncStorage.setItem("registered", "true");
+        phoneNum = String(phoneNum).trim();
+        
+        const completeUserData = {
+          Fname: formData.Fname, 
+          Lname: formData.Lname, 
+          city: formData.city,
+          field: formData.field,
+          companyName: formData.companyName,
+          phoneNumber: phoneNum,
+          password: userData.password.replace(/\s/g, ""),
+          role: userData.role
+        };
+        
+        console.log("Submitting user data:", completeUserData); 
+        
+        // Disable button while submitting
+        setButtonDisabled(true);
+        
+        // Show loading modal
+        setIsLoadingModalVisible(true);
+        
+        const resultAction = await dispatch(registerUser(completeUserData));
+        
+        if (registerUser.fulfilled.match(resultAction)) {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          
+          setIsLoadingModalVisible(false);
+          
+          setIsSuccessModalVisible(true);
+          
+          await AsyncStorage.setItem("isAuthenticated", "true");
+          await AsyncStorage.setItem("user", JSON.stringify(completeUserData));
+          await AsyncStorage.setItem("registered", "true");
+        }
+      } catch (error) {
+        console.error('Registration error:', error);
+        setIsLoadingModalVisible(false);
+        await AsyncStorage.removeItem('isRegistering');
+        setButtonDisabled(false);
       }
-    } catch (error) {
-      console.error('Registration error:', error);
-      loadingActionSheetRef.current?.hide();
-      setIsLoadingSheetVisible(false);
-      await AsyncStorage.removeItem('isRegistering');
-      setButtonDisabled(false);
     }
-  }
-};
+  };
 
   const Step1Form = (
     <Animated.View
@@ -255,10 +237,10 @@ const handleSubmit = async () => {
         ],
         position: "absolute",
         width: "100%",
-        zIndex:9
+        zIndex: 9
       }}
     >
-      <Text className="text-center text-[#F52525] text-lg font-bold mb-6 font-tajawal">
+      <Text className="text-center text-[#F52525] text-lg font-bold mb-6 font-tajawal" style={styles.textConfig}>
         أدخل معلومات شركتك
       </Text>
       <Divider />
@@ -277,9 +259,8 @@ const handleSubmit = async () => {
           placeholderTextColor="#888"
           value={formData.Fname}
           onChangeText={(text) => setFormData({ ...formData, Fname: text })}
-          className={`border ${
-            errors.Fname ? "border-red-500" : "border-[#2e752f]"
-          } rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}
+          className={`border ${errors.Fname ? "border-red-500" : "border-[#2e752f]"
+            } rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}
         />
         {errors.Fname ? (
           <Text className="text-red-500 text-right mt-0 -mb-1 font-tajawalregular text-[10px]">
@@ -301,9 +282,8 @@ const handleSubmit = async () => {
           placeholderTextColor="#888"
           value={formData.Lname}
           onChangeText={(text) => setFormData({ ...formData, Lname: text })}
-          className={`border ${
-            errors.Lname ? "border-red-500" : "border-[#2e752f]"
-          } rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}
+          className={`border ${errors.Lname ? "border-red-500" : "border-[#2e752f]"
+            } rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}
         />
         {errors.Lname ? (
           <Text className="text-red-500 text-right mt-0 -mb-1 font-tajawalregular text-[10px]">
@@ -389,36 +369,29 @@ const handleSubmit = async () => {
           value={formData.companyName}
           onChangeText={(text) => setFormData({ ...formData, companyName: text })}
           maxLength={14}
-           onFocus={handleInputFocus}
+          onFocus={handleInputFocus}
           onBlur={handleInputBlur}
           className={`border border-[#2e752f] rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}
         />
-        
       </View>
 
       <Divider />
 
       <View className="mt-6 flex-row justify-between gap">
-      <CustomButton
-        title="رجوع"
-        onPress={animateToPreviousStep}
-        containerStyles="p-3 bg-gray-500 rounded-full w-2/4 mr-2"
-        textStyles="text-white text-center font-tajawal text-[15px]"
-      />
-      <CustomButton
-        title="إنشاء حساب"
-        onPress={handleSubmit}
-        containerStyles="p-3 bg-[#2e752f] rounded-full w-2/4"
-        textStyles="text-white text-center font-tajawal text-[15px]"
-      />
-    </View>
+        <CustomButton
+          title="رجوع"
+          onPress={animateToPreviousStep}
+          containerStyles="p-3 bg-gray-500 rounded-full w-2/4 mr-2"
+          textStyles="text-white text-center font-tajawal text-[15px]"
+        />
+        <CustomButton
+          title="إنشاء حساب"
+          onPress={handleSubmit}
+          containerStyles="p-3 bg-[#2e752f] rounded-full w-2/4"
+          textStyles="text-white text-center font-tajawal text-[15px]"
+        />
+      </View>
     
-    {error && (
-      <Text className="text-red-500 text-center mt-4 font-tajawalregular text-[13px]">
-        {typeof error === 'string' ? error : 'حدث خطأ أثناء التسجيل'}
-      </Text>
-    )}
-      
       {error && (
         <Text className="text-red-500 text-center mt-4 font-tajawalregular text-[13px]">
           {typeof error === 'string' ? error : 'حدث خطأ أثناء التسجيل'}
@@ -427,75 +400,256 @@ const handleSubmit = async () => {
     </Animated.View>
   );
 
+  // Loading Modal
+  const LoadingModal = (
+    <Modal
+      visible={isLoadingModalVisible}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={() => setIsLoadingModalVisible(false)}
+    >
+      <TouchableOpacity
+        style={{ flex: 1, backgroundColor: 'rgba(15, 225, 47, 0.5)' }}
+        activeOpacity={1}
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: 'white',
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            height: '60%',
+            padding: 16
+          }}
+        >
+          <View style={{
+            width: 60,
+            height: 5,
+            backgroundColor: Color.green,
+            borderRadius: 5,
+            alignSelf: 'center',
+            marginBottom: 10
+          }} />
+
+          <View className="flex-1 items-center justify-center h-full py-12">
+            <View className="mb-4 items-center">
+              <Image
+                source={require('@/assets/images/loader.gif')}
+                style={{ width: 160, height: 160 }}
+                resizeMode="contain"
+                className="mb-4 rounded-full"
+              />
+            </View>
+            <Text className="text-center text-[#000000] text-3xl font-tajawal pt-2">
+              جار إنشاء حسابك
+            </Text>
+            <Text className="text-[#2e752f] text-base text-center p-4 font-tajawalregular">
+              يرجى الانتظار...
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </TouchableOpacity>
+    </Modal>
+  );
+
+  // Success Modal
+  const SuccessModal = (
+    <Modal
+      visible={isSuccessModalVisible}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={() => setIsSuccessModalVisible(false)}
+    >
+      <TouchableOpacity
+        style={{ flex: 1, backgroundColor: 'rgba(7, 122, 49, 0.62)' }}
+        activeOpacity={1}
+      >
+        <TouchableOpacity
+          activeOpacity={1}
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: 'white',
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            height: '60%',
+            padding: 16
+          }}
+        >
+          <View style={{
+            width: 60,
+            height: 5,
+            backgroundColor: Color.green,
+            borderRadius: 5,
+            alignSelf: 'center',
+            marginBottom: 10
+          }} />
+
+          <View className="flex-1 items-center justify-center h-full py-8">
+            <Image
+              source={require('@/assets/images/happyLeon.png')}
+              style={{ width: 240, height: 240 }}
+              resizeMode="contain"
+            />
+            <Text className="text-center text-black text-2xl font-tajawal font-bold" style={styles.FontText}>
+              مبروك!
+            </Text>
+            <Text className="text-gray-700 text-base text-center p-2 font-tajawalregular">
+              تم إنشاء حسابك بنجاح.
+            </Text>
+            <View className="w-full mt-8">
+              <CustomButton
+                onPress={() => {
+                  router.replace("/(home)");
+                }}
+                title="انتقل للصفحة الرئيسية"
+                textStyles="text-sm font-tajawal px-2 py-0 text-white"
+                containerStyles="w-[90%] m-auto bg-[#F52525] rounded-full p-3"
+                disabled={false}
+              />
+            </View>
+          </View>
+        </TouchableOpacity>
+      </TouchableOpacity>
+    </Modal>
+  );
+
+  // Loading Modal
+  const LoadingModal = (
+    <Modal
+      visible={isLoadingModalVisible}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={() => setIsLoadingModalVisible(false)}
+    >
+      <TouchableOpacity 
+        style={{ flex: 1, backgroundColor: 'rgba(15, 225, 47, 0.5)' }}
+        activeOpacity={1}
+      >
+        <TouchableOpacity 
+          activeOpacity={1}
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: 'white',
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            height: '60%',
+            padding: 16
+          }}
+        >
+          <View style={{ 
+            width: 60, 
+            height: 5, 
+            backgroundColor: Color.green, 
+            borderRadius: 5, 
+            alignSelf: 'center',
+            marginBottom: 10
+          }} />
+          
+          <View className="flex-1 items-center justify-center h-full py-12">
+            <View className="mb-4 items-center">
+              <Image 
+                source={require('@/assets/images/loader.gif')}
+                style={{ width: 160, height: 160 }}
+                resizeMode="contain"
+              className="mb-4 rounded-full"
+              />
+            </View>
+            <Text className="text-center text-[#000000] text-3xl font-tajawal pt-2">
+              جار إنشاء حسابك
+            </Text>
+            <Text className="text-[#2e752f] text-base text-center p-4 font-tajawalregular">
+              يرجى الانتظار...
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </TouchableOpacity>
+    </Modal>
+  );
+
+  // Success Modal
+  const SuccessModal = (
+    <Modal
+      visible={isSuccessModalVisible}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={() => setIsSuccessModalVisible(false)}
+    >
+      <TouchableOpacity 
+        style={{ flex: 1, backgroundColor: 'rgba(7, 122, 49, 0.62)' }}
+        activeOpacity={1}
+      >
+        <TouchableOpacity 
+          activeOpacity={1}
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: 'white',
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            height: '60%',
+            padding: 16
+          }}
+        >
+          <View style={{ 
+            width: 60, 
+            height: 5, 
+            backgroundColor: Color.green, 
+            borderRadius: 5, 
+            alignSelf: 'center',
+            marginBottom: 10
+          }} />
+          
+          <View className="flex-1 items-center justify-center h-full py-8">
+            <Image 
+              source={require('@/assets/images/happyLeon.png')}
+              style={{ width: 240, height: 240 }}
+              resizeMode="contain"
+            />
+            <Text className="text-center text-black text-2xl font-tajawal font-bold" style={styles.FontText}>
+              مبروك!
+            </Text>
+            <Text className="text-gray-700 text-base text-center p-2 font-tajawalregular">
+              تم إنشاء حسابك بنجاح.
+            </Text>
+            <View className="w-full mt-8">
+              <CustomButton
+                onPress={() => {
+                  router.replace("/(home)");
+                }}
+                title="انتقل للصفحة الرئيسية"
+                textStyles="text-sm font-tajawal px-2 py-0 text-white"
+                containerStyles="w-[90%] m-auto bg-[#F52525] rounded-full p-3"
+                disabled={false}
+              />
+            </View>
+          </View>
+        </TouchableOpacity>
+      </TouchableOpacity>
+    </Modal>
+  );
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className={`flex p-4 ${isSheetVisible || isLoadingSheetVisible ? "opacity-50" : "bg-white"}`}
+      className={`flex p-4 ${isLoadingModalVisible || isSuccessModalVisible ? "opacity-50" : "bg-white"}`}
       style={{ minHeight: 300 }}
     >
       <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
         <View>
-          <ActionSheetComponent
-            ref={loadingActionSheetRef}
-            containerStyle={{ backgroundColor: "white" , height:'60%'}}
-            contentStyle={{ backgroundColor: "white" }}
-            closeOnTouchBackdrop={false}
-            closeOnPressBack={false}
-            gestureEnabled={false}
-          >
-            <View className="flex-1 items-center justify-center h-full py-12">
-              <View>
-                <View className="mb-4 items-center">
-                  <Image 
-                    source={coloredLogo}
-                    resizeMode="contain"
-                    className="flex w-32 h-32"
-                  />
-                </View>
-              </View>
-              <View>
-                <Text className="text-center text-[#000000] text-3xl font-tajawal pt-2">
-                  جار إنشاء حسابك
-                </Text>
-                <Text className="text-[#2e752f] text-base text-center p-4 font-tajawalregular">
-                  يرجى الانتظار...
-                </Text>
-              </View>
-            </View>
-          </ActionSheetComponent>
-          
-          <ActionSheetComponent
-            ref={actionSheetRef}
-            containerStyle={{ backgroundColor: "white" , height:'70%'}}
-            contentStyle={{ backgroundColor: "white" }}
-            closeOnTouchBackdrop={false}
-            closeOnPressBack={false}
-          >
-            <View className="flex-1 items-center justify-center h-full py-8">
-              <Image 
-                source={coloredLogo}
-                resizeMode="contain"
-                className="flex w-40 h-40 mb-4"
-              />
-              <Text className="text-center text-black text-2xl font-tajawal font-bold">
-                مبروك!
-              </Text>
-              <Text className="text-gray-700 text-base text-center p-2 font-tajawalregular">
-                تم إنشاء حسابك بنجاح.
-              </Text>
-              <View className="w-full mt-8">
-                <CustomButton
-                  onPress={() => {
-                    router.replace("/(home)");
-                  }}
-                  title="انتقل للصفحة الرئيسية"
-                  textStyles="text-sm font-tajawal px-2 py-0 text-white"
-                  containerStyles="w-[70%] m-auto bg-[#F52525] rounded-full p-3"
-                  disabled={false}
-                />
-              </View>
-            </View>
-          </ActionSheetComponent>
+          {LoadingModal}
+          {SuccessModal}
   
           <View style={{ position: "relative", height: 500 }}>
             {Step1Form}
@@ -506,3 +660,9 @@ const handleSubmit = async () => {
     </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  FontText: {
+    fontFamily: 'Tajawal',
+  },
+});

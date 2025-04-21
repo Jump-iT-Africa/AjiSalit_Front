@@ -1,71 +1,63 @@
 import AppGradient from "@/components/ui/AppGradient";
-import { View, Text, TouchableOpacity, Image } from "react-native";
+import { View, Text, TouchableOpacity, Image, KeyboardAvoidingView } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Color from "@/constants/Colors";
 import HeaderWithBack from "@/components/ui/HeaderWithToolTipAndback";
 import Whitelogo from "@/assets/images/whiteLogo.png";
 import CustomButton from "@/components/ui/CustomButton";
-import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
 import PersonalInfoScreen from "@/components/ui/PersonalInfoScreen";
 import { useDispatch } from 'react-redux';
-import {setRole} from "@/store/slices/userSlice"
+import { setRole } from "@/store/slices/userSlice";
 import React, { useState, useRef, useEffect } from "react";
-
-
+import BottomSheetComponent from "@/components/ui/BottomSheetComponent";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export default function AccountnType() {
     const router = useRouter();
     const [tooltipVisible, setTooltipVisible] = useState(false);
-    const actionSheetRef = useRef<ActionSheetRef>(null);
+    const bottomSheetRef = useRef(null);
     const [selectedAccountType, setSelectedAccountType] = useState('');
     const dispatch = useDispatch();
     const [isExpanded, setIsExpanded] = useState(false);
 
     const handleInputFocus = (focused) => {
         setIsExpanded(focused);
-      };
+    };
+    
     const handleSheetClose = () => {
         setIsExpanded(false);
-      };
+    };
 
     const handleBack = () => {
         setTimeout(() => {
             router.replace("(tabs)");
         }, 100);
-
-        
     };
 
-    
-
-      const handleAccountTypeSelect = (type: string) => {
-        actionSheetRef.current?.hide();
+    const handleAccountTypeSelect = (type: string) => {
+        bottomSheetRef.current?.hide();
         setSelectedAccountType(type);
         setIsExpanded(false);
         setTimeout(() => {
-          actionSheetRef.current?.show();
+            bottomSheetRef.current?.show();
         }, 300);
-      };
+    };
 
-
-      useEffect(()=>{
-
-        try{
-            if(selectedAccountType === "شخص عادي" )
-            {
-                dispatch(setRole('client'))
-            }else{
-                dispatch(setRole('company'))
+    useEffect(() => {
+        try {
+            if (selectedAccountType === "شخص عادي") {
+                dispatch(setRole('client'));
+            } else {
+                dispatch(setRole('company'));
             }
-
-        }catch(e)
-        {
+        } catch (e) {
             console.log(e);
         }
-
-      },[selectedAccountType])
+    }, [selectedAccountType]);
 
     return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+         
         <AppGradient colors={[Color.red, Color.red]} className="flex-1">
             <TouchableOpacity onPress={handleBack}>
                 <HeaderWithBack
@@ -104,25 +96,31 @@ export default function AccountnType() {
                     textStyles="text-[#2e752f] font-tajawal text-[15px] pt-0 bg-white"
                 />
             </View>
-             
-            <ActionSheet
-                ref={actionSheetRef}
-                id="account-type-sheet"
+            <BottomSheetComponent
+                ref={bottomSheetRef}
                 containerStyle={{
                 borderTopLeftRadius: 20,
                 borderTopRightRadius: 20,
                 height: isExpanded ? '90%' : '90%',
+                    backgroundColor: "white",
+                }}
+                contentStyle={{
+                    backgroundColor: "white",
+                    padding: 0
                 }}
                 gestureEnabled={true}
-                closable={true}
-                onClose={handleSheetClose}
-                >
+                customHeight="80%" 
+                closeOnTouchBackdrop={true}
+                closeOnPressBack={true}
+                scrollable={true}
+            >
                 <PersonalInfoScreen
-                accountType={selectedAccountType}
-                onInputFocus={handleInputFocus}
+                    accountType={selectedAccountType}
+                    onInputFocus={() => {}}
                 />
-            </ActionSheet>
+            </BottomSheetComponent>
         </AppGradient>
+    </GestureHandlerRootView>
+
     );
 }
-
