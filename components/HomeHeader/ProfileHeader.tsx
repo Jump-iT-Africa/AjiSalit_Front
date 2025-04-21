@@ -12,10 +12,10 @@ import {selectUserRole} from "@/store/slices/userSlice";
 
 const ProfileHeader = () => {
   const userData = useSelector(selectUserData);
-  console.log('user data is', userData);
+  // console.log('user data is', userData);
   
   const role = useSelector(selectUserRole);
-  console.log('role form profile is', role);
+  // console.log('role form profile is', role);
   
   return (
     <SafeAreaView className='w-100 p-0'>

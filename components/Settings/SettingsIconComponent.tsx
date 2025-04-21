@@ -5,7 +5,6 @@ import { useNavigation } from '@react-navigation/native'; // <-- import navigati
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Colors from '@/constants/Colors';
 import { logoutUser } from '@/store/slices/userSlice'; 
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SettingsIconComponent = () => {
   const dispatch = useDispatch();

@@ -358,7 +358,11 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
+<<<<<<< HEAD
 				PRODUCT_BUNDLE_IDENTIFIER = app.ajisalit.com;
+=======
+				PRODUCT_BUNDLE_IDENTIFIER = "app.ajisalit.com";
+>>>>>>> 33e84bd01c8042f94e8ce2c7a6c9d0e84eae0cbe
 				PRODUCT_NAME = "AjiSalit";
 				SWIFT_OBJC_BRIDGING_HEADER = "AjiSalit/AjiSalit-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -386,7 +390,11 @@
 					"-lc++",
 				);
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
+<<<<<<< HEAD
 				PRODUCT_BUNDLE_IDENTIFIER = app.ajisalit.com;
+=======
+				PRODUCT_BUNDLE_IDENTIFIER = "app.ajisalit.com";
+>>>>>>> 33e84bd01c8042f94e8ce2c7a6c9d0e84eae0cbe
 				PRODUCT_NAME = "AjiSalit";
 				SWIFT_OBJC_BRIDGING_HEADER = "AjiSalit/AjiSalit-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;

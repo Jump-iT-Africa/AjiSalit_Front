@@ -8,9 +8,7 @@ import { setCurrentOrder } from "@/store/slices/OrdersManagment";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const OrderCard = ({ item }) => {
-  useEffect(() => {
-    console.log("Order info in OrderCard:", item);
-  }, []);
+ 
   const dispatch = useDispatch();
   const router = useRouter();
 
