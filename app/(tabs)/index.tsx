@@ -1,5 +1,5 @@
 import { View, Text, Image, ImageBackground, SafeAreaView, StyleSheet } from "react-native";
-import HeroImage from "@/assets/images/hassan.png";
+import HeroImage from "@/assets/images/register1.jpg";
 import React from "react";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
@@ -23,8 +23,8 @@ const App = () => {
                 onPress={() => router.push("register")}
                 title="باغي تسجل" textStyles="font-tajawal text-[14] "
               />
-              <Text className="text-white text-center mt-3  font-tajawal font-[700]" 
-              onPress={()=>router.push('register')}>
+              <Text className="text-white text-center mt-3font-[700] text-tajawal mt-3" 
+              onPress={()=>router.push('register')}  style={styles.textConfig}>
                 عندي حساب 
               </Text>
             </View>
@@ -37,9 +37,8 @@ const App = () => {
 };
 
 const styles = StyleSheet.create({
-  text: {
-    fontFamily: 'Tajawal'
-  }
+  textConfig: {
+    fontFamily: 'TajawalRegular',  }
 });
 
 export default App;

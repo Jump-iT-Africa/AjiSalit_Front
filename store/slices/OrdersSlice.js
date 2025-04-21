@@ -42,7 +42,7 @@ export const fetchOrders = createAsyncThunk(
       if (response.data === "ماكين حتا طلب" || !Array.isArray(response.data)) {
         return []; 
       }
-      console.log("reponse of the client or  company", response.data);
+      // console.log("reponse of the client or  company", response.data);
       return response.data;
       
     } catch (error) {
@@ -141,7 +141,7 @@ const ordersSlice = createSlice({
         })
         .addCase(fetchOrders.fulfilled, (state, action) => {
           state.loading = false;
-          console.log('Fetch orders fulfilled:', action.payload);
+          // console.log('Fetch orders fulfilled:', action.payload);
           state.items = transformOrderData(action.payload);
         })
         .addCase(fetchOrders.rejected, (state, action) => {
