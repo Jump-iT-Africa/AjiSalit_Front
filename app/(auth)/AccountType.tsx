@@ -1,5 +1,5 @@
 import AppGradient from "@/components/ui/AppGradient";
-import { View, Text, TouchableOpacity, Image, KeyboardAvoidingView } from "react-native";
+import { View, Text, TouchableOpacity, Image, KeyboardAvoidingView, Platform } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Color from "@/constants/Colors";
 import HeaderWithBack from "@/components/ui/HeaderWithToolTipAndback";
@@ -30,7 +30,7 @@ export default function AccountnType() {
 
     const handleBack = () => {
         setTimeout(() => {
-            router.replace("(tabs)");
+            router.back();
         }, 100);
     };
 
@@ -57,66 +57,67 @@ export default function AccountnType() {
 
     return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-         
-        <AppGradient colors={[Color.red, Color.red]} className="flex-1">
-            <TouchableOpacity onPress={handleBack}>
-                <HeaderWithBack
-                    onPress={() => router.replace('(tabs)')}
-                    tooltipVisible={tooltipVisible}
-                    setTooltipVisible={setTooltipVisible}
-                    content="فهاد الصفحة غدي تختار واش نتا شركة ولا شخص عادي"
-                />
-            </TouchableOpacity>
-            
-            <View className="flex-1 justify-start items-center mt-[30%]">
-                <Image
-                    source={Whitelogo}
-                    resizeMode="contain"
-                    className="w-40 h-40 mb-12"
-                />
-                <Text className="text-white font-tajawal text-center mb-2 text-xl px-10">
-                    واش نتا شركة ولا شخص عادي؟
-                </Text>
-                <Text className="font-tajawalregular font-thin color-white">
-                    تقدر تبدل الوضعية من بعد.
-                </Text>
-            </View>
-            
-            <View className="px-10">
-                <CustomButton
-                    onPress={() => handleAccountTypeSelect('شركة')}
-                    title={"شركة"}
-                    containerStyles="bg-[#2e752f]"
-                    textStyles="text-white font-tajawal text-[15px] pt-0"
-                />
-                <CustomButton
-                    onPress={() => handleAccountTypeSelect('شخص عادي')}
-                    title={"شخص عادي"}
-                    containerStyles="bg-white mt-4"
-                    textStyles="text-[#2e752f] font-tajawal text-[15px] pt-0 bg-white"
-                />
-            </View>
-            <BottomSheetComponent
-                ref={bottomSheetRef}
-                containerStyle={{
-                    backgroundColor: "white",
-                }}
-                contentStyle={{
-                    backgroundColor: "white",
-                    padding: 0
-                }}
-                gestureEnabled={true}
-                customHeight="80%" 
-                closeOnTouchBackdrop={true}
-                closeOnPressBack={true}
-                scrollable={true}
-            >
-                <PersonalInfoScreen
-                    accountType={selectedAccountType}
-                    onInputFocus={() => {}}
-                />
-            </BottomSheetComponent>
-        </AppGradient>
+         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+            <AppGradient colors={[Color.red, Color.red]} className="flex-1">
+                <TouchableOpacity onPress={handleBack}>
+                    <HeaderWithBack
+                        onPress={() => router.back()}
+                        tooltipVisible={tooltipVisible}
+                        setTooltipVisible={setTooltipVisible}
+                        content="فهاد الصفحة غدي تختار واش نتا شركة ولا شخص عادي"
+                    />
+                </TouchableOpacity>
+                
+                <View className="flex-1 justify-start items-center mt-[30%]">
+                    <Image
+                        source={Whitelogo}
+                        resizeMode="contain"
+                        className="w-40 h-40 mb-12"
+                    />
+                    <Text className="text-white font-tajawal text-center mb-2 text-xl px-10">
+                        واش نتا شركة ولا شخص عادي؟
+                    </Text>
+                    <Text className="font-tajawalregular font-thin color-white">
+                        تقدر تبدل الوضعية من بعد.
+                    </Text>
+                </View>
+                
+                <View className="px-10">
+                    <CustomButton
+                        onPress={() => handleAccountTypeSelect('شركة')}
+                        title={"شركة"}
+                        containerStyles="bg-[#2e752f]"
+                        textStyles="text-white font-tajawal text-[15px] pt-0"
+                    />
+                    <CustomButton
+                        onPress={() => handleAccountTypeSelect('شخص عادي')}
+                        title={"شخص عادي"}
+                        containerStyles="bg-white mt-4"
+                        textStyles="text-[#2e752f] font-tajawal text-[15px] pt-0 bg-white"
+                    />
+                </View>
+                <BottomSheetComponent
+                    ref={bottomSheetRef}
+                    containerStyle={{
+                        backgroundColor: "white",
+                    }}
+                    contentStyle={{
+                        backgroundColor: "white",
+                        padding: 0
+                    }}
+                    gestureEnabled={true}
+                    customHeight="58%" 
+                    closeOnTouchBackdrop={true}
+                    closeOnPressBack={true}
+                    scrollable={true}
+                >
+                    <PersonalInfoScreen
+                        accountType={selectedAccountType}
+                        onInputFocus={() => {}}
+                    />
+                </BottomSheetComponent>
+            </AppGradient>
+        </KeyboardAvoidingView>
     </GestureHandlerRootView>
 
     );

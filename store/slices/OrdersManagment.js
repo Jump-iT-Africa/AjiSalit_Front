@@ -51,22 +51,22 @@ export const fetchOrderByQrCodeOrId = createAsyncThunk(
       }
       
       const sanitizedQrCode = qrCode.trim();
-
+      
       const result = await axios.get(`${API_BASE_URL}/order/scan/${sanitizedQrCode}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
       
-      console.log('data retured from scan',result.data);
-
+      console.log('data returned from scan', result.data);
+      
       const userDataStr = await AsyncStorage.getItem('user');
+      if (userDataStr) {
         const userData = JSON.parse(userDataStr);
         console.log('the role of scanner is', userData.role);
-        if(userData.role === 'client')
-        {
-          try
-          {
+        
+        if(userData.role === 'client') {
+          try {
             const response = await axios.patch(
               `${API_BASE_URL}/order/${sanitizedQrCode}`,
               {},
@@ -77,19 +77,15 @@ export const fetchOrderByQrCodeOrId = createAsyncThunk(
               }
             );
             console.log('this is log after adding user to Command Table when scan', response?.data);
-          }
-          catch(error)
-          {
-            console.log(error);
-            return rejectWithValue(error);
+          } catch(error) {
+            console.log("Error updating order:", error);
           }
         }
+      }
       
-      //nstori l order f local storage bach ila dkhel fl offline ibarno lih fine
       try {
         await AsyncStorage.setItem('lastScannedOrder', JSON.stringify(result.data));
-        console.log('this is saved data', saved);
-        
+        console.log('Order saved to local storage');
       } catch (storageError) {
         console.log("Failed to store order in AsyncStorage:", storageError);
       }
@@ -102,7 +98,7 @@ export const fetchOrderByQrCodeOrId = createAsyncThunk(
         console.log("Error response data:", error.response.data);
         console.log("Error response status:", error.response.status);
       }
-      return rejectWithValue(error.response?.data || 'Failed to fetch order by QR code');
+      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to fetch order by QR code');
     }
   }
 );
@@ -238,7 +234,7 @@ const ordersSlice = createSlice({
       state.success = false;
     },
     setCurrentOrder: (state, action) => {
-      console.log("setCurrentOrder payload:", action.payload);
+      // console.log("setCurrentOrder payload:", action.payload);
       
       // Keep the original nested structure for objects like companyId
       const normalizedOrder = {
@@ -267,7 +263,7 @@ const ordersSlice = createSlice({
         ...action.payload
       };
       
-      console.log("Normalized order in Redux:", normalizedOrder);
+      // console.log("Normalized order in Redux:", normalizedOrder);
       
       state.currentOrder = normalizedOrder;
       state.success = true;

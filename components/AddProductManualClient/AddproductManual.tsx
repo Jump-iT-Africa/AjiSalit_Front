@@ -1,6 +1,5 @@
 import { View, Text, TouchableOpacity , Image} from 'react-native'
 import React, { useState } from 'react'
-import AddProductImage from "@/assets/images/addProduct.svg"
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Colors  from '@/constants/Colors';
