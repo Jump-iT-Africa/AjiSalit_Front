@@ -19,7 +19,7 @@
     "ios": {
       "googleServicesFile": "./google-services.json",
       "supportsTablet": false,
-      "bundleIdentifier": "com.ajisalit.app",
+      "bundleIdentifier": "app.ajisalit.com",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "UIBackgroundModes": ["remote-notification"]
@@ -32,7 +32,7 @@
         "backgroundColor": "#ffffff",
         "userInterfaceStyle": "light"
       },
-      "package": "com.ajisalit.app",
+      "package": "app.ajisalit.com",
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"

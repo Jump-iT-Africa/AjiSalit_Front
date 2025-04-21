@@ -1,4 +1,4 @@
-package com.ajisalit.it
+package app.ajisalit.com
 
 import android.app.Application
 import android.content.res.Configuration

@@ -28,7 +28,7 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <string>aji-salit</string>
-          <string>com.ajisalit.it</string>
+          <string>app.ajisalit.com</string>
         </array>
       </dict>
     </array>
