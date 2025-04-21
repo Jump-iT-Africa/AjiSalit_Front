@@ -8,9 +8,9 @@ import {
   Image,
   ActivityIndicator,
   Keyboard,
-  TouchableWithoutFeedback
+  Modal,
+  ScrollView
 } from "react-native";
-import ActionSheetComponent from "@/components/ui/ActionSheet";
 import Color from "@/constants/Colors";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Feather from '@expo/vector-icons/Feather';
@@ -22,29 +22,21 @@ const CitySelector = ({
   isSubmitted = false,
   regionsAndCities 
 }) => {
-  const [isSheetVisible, setIsSheetVisible] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [filteredCities, setFilteredCities] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [hasStartedTyping, setHasStartedTyping] = useState(false);
   const [notFound, setNotFound] = useState(false);
-  const [selectedCity, setSelectedCity] = useState(initialValue);
   const [minimumCharsReached, setMinimumCharsReached] = useState(false);
-  
-  const actionSheetRef = useRef(null);
+  const [selectedCity, setSelectedCity] = useState(initialValue);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
   const searchTimeout = useRef(null);
   const MIN_CHARS = 4;
 
-  // Dismiss keyboard when filtered cities are populated
-  useEffect(() => {
-    if (filteredCities.length > 0) {
-      Keyboard.dismiss();
-    }
-  }, [filteredCities]);
-
-  const openActionSheet = () => {
-    setIsSheetVisible(true);
-    actionSheetRef.current?.show();
+  const openBottomSheet = () => {
+    console.log("Opening modal");
+    setIsModalVisible(true);
     setSearchText("");
     setFilteredCities([]);
     setNotFound(false);
@@ -52,9 +44,8 @@ const CitySelector = ({
     setMinimumCharsReached(false);
   };
 
-  const closeActionSheet = () => {
-    actionSheetRef.current?.hide();
-    setIsSheetVisible(false);
+  const closeBottomSheet = () => {
+    setIsModalVisible(false);
   };
 
   const handleSearch = (text) => {
@@ -86,10 +77,9 @@ const CitySelector = ({
     }
     
     searchTimeout.current = setTimeout(() => {
-      if (text.trim() === "") {
-        setFilteredCities([]);
+      if (!regionsAndCities || !regionsAndCities.cities || !regionsAndCities.cities.data) {
+        console.error("Cities data is not available");
         setIsSearching(false);
-        setHasStartedTyping(false);
         return;
       }
       
@@ -118,17 +108,17 @@ const CitySelector = ({
   };
 
   const selectCity = (city) => {
-    Keyboard.dismiss(); // Explicitly dismiss keyboard
+    Keyboard.dismiss();
     setSelectedCity(city.names.ar);
     onCitySelect(city);
-    closeActionSheet();
+    setIsModalVisible(false);  // Close the modal after selection
   };
 
   const renderCityItem = ({ item }) => (
     <TouchableOpacity 
       onPress={() => selectCity(item)}
       className="border-b border-gray-200 p-3"
-      activeOpacity={0.7} // Make it more responsive
+      activeOpacity={0.7}
     >
       <Text className="text-right font-tajawal text-[16px] text-gray-800">
         {item.names.ar}
@@ -139,33 +129,63 @@ const CitySelector = ({
     </TouchableOpacity>
   );
 
-  const InitialSearchState = () => (
-    <View className="flex-1 items-center ">
-      <Text className="text-center font-tajawalregular text-[#2e752f]">
-        قلب على مدينتك
+  const SearchStateDisplay = ({ message, showImage = true }) => (
+    <View className="flex-1 items-center  py-4">
+      <Text className="text-center font-tajawalregular text-[#2e752f] mb-4">
+        {message}
       </Text>
-      <Image
-        source={require('@/assets/images/searchLeon.png')}
-        style={{ width: 250, height: 250 }}
-        resizeMode="contain"
-      />
+      {showImage && (
+        <Image
+          source={require('@/assets/images/searchLeon.png')}
+          style={{ width: 200, height: 200 }}
+          resizeMode="contain"
+        />
+      )}
     </View>
   );
 
-  const MinimumCharsMessage = () => (
-    <View className="flex-1 items-center ">
-      <Text className="text-center font-tajawalregular text-[#2e752f]">
-        قلب على مدينتك
-      </Text>
-      <Image
-        source={require('@/assets/images/searchLeon.png')}
-        style={{ width: 250, height: 250 }}
-        resizeMode="contain"
+  const getContentToDisplay = () => {
+    if (isSearching) {
+      return (
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color={Color.green} />
+        </View>
+      );
+    } 
+    
+    if (notFound && minimumCharsReached) {
+      return <SearchStateDisplay message="لم يتم العثور على هذه المدينة" />;
+    } 
+    
+    if (!hasStartedTyping) {
+      return <SearchStateDisplay message="قلب على مدينتك" />;
+    } 
+    
+    if (hasStartedTyping && !minimumCharsReached) {
+      return <SearchStateDisplay message="اكتب على الأقل 4 أحرف للبحث" />;
+    }
+    
+    return (
+      <FlatList
+        data={filteredCities}
+        renderItem={renderCityItem}
+        keyExtractor={(item, index) => `city-${index}`}
+        contentContainerStyle={{ paddingBottom: 20, minHeight: 200, width: '100%' }}
+        keyboardShouldPersistTaps="handled"
+        ListEmptyComponent={
+          hasStartedTyping && minimumCharsReached && !isSearching ? (
+            <View className="flex-1 justify-center items-center py-8">
+              <Text className="text-center font-tajawal text-gray-500">
+                اكتب اسم المدينة للبحث
+              </Text>
+            </View>
+          ) : null
+        }
       />
-    </View>
-  );
+    );
+  };
 
-  return (
+  return ( 
     <View className="mb-3">
       <Text
         className="text-right text-gray-700 mb-2 font-tajawal text-[12px]"
@@ -175,7 +195,7 @@ const CitySelector = ({
       </Text>
       
       <TouchableOpacity
-        onPress={openActionSheet}
+        onPress={openBottomSheet}
         className={`border ${
           errors.city && isSubmitted ? "border-red-500" : "border-[#2e752f]"
         } rounded-lg p-3 bg-white flex-row justify-between items-center`}
@@ -196,66 +216,61 @@ const CitySelector = ({
         </Text>
       ) : null}
 
-      <ActionSheetComponent
-        ref={actionSheetRef}
-        containerStyle={{ height: "70%", backgroundColor: "white" }}
+      <Modal
+        visible={isModalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={closeBottomSheet}
       >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View className="flex-1">
-            <View className="flex-row justify-between items-center -mt-4">
-              <View style={{ width: 24 }} />
-            </View>
+        <TouchableOpacity 
+          style={{ flex: 1, backgroundColor: 'rgba(7, 114, 9, 0.44)' }}
+          activeOpacity={1}
+          onPress={closeBottomSheet}
+        >
+          <TouchableOpacity 
+            activeOpacity={1}
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              backgroundColor: 'white',
+              borderTopLeftRadius: 20,
+              borderTopRightRadius: 20,
+              height: '80%',
+              padding: 16
+            }}
+          >
+            <View style={{ 
+              width: 60, 
+              height: 5, 
+              backgroundColor: Color.green, 
+              borderRadius: 5, 
+              alignSelf: 'center',
+              marginBottom: 10
+            }} />
             
-            <View className="flex-row items-center mb-4 rounded-full border-gray-300 p-2 bg-[#2e752f]">
-              <View className="ml-2">
-                <Feather name="search" size={24} color="white" />
+            <View className="flex-1">
+              <View className="flex-row items-center mb-4 rounded-full border-gray-300 p-2 bg-[#2e752f]">
+                <View className="ml-2">
+                  <Feather name="search" size={24} color="white" />
+                </View>
+
+                <TextInput
+                  className="flex-1 text-right font-tajawal pr-2 text-white"
+                  placeholder="ابحث..."
+                  placeholderTextColor="white"
+                  value={searchText}
+                  onChangeText={handleSearch}
+                  autoFocus={true}
+                />
               </View>
 
-              <TextInput
-                className="flex-1 text-right font-tajawal pr-2 text-white"
-                placeholder="ابحث..."
-                placeholderTextColor="white"
-                value={searchText}
-                onChangeText={handleSearch}
-                autoFocus={true}
-              />
+              {getContentToDisplay()}
             </View>
-
-            {isSearching ? (
-              <View className="flex-1 justify-center items-center">
-                <ActivityIndicator size="large" color={Color.green} />
-              </View>
-            ) : notFound && minimumCharsReached ? (
-              <View className="flex-1 justify-center items-center">
-                <Text className="text-center font-tajawal text-red-500">
-                  لم يتم العثور على هذه المدينة
-                </Text>
-              </View>
-            ) : !hasStartedTyping ? (
-              <InitialSearchState />
-            ) : hasStartedTyping && !minimumCharsReached ? (
-              <MinimumCharsMessage />
-            ) : (
-              <FlatList
-                data={filteredCities}
-                renderItem={renderCityItem}
-                keyExtractor={(item, index) => `city-${index}`}
-                contentContainerStyle={{ paddingBottom: 20 }}
-                keyboardShouldPersistTaps="handled" // This helps with keyboard handling
-                ListEmptyComponent={
-                  hasStartedTyping && minimumCharsReached && !isSearching ? (
-                    <View className="flex-1 justify-center items-center py-8">
-                      <Text className="text-center font-tajawal text-gray-500">
-                        اكتب اسم المدينة للبحث
-                      </Text>
-                    </View>
-                  ) : null
-                }
-              />
-            )}
-          </View>
-        </TouchableWithoutFeedback>
-      </ActionSheetComponent>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 };

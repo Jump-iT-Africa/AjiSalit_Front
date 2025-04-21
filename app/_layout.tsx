@@ -7,11 +7,11 @@ import { View } from 'react-native';
 import { Provider } from 'react-redux';
 import store from '@/store/actions/Store';
 import AuthCheck from "@/services/CheckIfUserAuth";
-import NavigationHandler from "@/services/NavigationHandler"; // Create this component
 import * as Notifications from "expo-notifications";
 import { NotificationProvider } from '../context/NotificationContext'
 import HandleNotification from "./(home)/HandleNotification";
-
+import NavigationHandler from "@/services/NavigationHandler";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 
 SplashScreen.preventAutoHideAsync()
@@ -41,9 +41,9 @@ export default function RootLayout() {
       try {
         const appData = await AsyncStorage.getItem('isAppFirstLaunched');
         const isAuthenticated = await AsyncStorage.getItem('isAuthenticated');
-        
+
         console.log("App initialization - Auth status:", isAuthenticated);
-        
+
 
         if (appData === null) {
           setIsAppFirstLaunched(true);
@@ -51,7 +51,7 @@ export default function RootLayout() {
         } else {
           setIsAppFirstLaunched(false);
         }
-        
+
       } catch (error) {
         // console.log('Error checking first launch:', error);
         setIsAppFirstLaunched(false);
@@ -59,9 +59,8 @@ export default function RootLayout() {
         setIsReady(true);
       }
     };
-    
+
     initializeApp();
-  }, []);
   }, []);
 
   useEffect(() => {
@@ -91,8 +90,8 @@ export default function RootLayout() {
   }
 
   return (
-      <NotificationProvider>
-        <Provider store={store}>
+    <NotificationProvider>
+      <Provider store={store}>
         <AuthCheck />
         <HandleNotification />
         <NavigationHandler firstLaunch={isAppFirstLaunched} />
@@ -101,7 +100,7 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="(home)" options={{ headerShown: false }} />
         </Stack>
-        </Provider>
-      </NotificationProvider>
+      </Provider>
+    </NotificationProvider>
   );
 }
