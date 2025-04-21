@@ -18,12 +18,14 @@ export const saveUserToDB = async (userData) => {
         await AsyncStorage.setItem("token", response.data.token);
       }
       
-      if (response.data && response.data.user) {
-        await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
-      } else if (response.data && !response.data.user) {
+      if (response.data) {
         await AsyncStorage.setItem("user", JSON.stringify(response.data));
+        // Add to loginUser function
+        console.log('Setting auth state after login');
+        await AsyncStorage.setItem("isAuthenticated", "true");
+        console.log('Auth state set');
       }
-      console.log('bigresponse', response);
+      console.log('bigresponse', response.data);
       
       return response.data;
     } catch (error) {

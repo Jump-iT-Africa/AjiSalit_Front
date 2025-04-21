@@ -60,8 +60,6 @@ export async function registerForPushNotificationsAsync() {
       }
       return pushTokenString;
     } catch (e) {
-      AsyncStorage.setItem("notification-push", "null");
-
       throw new Error(`${e}`);
     }
   } else {
