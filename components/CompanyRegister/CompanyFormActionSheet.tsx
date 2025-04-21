@@ -29,7 +29,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import CitySelector from "./CitySelector";
 import regionsAndCitiesData from "@/constants/Cities/Cities.json";
 
-export default function CombinedCompanyForm({ onInputFocus }) {
+export default function CombinedCompanyForm({ onInputFocus, onLoadingModalChange }) {
   const dispatch = useDispatch();
   const userData = useSelector(state => state.user);
   const isLoading = useSelector(selectLoading);
@@ -146,6 +146,12 @@ export default function CombinedCompanyForm({ onInputFocus }) {
   };
 
   useEffect(() => {
+    if (onLoadingModalChange) {
+      onLoadingModalChange(isLoadingModalVisible);
+    }
+  }, [isLoadingModalVisible]);
+
+  useEffect(() => {
     if (isLoading) {
       setIsLoadingModalVisible(true);
     } else if (isLoadingModalVisible && userData.registered) {
@@ -195,10 +201,8 @@ export default function CombinedCompanyForm({ onInputFocus }) {
         
         console.log("Submitting user data:", completeUserData); 
         
-        // Disable button while submitting
         setButtonDisabled(true);
         
-        // Show loading modal
         setIsLoadingModalVisible(true);
         
         const resultAction = await dispatch(registerUser(completeUserData));
@@ -411,7 +415,7 @@ export default function CombinedCompanyForm({ onInputFocus }) {
       onRequestClose={() => setIsLoadingModalVisible(false)}
     >
       <TouchableOpacity 
-        style={{ flex: 1, backgroundColor: 'rgba(15, 225, 47, 0.5)' }}
+        style={{ flex: 1, backgroundColor: 'rgba(47, 117, 47, 0.48)' }}
         activeOpacity={1}
       >
         <TouchableOpacity 
@@ -441,7 +445,7 @@ export default function CombinedCompanyForm({ onInputFocus }) {
             <View className="mb-4 items-center">
               <Image 
                 source={require('@/assets/images/loader.gif')}
-                style={{ width: 160, height: 160 }}
+                style={{ width: 200, height: 200 }}
                 resizeMode="contain"
               className="mb-4 rounded-full"
               />
@@ -458,16 +462,16 @@ export default function CombinedCompanyForm({ onInputFocus }) {
     </Modal>
   );
 
-  // Success Modal
   const SuccessModal = (
     <Modal
       visible={isSuccessModalVisible}
       transparent={true}
       animationType="slide"
       onRequestClose={() => setIsSuccessModalVisible(false)}
+
     >
       <TouchableOpacity 
-        style={{ flex: 1, backgroundColor: 'rgba(7, 122, 49, 0.62)' }}
+        style={{ flex: 1, backgroundColor: 'rgba(47, 117, 47, 0.48)' }}
         activeOpacity={1}
       >
         <TouchableOpacity 

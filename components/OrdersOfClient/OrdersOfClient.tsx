@@ -48,7 +48,7 @@ const OrdersOfClient = ({ SearchCode }) => {
     if (authCheck) {
       return dispatch(fetchOrders())
         .then(response => {
-          console.log("Orders fetched successfully:", response);
+          // console.log("Orders fetched successfully:", response);
           setOrdersLoaded(true);
           setLastRefreshTime(Date.now());
           if (isRefreshing) setRefreshing(false);

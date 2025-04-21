@@ -1,4 +1,3 @@
-// @ts-nocheck
 
 import { useLocalSearchParams } from "expo-router";
 import React, { useState, useRef, useEffect } from "react";
@@ -23,21 +22,23 @@ import { Audio } from 'expo-av';
 import { Feather } from "@expo/vector-icons";
 
 export default function ConfirmPIN() {
-  const { pin } = useLocalSearchParams();
   const router = useRouter();
   const dispatch = useDispatch();
   const [code, setCode] = useState("");
   const [lastVisibleIndex, setLastVisibleIndex] = useState(-1);
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const timeoutRef = useRef(null);
-  const toast = useToast();
   const [isValidating, setIsValidating] = useState(false);
   const [isError, setIsError] = useState(false);
   const createdPin = useSelector((state) => state.user.password);
 
+
+
+  console.log('pin from redux', createdPin);
+  
   const handleBack = () => {
     setTimeout(() => {
-      router.replace("(tabs)");
+      router.back();
     }, 100);
   };
 
@@ -188,7 +189,7 @@ export default function ConfirmPIN() {
     <AppGradient colors={[Color.red, Color.red]} className="flex-1">
       <TouchableOpacity onPress={handleBack}>
         <HeaderWithBack
-          onPress={() => router.replace("(tabs)")}
+          onPress={() => router.back()}
           tooltipVisible={tooltipVisible}
           setTooltipVisible={setTooltipVisible}
           content="فهاد صفحة غادي تأكد الكود ديالك"

@@ -100,7 +100,7 @@ const CompanyFieldDropDown = ({
         onRequestClose={closeModal}
       >
         <TouchableOpacity 
-          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)' }}
+          style={{ flex: 1, backgroundColor: 'rgba(47, 117, 47, 0.48)' }}
           activeOpacity={1}
           onPress={closeModal}
         >

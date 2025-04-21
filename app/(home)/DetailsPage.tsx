@@ -112,7 +112,7 @@ useEffect(() => {
           const storedOrder = await AsyncStorage.getItem('lastScannedOrder');
           if (storedOrder) {
             const parsedOrder = JSON.parse(storedOrder);
-            console.log("Using order from AsyncStorage:", parsedOrder);
+            // console.log("Using order from AsyncStorage:", parsedOrder);
             dispatch(setCurrentOrder(parsedOrder));
             setOrderData(parsedOrder);
           } else {
