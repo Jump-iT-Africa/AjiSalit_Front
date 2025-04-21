@@ -1,4 +1,4 @@
-package com.ajisalit.it
+package app.ajisalit.com
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

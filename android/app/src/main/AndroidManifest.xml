@@ -29,7 +29,7 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="aji-salit"/>
-        <data android:scheme="com.ajisalit.it"/>
+        <data android:scheme="app.ajisalit.com"/>
       </intent-filter>
     </activity>
   </application>
