@@ -19,7 +19,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { createOrder, resetOrderState } from '@/store/slices/CreateOrder';
 import Color from '@/constants/Colors';
 import CustomButton from '../ui/CustomButton';
-import ActionSheetComponent from '../ui/BottomSheetComponent';
+import BottomSheetComponent from '../ui/BottomSheetComponent';
 import Divider from '../ui/Devider';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -27,11 +27,13 @@ import * as ImagePicker from 'expo-image-picker';
 import Noimages from "@/assets/images/noImages.png"
 import UniqueIdModal from '../QrCodeGeneration/GenerateQrCode';
 import PaymentStatus from './PaymenStatus';
-
+import OrderVerificationBottomSheet from './OrderVerificationBottomSheet';
 
 const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) => {
   const actionSheetRef = useRef(null);
   const dispatch = useDispatch();
+  const verificationSheetRef = useRef(null);
+
   const { loading, error, success, currentOrder } = useSelector((state) => state.order);
 
   const [formData, setFormData] = useState({
@@ -216,6 +218,42 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
   const handleSubmit = () => {
     if (!validateStep2()) return;
     
+
+    verificationSheetRef.current?.show();
+
+    // const newUniqueId = generateUniqueId(12);
+    // setUniqueId(newUniqueId);
+    
+    // const formatDateToIso = (date) => {
+    //   if (!(date instanceof Date)) return '';
+    //   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    // };
+    
+    // const deliveryDate = formData.RecieveDate;
+    // const pickupDate = new Date(deliveryDate);
+    // pickupDate.setDate(pickupDate.getDate() + 2);
+    
+    // // Prepare orderdata
+
+  
+    // const orderData = {
+    //   price: parseFloat(formData.price),
+    //   situation: formData.situation || "خالص",
+    //   status: "في طور الانجاز",
+    //   advancedAmount: formData.situation === 'تسبيق' ? formData.advancedAmount : null,
+    //   deliveryDate: formatDateToIso(deliveryDate),
+    //   pickupDate: formatDateToIso(pickupDate),
+    //   qrCode: newUniqueId,
+    //   isFinished: false,
+    //   isPickUp: false
+    // };
+
+    // console.log("Component - Order data before dispatch:", JSON.stringify(orderData));
+    //   dispatch(createOrder(orderData));
+    //   setShowIdModal(true);
+  };
+
+  const processOrderSubmission = () => {
     const newUniqueId = generateUniqueId(12);
     setUniqueId(newUniqueId);
     
@@ -228,27 +266,23 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
     const pickupDate = new Date(deliveryDate);
     pickupDate.setDate(pickupDate.getDate() + 2);
     
-    // Prepare orderdata
-
-
-const orderData = {
-  price: parseFloat(formData.price),
-  situation: formData.situation || "خالص",
-  status: "في طور الانجاز",
-  advancedAmount: formData.situation === 'تسبيق' ? formData.advancedAmount : null,
-  deliveryDate: formatDateToIso(deliveryDate),
-  pickupDate: formatDateToIso(pickupDate),
-  qrCode: newUniqueId,
-  isFinished: false,
-  isPickUp: false
-};
-
-console.log("Component - Order data before dispatch:", JSON.stringify(orderData));
-    
+    const orderData = {
+      price: parseFloat(formData.price),
+      situation: formData.situation || "خالص",
+      status: "في طور الانجاز",
+      advancedAmount: formData.situation === 'تسبيق' ? formData.advancedAmount : null,
+      deliveryDate: formatDateToIso(deliveryDate),
+      pickupDate: formatDateToIso(pickupDate),
+      qrCode: newUniqueId,
+      isFinished: false,
+      isPickUp: false
+    };
+  
+    console.log("Component - Order data before dispatch:", JSON.stringify(orderData));
     dispatch(createOrder(orderData));
-    
     setShowIdModal(true);
   };
+  
 
   const handleModalClose = () => {
     setShowIdModal(false);
@@ -277,8 +311,6 @@ console.log("Component - Order data before dispatch:", JSON.stringify(orderData)
     return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
   };
 
-  
-  
 
   const handleStatusChange = (status, advancedAmount) => {
     console.log("handleStatusChange received:", status, advancedAmount);
@@ -297,12 +329,10 @@ console.log("Component - Order data before dispatch:", JSON.stringify(orderData)
       return newData;
     });
   };
-
   
-
   const Step1Form = (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-    <KeyboardAvoidingView>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false} >
+    <KeyboardAvoidingView >
       <Animated.View
         style={{
           opacity: step1Animation,
@@ -314,17 +344,20 @@ console.log("Component - Order data before dispatch:", JSON.stringify(orderData)
           }],
           position: 'absolute',
           width: '100%',
-          zIndex:9
+          zIndex:9,
         }}
       >
         <Text className="text-center text-[#F52525] text-xl font-bold mb-6 font-tajawal">
           معلومات الطلب
         </Text>
 
-        <Divider />
 
-        <View className="mb-4 mt-4">
-          <Text className="text-right text-gray-700 mb-2 font-tajawal" style={{ color: Color.green }}>
+
+        <View >
+          <View>
+
+          <View className="mb-4 mt-4">
+          <Text className="text-right text-gray-700 mb-2 font-tajawal text-[12px]" style={{ color: Color.green }}>
             المبلغ (بالدرهم): <Text className="text-red-500">*</Text>
           </Text>
           <TextInput
@@ -336,10 +369,10 @@ console.log("Component - Order data before dispatch:", JSON.stringify(orderData)
             className={`border ${errors.price ? 'border-red-500' : 'border-[#2e752f]'} rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}
           />
           {errors.price ? <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[13px]">{errors.price}</Text> : null}
-        </View>
+        </View> 
 
-        <View className="mb-4 mt-4">
-          <Text className="text-right text-gray-700 mb-2 font-tajawal" style={{ color: Color.green }}>
+        <View className="mb-0 mt-0">
+          <Text className="text-right text-gray-700 mb-2 font-tajawal text-[12px]" style={{ color: Color.green }}>
             الحالة: <Text className="text-red-500">*</Text>
           </Text>
 
@@ -363,88 +396,95 @@ console.log("Component - Order data before dispatch:", JSON.stringify(orderData)
           ) : null}
         </View>
 
-        <View className="mt-4 mb-6">
-          <Text className="text-right text-gray-700 mb-2 font-tajawal" style={{ color: Color.green }}>
-            تاريخ التسليم:<Text className="text-red-500">*</Text>
-          </Text>
 
-          <TouchableOpacity
-            onPress={() => setShowCalendar(true)}
-            className={`border ${errors.RecieveDate ? 'border-red-500' : 'border-[#2e752f]'} rounded-lg p-3 bg-white flex-row justify-between items-center`}
-          >
-            <AntDesign name="calendar" size={20} color="gray" />
-            <Text className="text-gray-500 text-right font-tajawalregular">
-              {formData.RecieveDate instanceof Date ? formatDate(formData.RecieveDate) : 'يرجى إدخال تاريخ التسليم'}
+
+          <View className="mt-4 mb-6">
+            <Text className="text-right text-gray-700 mb-2 font-tajawal text-[12px]" style={{ color: Color.green }}>
+              تاريخ التسليم:<Text className="text-red-500">*</Text>
             </Text>
-          </TouchableOpacity>
 
-          {Platform.OS === 'ios' ? (
-            <Modal
-              transparent={true}
-              animationType="slide"
-              visible={showCalendar}
-              onRequestClose={() => setShowCalendar(false)}
+            <TouchableOpacity
+              onPress={() => setShowCalendar(true)}
+              className={`border ${errors.RecieveDate ? 'border-red-500' : 'border-[#2e752f]'} rounded-lg p-3 bg-white flex-row justify-between items-center`}
             >
-              <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
-                <View className="bg-white rounded-lg p-4 w-5/5">
-                  <View className="flex-row justify-end mb-4">
-                    <TouchableOpacity onPress={() => setShowCalendar(false)}>
-                      <AntDesign name="calendar" size={24} color="black" />
+              <AntDesign name="calendar" size={20} color="gray" />
+              <Text className="text-gray-500 text-right font-tajawalregular">
+                {formData.RecieveDate instanceof Date ? formatDate(formData.RecieveDate) : 'يرجى إدخال تاريخ التسليم'}
+              </Text>
+            </TouchableOpacity>
+
+            {Platform.OS === 'ios' ? (
+              <Modal
+                transparent={true}
+                animationType="slide"
+                visible={showCalendar}
+                onRequestClose={() => setShowCalendar(false)}
+              >
+                <View className="flex-1 justify-center items-center bg-[#2e752f] bg-opacity-50">
+                  <View className="bg-white rounded-lg p-4 w-5/5">
+                    <View className="flex-row justify-end mb-4">
+                      <TouchableOpacity onPress={() => setShowCalendar(false)}>
+                        <AntDesign name="calendar" size={24} color="black" />
+                      </TouchableOpacity>
+                    </View>
+                  {/* !!! change the color from blue to green */}
+                    <DateTimePicker
+                      value={selectedDate}
+                      mode="date"
+                      display="inline"
+                      onChange={(_, date) => date && setSelectedDate(date)}
+                      minimumDate={new Date()}
+                      style={{ height: 300, width: '100%' }}
+                    />
+
+                    <TouchableOpacity
+                      onPress={() => handleDateSelect(selectedDate)}
+                      className="mt-4 p-3 bg-[#F52525] rounded-full"
+                    >
+                      <Text className="text-white text-center font-tajawal text-[15px]">تأكيد</Text>
                     </TouchableOpacity>
                   </View>
-
-                  <DateTimePicker
-                    value={selectedDate}
-                    mode="date"
-                    display="inline"
-                    onChange={(_, date) => date && setSelectedDate(date)}
-                    minimumDate={new Date()}
-                    style={{ height: 300, width: '100%' }}
-                  />
-
-                  <TouchableOpacity
-                    onPress={() => handleDateSelect(selectedDate)}
-                    className="mt-4 p-3 bg-[#2e752f] rounded-full"
-                  >
-                    <Text className="text-white text-center font-tajawal text-[15px]">تأكيد</Text>
-                  </TouchableOpacity>
                 </View>
-              </View>
-            </Modal>
-          ) : (
-            showCalendar && (
-              <DateTimePicker
-                value={selectedDate}
-                mode="date"
-                display="calendar"
-                onChange={(_, date) => date && handleDateSelect(date)}
-                minimumDate={new Date()}
+              </Modal>
+            ) : (
+              showCalendar && (
+                <DateTimePicker
+                  value={selectedDate}
+                  mode="date"
+                  display="calendar"
+                  onChange={(_, date) => date && handleDateSelect(date)}
+                  minimumDate={new Date()}
+                />
+              )
+            )}
+
+            {errors.RecieveDate ?
+              <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[13px]">{errors.RecieveDate}</Text> :
+              null
+            }
+          </View>
+          </View>
+            <Divider />
+
+          <View className='mt-2'>
+            <View className="mt-0 ">
+              <CustomButton
+                title="التالي"
+                onPress={() => {
+                  if (validateStep1()) {
+                    animateToNextStep();
+                  }
+                }}
+                containerStyles="p-3 bg-[#2e752f] rounded-full"
+                textStyles="text-white text-center font-tajawal text-[15px]"
               />
-            )
-          )}
+            </View>
+          </View>
+        </View> 
 
-          {errors.RecieveDate ?
-            <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[13px]">{errors.RecieveDate}</Text> :
-            null
-          }
-        </View>
-
-        <Divider />
-
-        <View className="mt-6">
-          <CustomButton
-            title="التالي"
-            onPress={() => {
-              if (validateStep1()) {
-                animateToNextStep();
-              }
-            }}
-            containerStyles="p-3 bg-[#2e752f] rounded-full"
-            textStyles="text-white text-center font-tajawal text-[15px]"
-          />
-        </View>
       </Animated.View>
     </KeyboardAvoidingView>
+    
     </TouchableWithoutFeedback>
   );
 
@@ -468,7 +508,7 @@ console.log("Component - Order data before dispatch:", JSON.stringify(orderData)
         </Text>
         <Divider />
   
-        <View className="my-8">
+        <View className="my-2">
           <Text className="text-right text-gray-700 font-tajawal mb-5" style={{ color: Color.green }}>
             تحميل الصور:
           </Text>
@@ -491,7 +531,7 @@ console.log("Component - Order data before dispatch:", JSON.stringify(orderData)
           </View>
        
           {uploadedImages.length > 0 ? (
-            <View className="mb-4">
+            <View className="  ">
               {uploadedImages.map((image) => (
                 <View key={image.id} className="flex-row justify-between items-center bg-gray-100 rounded-lg p-3 mb-2">
                   <TouchableOpacity onPress={() => removeImage(image.id)}>
@@ -522,11 +562,11 @@ console.log("Component - Order data before dispatch:", JSON.stringify(orderData)
               ))}
             </View>
           ) : (
-            <View className='w-full h-40 flex items-center'>
+            <View className='w-full  flex items-center'>
               <Image
                 source={Noimages}
                 resizeMode='contain'
-                className='flex-1 w-full h-100'
+                className='flex w-50 h-45 '
               />
               <Text className='font-tajawal text-[#2e752f] mt-2 text-xl'>
               لا يوجد صور 
@@ -540,17 +580,17 @@ console.log("Component - Order data before dispatch:", JSON.stringify(orderData)
   
         <Divider />
   
-        <View className="mt-6 flex-row justify-between">
+        <View className="mt-6 flex-row justify-between ">
           <CustomButton
             title="رجوع"
             onPress={animateToPreviousStep}
-            containerStyles="p-3 bg-gray-500 rounded-full w-2/4 mr-2"
+            containerStyles="p-3 bg-gray-500 rounded-full w-[48%] mr-2"
             textStyles="text-white text-center font-tajawal text-[15px]"
           />
           <CustomButton
             title={loading ? "جاري الإرسال..." : "إنشاء طلب"}
             onPress={handleSubmit}
-            containerStyles={`p-3 ${loading ? "bg-gray-400" : "bg-[#2e752f]"} rounded-full w-2/4`}
+            containerStyles={`p-3 ${loading ? "bg-gray-400" : "bg-[#2e752f]"} rounded-full w-[48%]`}
             textStyles="text-white text-center font-tajawal text-[15px]"
             disabled={loading}
           />
@@ -612,24 +652,42 @@ console.log("Component - Order data before dispatch:", JSON.stringify(orderData)
   );
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <ActionSheetComponent ref={actionSheetRef} containerStyle={{ backgroundColor: 'white' }} onClose={handleClose} >
-        {formSubmitted && success ? (
-          SuccessView
-        ) : (
-          <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            className="flex"
-            style={{ minHeight: 500 }}
-          >
-            <View style={{ position: 'relative', height: 500 }} >
-              {Step1Form}
-              {Step2Form}
-            </View>
-          </KeyboardAvoidingView>
-        )}
-      </ActionSheetComponent>
-    </TouchableWithoutFeedback>
+    <>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <BottomSheetComponent 
+          ref={actionSheetRef} 
+          containerStyle={{ backgroundColor: 'white' }} 
+          onClose={handleClose}
+          customHeight="80%" 
+        >
+          {formSubmitted && success ? (
+            SuccessView
+          ) : (
+            <KeyboardAvoidingView
+              behavior={Platform.OS === "ios" ? "padding" : "height"}
+              className="flex"
+              style={{ minHeight: 1000 }}
+            >
+              <View style={{ position: 'relative', height: 1000 }} >
+                {Step1Form}
+                {Step2Form}
+              </View>
+            </KeyboardAvoidingView>
+          )}
+        </BottomSheetComponent>
+      </TouchableWithoutFeedback>
+      
+      <OrderVerificationBottomSheet
+        ref={verificationSheetRef}
+        formData={formData}
+        uploadedImages={uploadedImages}
+        loading={loading}
+        onConfirm={processOrderSubmission}
+        onEdit={() => {
+          
+        }}
+      />
+    </>
   );
 });
 

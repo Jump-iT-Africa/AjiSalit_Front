@@ -1,4 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools">
   <uses-permission android:name="android.permission.CAMERA"/>
   <uses-permission android:name="android.permission.INTERNET"/>
   <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
@@ -29,6 +29,10 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="aji-salit"/>
+<<<<<<< HEAD
+=======
+        <data android:scheme="com.ajisalit.it"/>
+>>>>>>> 33e84bd01c8042f94e8ce2c7a6c9d0e84eae0cbe
         <data android:scheme="app.ajisalit.com"/>
       </intent-filter>
     </activity>
