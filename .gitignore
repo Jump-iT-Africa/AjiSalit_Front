@@ -36,6 +36,8 @@ yarn-error.*
 package-lock.json
 
 #FCM credintials 
-ajisalit-8b592-firebase-adminsdk-fbsvc-da06362429.json
+ajisalit-notification-nv-firebase-adminsdk-fbsvc-08737fcc9b.json
 google-services.json
 credentials.json
+/android
+/ios
