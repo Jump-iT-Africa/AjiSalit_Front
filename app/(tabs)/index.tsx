@@ -5,19 +5,23 @@ import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import AppGradient from "@/components/ui/AppGradient";
 import CustomButton from "@/components/ui/CustomButton";
-import { Linking } from 'react-native';
+import { useNotification } from "@/context/NotificationContext";
+import { useEffect } from "react";
 
 const App = () => {
   const router = useRouter();
+  const { notification } = useNotification();
 
+  useEffect(() => {
+    if (notification) {
+      alert("You received a notification!");
+    }
+  }, [notification]);
   return (
     <View className="flex-1">
       <ImageBackground source={HeroImage} resizeMode="cover" className="flex-1">
         <AppGradient colors={["rgba(0,0,0,0.0)", "#25000B"]}>
           <SafeAreaView className="flex-1 mx-5 my-12 justify-between">
-            <View className="mt-20">
-              
-            </View>
             <View>
               <CustomButton
                 onPress={() => router.push("register")}

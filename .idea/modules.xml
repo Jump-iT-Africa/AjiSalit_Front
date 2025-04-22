@@ -2,7 +2,11 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+<<<<<<< HEAD
+      <module fileurl="file://$PROJECT_DIR$/.idea/AjiSalit_Front.iml" filepath="$PROJECT_DIR$/.idea/AjiSalit_Front.iml" />
+=======
       <module fileurl="file://$PROJECT_DIR$/.idea/ajiSalit_Mobile.iml" filepath="$PROJECT_DIR$/.idea/ajiSalit_Mobile.iml" />
+>>>>>>> 33e84bd01c8042f94e8ce2c7a6c9d0e84eae0cbe
     </modules>
   </component>
 </project>
