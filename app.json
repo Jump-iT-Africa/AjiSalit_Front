@@ -52,16 +52,12 @@
           "recordAudioAndroid": true
         }
       ],
-<<<<<<< HEAD
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/logo-notification.jpg"
+          "icon": "./assets/images/logonotification.png"
         }
       ]
-=======
-      "expo-font"
->>>>>>> 33e84bd01c8042f94e8ce2c7a6c9d0e84eae0cbe
     ],
     "newArchEnabled": true,
     "extra": {
@@ -69,16 +65,9 @@
         "origin": false
       },
       "eas": {
-<<<<<<< HEAD
         "projectId": "46ec5070-4c89-4c34-9dbe-7350c1a1d4c5"
       }
     },
     "owner": "tttesttt12"
-=======
-        "projectId": "8b052de7-9062-4642-945e-feb3ad08c341"
-      }
-    },
-    "owner": "oussamabenm"
->>>>>>> 33e84bd01c8042f94e8ce2c7a6c9d0e84eae0cbe
   }
 }
