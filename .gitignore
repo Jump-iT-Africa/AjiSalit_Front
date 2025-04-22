@@ -34,3 +34,8 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 package-lock.json
+
+#FCM credintials 
+ajisalit-8b592-firebase-adminsdk-fbsvc-da06362429.json
+google-services.json
+credentials.json
