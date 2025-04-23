@@ -7,10 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "aji-salit",
     "userInterfaceStyle": "light",
-    "assetBundlePatterns": [
-      "**/*",
-      "assets/fonts/*"
-    ],
+    "assetBundlePatterns": ["**/*", "assets/fonts/*"],
     "splash": {
       "image": "./assets/images/splashs.png",
       "resizeMode": "cover",
@@ -22,9 +19,7 @@
       "bundleIdentifier": "app.ajisalit.com",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "UIBackgroundModes": [
-          "remote-notification"
-        ],
+        "UIBackgroundModes": ["remote-notification"],
         "NSCameraUsageDescription": "This app uses the camera to scan QR codes"
       }
     },
@@ -57,7 +52,8 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/logonotification.png"
+          "icon": "./assets/images/logooo.png",
+          "color": "#ffffff"
         }
       ]
     ],
