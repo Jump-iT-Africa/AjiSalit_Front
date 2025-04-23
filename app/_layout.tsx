@@ -90,7 +90,7 @@ export default function RootLayout() {
   }
 
   return (
-    <NotificationProvider>
+    <NotificationProvider >
       <Provider store={store}>
         <AuthCheck />
         <HandleNotification />
