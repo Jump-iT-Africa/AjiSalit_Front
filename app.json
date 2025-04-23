@@ -36,13 +36,7 @@
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
-      ],
-      "notification": {
-        "icon": "./assets/images/logooo.png",
-        "color": "#FFFFFF",
-        "androidMode": "default",
-        "androidCollapsedTitle": "Aji Salit"
-      }
+      ]
     },
     "plugins": [
       "expo-router",
