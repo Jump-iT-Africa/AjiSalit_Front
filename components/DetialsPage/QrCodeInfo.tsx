@@ -25,12 +25,11 @@ export default function QrCodeInfo({uniqueId})
                 <QRCode 
                     value={uniqueId}
                     size={180}
-                    logo={require('@/assets/images/logo.png')}
+                    logo={require('@/assets/images/MoroccoLogo.png')}
                     logoSize={40}
                     logoBackgroundColor="white"
                     />
                 </View>
-                
             </View>
             <View className=" w-[90%] mx-auto">
                 <View style={styles.divider} />

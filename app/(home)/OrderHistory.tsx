@@ -1,109 +1,170 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { 
-  View, 
-  Text, 
-  ActivityIndicator, 
-  TouchableOpacity, 
+import React, { useEffect, useState, useCallback, useRef } from "react";
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  TouchableOpacity,
   SafeAreaView,
-  RefreshControl
+  RefreshControl,
+  Modal,
+  ScrollView,
+  Image
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { FlashList } from "@shopify/flash-list";
-import { Ionicons } from '@expo/vector-icons';
-import Octicons from '@expo/vector-icons/Octicons';
+import ProfileHeader from "@/components/HomeHeader/ProfileHeader";
+import SearchBar, { FilterOptions } from "@/components/Search/SearchCommandsComponents";
+import { HistoryOrders } from '@/store/slices/OrdersSlice';
+import { useSelector } from "react-redux";
+import Ionicons from '@expo/vector-icons/Ionicons';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import Color from '@/constants/Colors';
+import Noimages from "@/assets/images/noImages.png";
 
 
-const sampleData = {
-  "orders": [
-    {
-      "orderCode": "asd123jkjk",
-      "customerName": "samawi",
-    },
-    {
-      "orderCode": "qweAS11123",
-      "customerName": "mimoun",
-    },
-    {
-      "orderCode": "msd1231XAS",
-      "customerName": "ayoub",
-    },
-    {
-      "orderCode": "jh111DDDf",
-      "customerName": "Mohammed ali",
-    },
-    {
-      "orderCode": "yetrEEE1231",
-      "customerName": "محمد المرجاني",
-    },
-    {
-      "orderCode": "ku3QWQWQt",
-      "customerName": "محمد المرجاني",
-    },
-    {
-      "orderCode": "cbvQQQ1213",
-      "customerName": "محمد المرجاني",
-    },
-    {
-      "orderCode": "etrWWW2322",
-      "customerName": "محمد المرجاني",
-    },
-    {
-      "orderCode": "bnbnDDDWW11",
-      "customerName": "محمد المرجاني",
-    },
-    {
-      "orderCode": "lsfKKK999",
-      "customerName": "محمد المرجاني",
-    },
-    {
-      "orderCode": "pwpNNNN99",
-      "customerName": "محمد المرجاني",
-    },
-    {
-      "orderCode": "mmmNNJ9999",
-      "customerName": "محمد المرجاني",
-    },
-    {
-      "orderCode": "cLKNK99dd",
-      "customerName": "محمد المرجاني",
-    },
-    {
-      "orderCode": "pIOIIII9op",
-      "customerName": "محمد المرجاني",
-    },
-    {
-      "orderCode": "l778BBJkl",
-      "customerName": "محمد المرجاني",
-    },
-  ]
+const OrderDetailsModal = ({ isVisible, onClose, orderData }) => {
+  
+
+  console.log('order data', orderData);
+  
+
+
+  
+
+  return (
+    <Modal
+      visible={isVisible}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={onClose}
+    >
+      <TouchableOpacity 
+        style={{ flex: 1, backgroundColor: 'rgba(47, 117, 47, 0.48)' }}
+        activeOpacity={1}
+        onPress={onClose}
+      >
+        <TouchableOpacity 
+          activeOpacity={1}
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: '#F5F6F7',
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            height: '58%',
+            padding: 16
+          }}
+          onPress={(e) => e.stopPropagation()}
+        >
+          <View style={{ 
+            width: 60, 
+            height: 5, 
+            backgroundColor: Color.green, 
+            borderRadius: 5, 
+            alignSelf: 'center',
+            marginBottom: 10
+          }} />
+
+          <Text className="text-center text-[#F52525] text-[20px] font-bold mb-0 font-tajawal">
+            تفاصيل الطلب
+          </Text>
+
+          <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+            <View className='bg-white flex justify-center items-center rounded-[20px] shadow-l p-8 mx-1 mt-4'>
+              <View className='flex-row-reverse gap-3 items-center'>
+                <View className="flex-row items-center justify-end mb-4">
+                  <Text className="text-[#000] text-[10px] font-tajawal mr-2">
+                    رقم الطلب : 
+                  </Text>
+                  <AntDesign name="filetext1" size={20} color="#F5B225" />
+                </View>
+                <Text className="text-right text-[11px] font-bold mb-4 font-tajawal text-[#E23744]">
+                  {orderData?.orderCode || ''}
+                </Text>
+              </View>
+              
+              <View className='flex-row-reverse gap-3 items-center'>
+                <View className="flex-row items-center justify-end mb-4">
+                  <Text className="text-[#000] text-[10px] font-tajawal mr-2">
+                    صاحب(ة) الطلب : 
+                  </Text>
+                  <AntDesign name="user" size={20} color="#F5B225" />
+                </View>
+                <Text className="text-right text-[11px] font-bold mb-4 font-tajawal text-[#2F752F]">
+                  {orderData?.customerDisplayName || ''}
+                </Text>
+              </View>
+
+              <View className='flex-row-reverse gap-3 items-center'>
+                <View className="flex-row items-center justify-end mb-4">
+                  <Text className="text-[#000] text-[10px] font-tajawal mr-2">
+                    المبلغ الإجمالي : 
+                  </Text>
+                  <FontAwesome name="money" size={20} color="#F5B225" />
+                </View>
+                <Text className="text-right text-[11px] font-bold mb-4 font-tajawal text-[#2F752F]">
+                  {orderData?.price || '0'} درهم
+                </Text>
+              </View>
+
+              <View className='flex-row-reverse gap-3 items-center'>
+                <View className="flex-row items-center justify-end mb-4">
+                  <Text className="text-[#000] text-[10px] font-tajawal mr-2">
+                    تاريخ التسليم : 
+                  </Text>
+                  <AntDesign name="calendar" size={20} color="#F5B225" />
+                </View>
+                <Text className="text-right text-[11px] font-bold mb-4 font-tajawal text-[#2F752F]">
+                  {orderData?.pickupDate }
+                </Text>
+              </View>
+            </View>
+
+            {orderData?.images && orderData.images.length > 0 ? (
+              <View className="mb-6">
+                <SafeAreaView>
+                  <ScrollView className='my-10' style={{ flex: 1 }} horizontal={true} showsHorizontalScrollIndicator={false}>
+                    <View className="flex-row my-4">
+                      {orderData.images.map((image, index) => (
+                        <View key={index} className="mr-3 bg-gray-100 rounded-lg overflow-hidden w-20 h-20">
+                          <Image 
+                            source={{ uri: image.uri }} 
+                            style={{ width: '100%', height: '100%' }} 
+                            resizeMode="cover"
+                          />
+                        </View>
+                      ))}
+                    </View>
+                  </ScrollView>
+                </SafeAreaView>
+              </View>
+            ) : (
+              <View className='w-full flex items-center mt-4'>
+                <Image 
+                  source={Noimages}
+                  resizeMode='contain'
+                  className='flex items-center justify-center w-40 h-40'
+                />
+              </View>
+            )}
+          </ScrollView>
+        </TouchableOpacity>
+      </TouchableOpacity>
+    </Modal>
+  );
 };
-
-interface OrderHistory {
-  orderCode: string;
-  customerName: string;
-}
 
 export default function OrderHistory() {
   const router = useRouter();
-  const [history, setHistory] = useState<OrderHistory[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      try {
-        setHistory(sampleData.orders || []);
-        setLoading(false);
-      } catch (err) {
-        console.log('Error setting history Orders:', err);
-        setError('Failed to load History Orders');
-        setLoading(false);
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, []);
+  const filteredOrders = useSelector(HistoryOrders);
+  
+  
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
@@ -112,45 +173,44 @@ export default function OrderHistory() {
     }, 2000);
   }, []);
 
-  const renderOrderItem = ({ item }: { item: OrderHistory }) => {
+  
+  const showOrderDetails = (order) => {
+    setSelectedOrder(order);
+    setModalVisible(true);
+  };
+
+  const renderOrderItem = ({ item }) => {
     return (
       <View className={`mb-3 px-3`}>
-        <TouchableOpacity 
-          className={`bg-white rounded-2xl p-4 flex-row-reverse justify-beeen items-center shadow`}
+        <TouchableOpacity
+          className={`bg-white rounded-2xl p-4 flex-row-reverse justify-between items-center shadow`}
           activeOpacity={0.7}
-          onPress={() => {
-            router.push({
-              pathname: '/DetailsPage',
-              params: { id: item.orderCode }
-            })
-          }}
+          onPress={() =>  showOrderDetails(item)
+          }
         >
-
-          <View className="w-full flex-row-reverse items-end">
-            <View className={`w-[50px] h-[50px] rounded-lg bg-green-100 justify-center items-center`}>
-                <Octicons name="archive" size={24} color="#295f2b" />
-            </View>
+          <View className="flex-row-reverse items-center justify-center">
             <View className="flex-col items-end justify-center pr-4">
-                <Text className={`text-base font-bold text-[#E23744] mb-2`}>{item.orderCode}</Text>
-                <View className={`flex-1 items-end px-3 flex-row-reverse text-sm`}>
-                    <Text className={`text-sm text-gray-500`}>صاحب(ة) الطلب:</Text>
-                    <Text className={`text-base text-[#295f2b] font-semibold`}>{item.customerName}</Text>
-                </View>
+              <Text className={`text-base font-bold text-[#E23744] mb-2`}>{item.orderCode}</Text>
+              <View className={`flex-1 items-end px-0 flex-row-reverse text-sm`}>
+                <Text className='text-sm text-[#000] font-tajawalregular pt-2'>صاحب(ة) الطلب: </Text>
+                <Text className={`text-base text-[#295f2b] font-semibold pb-[0.7]`}> {item.customerDisplayName} </Text>
+              </View>
             </View>
           </View>
-          
-
-          {/* <View className={`items-end`}>
-            <TouchableOpacity className={`p-1`}>
-              <Ionicons name="trash-outline" size={24} color="#F52525" />
+          <View>
+            <TouchableOpacity 
+              className={`p-1`} 
+              onPress={() => showOrderDetails(item)}
+            >
+              <Ionicons name="eye" size={20} color="#757575" />
             </TouchableOpacity>
-          </View> */}
+          </View>
         </TouchableOpacity>
       </View>
     );
   };
 
-  if (loading) {
+  if (!filteredOrders) {
     return (
       <View className={`flex-1 justify-center items-center`}>
         <ActivityIndicator size="large" color="#295f2b" />
@@ -158,28 +218,23 @@ export default function OrderHistory() {
     );
   }
 
-  if (error) {
-    return (
-      <View className={`flex-1 justify-center items-center`}>
-        <Text className={`text-[#F52525] mb-4`}>{error}</Text>
-        <TouchableOpacity 
-          className={`bg-[#295f2b] py-2 px-4 rounded-lg`}
-          onPress={() => {
-            setLoading(true);
-            setHistory(sampleData.orders || []);
-            setLoading(false);
-          }}
-        >
-          <Text className={`text-white font-medium`}>إعادة المحاولة</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
   return (
     <SafeAreaView className={`flex-1 bg-gray-100 p-9`}>
+      <View className="px-4">
+        <ProfileHeader />
+        <View className="mt-2 mb-4">
+          <SearchBar 
+            onSearch={(text) => {
+              
+            }} 
+            onFilter={(filters) => {
+              
+            }} 
+          />
+        </View>
+      </View>
       <FlashList
-        data={history}
+        data={filteredOrders || []}
         renderItem={renderOrderItem}
         estimatedItemSize={100}
         refreshControl={
@@ -187,6 +242,13 @@ export default function OrderHistory() {
         }
         showsVerticalScrollIndicator={false}
         ListFooterComponent={<View className={`h-[100px]`} />}
+      />
+      
+      
+      <OrderDetailsModal
+        isVisible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        orderData={selectedOrder}
       />
     </SafeAreaView>
   );

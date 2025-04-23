@@ -1,6 +1,6 @@
-import React, { useRef, useEffect } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
-import ActionSheetComponent from "../../ui/BottomSheetComponent";
+import React, { useRef, useEffect, useState } from "react";
+import { View, Text, TouchableOpacity, Modal,Image } from "react-native";
+import BottomSheetComponent from "../../ui/BottomSheetComponent";
 import CustomButton from "../../ui/CustomButton";
 import Colors from "@/constants/Colors";
 import { router } from 'expo-router';
@@ -9,6 +9,9 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import { useSelector, useDispatch } from 'react-redux';
 import { pickupButtonPressed } from '@/store/slices/OrderDetailsSlice';
 import { updateOrderDate, setCurrentOrder } from '@/store/slices/OrdersManagment';
+import successLeon from '@/assets/images/successLeon.png'
+
+
 
 export default function PickUpButton({orderData}) {
     const actionSheetRef = useRef(null);
@@ -17,7 +20,8 @@ export default function PickUpButton({orderData}) {
     const currentOrder = useSelector(state => state.orders.currentOrder || {});
     const finishButtonClicked = useSelector(state => state.buttons.finishButtonClicked);
     const pickupButtonClicked = useSelector(state => state.buttons.pickupButtonClicked);
-    
+    const [isModalVisible, setIsModalVisible] = useState(false);
+        
     const orderId = currentOrder?.id || orderData?.id;
     
     const orderIsFinished = currentOrder?.isFinished || finishButtonClicked || orderData?.isFinished;
@@ -40,9 +44,13 @@ export default function PickUpButton({orderData}) {
                 isPickUp: true
             }));
             
-            actionSheetRef.current?.show();
+            setIsModalVisible(true)
         }
     };
+
+    const closeBottomSheet = () => {
+        setIsModalVisible(false);
+      };
     
     const isEnabled = orderIsFinished && !isPickedUp;
     const buttonColor = isEnabled ? 'bg-green-700' : 'bg-gray-400';
@@ -58,34 +66,60 @@ export default function PickUpButton({orderData}) {
                 <AntDesign name="checkcircle" size={24} color="white" />
             </TouchableOpacity>
             
-            <ActionSheetComponent
-                ref={actionSheetRef}
-                containerStyle={{ backgroundColor: Colors.green, height: 600 }}
-                contentStyle={{ backgroundColor: Colors.green }}
+            <Modal
+                visible={isModalVisible}
+                transparent={true}
+                animationType="slide"
+                onRequestClose={closeBottomSheet}
             >
-                <View className="flex-1 items-center justify-left">
-                    <View>
-                        <Ionicons name="checkmark-done-circle-outline" size={190} color="white" />
-                    </View>
-                    <View>
-                        <Text className="text-center text-white text-6xl font-tajawalregular pt-14 mt-0">تهانينا!</Text>
-                        <Text className="text-white text-2xl font-direction text-center p-4">
-                            تم استلام الطلب بنجاح
-                        </Text>
-                    </View>
-                    <View className="w-full mt-7">
-                        <CustomButton
-                            onPress={() => {
-                                actionSheetRef.current?.hide();
-                                router.replace('/(home)');
-                            }}
-                            title="انتقل للصفحة الرئيسية"
-                            textStyles="text-sm font-tajawal px-2 py-0 text-[#2e752f]"
-                            containerStyles="w-[90%] m-auto bg-white"
-                        />
-                    </View>
-                </View>
-            </ActionSheetComponent>
+                <TouchableOpacity 
+                style={{ flex: 1, backgroundColor: 'rgba(47, 117, 47, 0.48)' }}
+                activeOpacity={1}
+                onPress={closeBottomSheet}
+                >
+                    <TouchableOpacity 
+                        activeOpacity={1}
+                        style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        backgroundColor: 'white',
+                        borderTopLeftRadius: 20,
+                        borderTopRightRadius: 20,
+                        height: '55%',
+                        padding: 16
+                        }}
+                    >
+                        <View className="flex-1 items-center justify-left h-full">
+                            <View >
+                                <Image
+                                    source={successLeon}
+                                    resizeMode="contain"
+                                    className=""
+                                />
+                            </View>
+                            <View>
+                                <Text className="text-center text-[#2F752F] text-4xl font-tajawal pt-3 mt-0">مبروك!</Text>
+                                <Text className="text-black text-2xl text-center p-4 font-tajawalregular">
+                                تم استلام الطلب بنجاح   
+                                </Text>
+                            </View>
+                            <View className="w-full mt-4">
+                                <CustomButton
+                                    onPress={() => {
+                                        actionSheetRef.current?.hide();
+                                        router.replace('/(home)');
+                                    }}
+                                    title="انتقل للصفحة الرئيسية"
+                                    textStyles="text-sm font-tajawal pt-4 py-0 text-white"
+                                    containerStyles="w-[90%] m-auto bg-[#F52525] pt-2"
+                                />
+                            </View>
+                        </View>
+                    </TouchableOpacity>
+                </TouchableOpacity>
+            </Modal>
         </>
     );
 }

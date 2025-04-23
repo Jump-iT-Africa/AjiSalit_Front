@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 import React, { useEffect, useCallback } from 'react';
 import { 
@@ -16,7 +15,7 @@ import {
 import NoOrdersExists from '../NoOrderExists/NoOrdersExists';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { FlashList } from "@shopify/flash-list";
-import AjiSalit from "@/assets/images/logo.png";
+import AjiSalit from "@/assets/images/coloredLogo.png";
 import { useRouter } from 'expo-router';
 import { useSelector, useDispatch } from 'react-redux';
 import { 
@@ -33,7 +32,7 @@ import { finishButtonPressed } from '@/store/slices/OrderDetailsSlice';
 import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { updateOrderDate } from '@/store/slices/OrdersManagment';
-
+import NoSearchResult from '@/assets/images/NoSearchResult.png'
 
 
 
@@ -50,7 +49,11 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
   const [ordersLoaded, setOrdersLoaded] = useState(false);
   const pickupButtonClicked = useSelector(state => state.buttons.pickupButtonClicked);
   const isPickedUp = pickupButtonClicked;
-
+  const allOrders = useSelector(state => state.orders.orders); // Get all orders from redux store
+  const searchTerm = useSelector(state => state.orders.searchTerm); // Get search term from redux store
+ 
+  console.log('search code', SearchCode);
+  
 
   useEffect(() => {
     if (SearchCode !== undefined && SearchCode !== null) {
@@ -192,8 +195,8 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
               <Image 
                 source={AjiSalit}
                 style={{
-                  width: 36,
-                  height: 36,
+                  width: 30,
+                  height: 30,
                   opacity: isConfirmed || item.isFinished ? 1 : 1,
                   tintColor: isConfirmed || item.isFinished ? 'red' : '#808080',
                 }}
@@ -266,7 +269,30 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
     );
   }
 
-  if (ordersLoaded && Array.isArray(filteredOrders) && filteredOrders.length === 0) {
+  const hasOrders = Array.isArray(allOrders) && allOrders.length > 0;
+  const hasFilteredResults = Array.isArray(filteredOrders) && filteredOrders.length > 0;
+  const isSearchActive = searchTerm && searchTerm.trim() !== '';
+
+  if (ordersLoaded && hasOrders && !hasFilteredResults && isSearchActive) {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <View className="w-80 h-80">
+          <Image 
+            source={NoSearchResult}
+            resizeMode="contain"
+            className="w-full h-full"
+          />
+        </View>
+        <View>
+          <Text className="font-tajawal text-xl mt-8 text-center">
+            لا توجد أي نتائج!
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (Array.isArray(filteredOrders) && filteredOrders.length === 0) {
     console.log("No orders found, showing NoOrdersExists component");
     return (
       <SafeAreaView className="flex-1 bg-gray-100">
@@ -274,7 +300,7 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
       </SafeAreaView>
     );
   }
-  
+
   return (
     <SafeAreaView className="flex-1 bg-gray-100 p-4 pb-10">
       <FlashList
@@ -336,7 +362,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center'
   },
-  modalText: {
+  modalText: {  
     marginBottom: 15,
     textAlign: 'center',
     fontSize: 16,

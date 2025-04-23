@@ -172,8 +172,13 @@ export const selectFilteredOrders = state => {
     return [];
   }
   
-  let result = items;
+
+
+  // let result = items;
+  //here i return only order with is pickup and is finised are both true
+  let result = items.filter(order => !(order.isFinished === true && order.isPickUp === true));
   
+
   if (searchTerm) {
     result = result.filter(order => 
       order.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -215,8 +220,88 @@ export const selectFilteredOrders = state => {
       return orderDate.toDateString() === filterDate.toDateString();
     });
   }
+
+
+  
+
+  console.log('result here', result)
   
   return result;
 };
+
+
+
+
+
+export const HistoryOrders = state => {
+  if (!state || !state.orders) {
+    return [];
+  }
+  
+  const { items, searchTerm, statusFilter, dateFilter } = state.orders;
+  
+  if (!items || !Array.isArray(items)) {
+    return [];
+  }
+  
+
+
+  // let result = items;
+  //here i return only order with is pickup and is finised are both true
+  let result = items.filter(order => (order.isFinished === true && order.isPickUp === true));
+  
+
+  if (searchTerm) {
+    result = result.filter(order => 
+      order.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.customerDisplayName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }
+  
+  if (statusFilter) {
+    let typeToFilter;
+    
+    switch(statusFilter) {
+      case 'خالص':
+        typeToFilter = 'paid';
+        break;
+      case 'غير خالص':
+        typeToFilter = 'unpaid';
+        break;
+      case 'تسبيق':
+        typeToFilter = 'installment';
+        break;
+      default:
+        typeToFilter = null;
+    }
+    
+    if (typeToFilter) {
+      result = result.filter(order => order.type === typeToFilter);
+    }
+  }
+  
+  if (dateFilter) {
+    const filterDate = new Date(dateFilter);
+    
+    result = result.filter(order => {
+      if (!order.date || order.date === "غير محدد") return false;
+      
+      const [day, month, year] = order.date.split('/').map(Number);
+      const orderDate = new Date(year, month - 1, day);
+      
+      return orderDate.toDateString() === filterDate.toDateString();
+    });
+  }
+
+
+  
+
+  console.log('result here', result)
+  
+  return result;
+};
+
+
+
 
 export default ordersSlice.reducer;

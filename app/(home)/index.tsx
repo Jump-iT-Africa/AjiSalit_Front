@@ -80,14 +80,13 @@ const Home = () => {
             placeholder="بحث..."
           />
         </View>
-        <View className='pt-2'>
-        {role === 'company' &&
-          <DateFiler
-          onFilterChange={handleDateFilter}
-        />
-        }
-          
-        </View>
+        {/* <View className='pt-2'> */}
+          {/* {role === 'company' &&
+            <DateFiler
+            onFilterChange={handleDateFilter}
+          />
+          } */}
+        {/* </View> */}
       </View>
       <View className='w-full h-full px-2 mt-4 '>
 
