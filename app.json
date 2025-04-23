@@ -1,33 +1,34 @@
 {
   "expo": {
     "name": "Aji Salit",
-    "slug": "ajisalit",
-    "version": "1.1.1",
+    "slug": "aji-salit",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "aji-salit",
     "userInterfaceStyle": "light",
-    "assetBundlePatterns": ["**/*", "assets/fonts/*"],
+    "assetBundlePatterns": [
+      "**/*",
+      "assets/fonts/*"
+    ],
     "splash": {
       "image": "./assets/images/splashs.png",
       "resizeMode": "cover",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#fff"
     },
     "ios": {
-      "googleServicesFile": "./google-services.json",
       "supportsTablet": false,
       "bundleIdentifier": "app.ajisalit.com",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "UIBackgroundModes": ["remote-notification"],
         "NSCameraUsageDescription": "This app uses the camera to scan QR codes"
       }
     },
     "android": {
-      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/splashs.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#ffffff",
+        "userInterfaceStyle": "light"
       },
       "package": "app.ajisalit.com",
       "permissions": [
@@ -45,13 +46,7 @@
           "recordAudioAndroid": true
         }
       ],
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/images/logooo.png",
-          "color": "#ffffff"
-        }
-      ]
+      "expo-font"
     ],
     "newArchEnabled": true,
     "extra": {
@@ -59,9 +54,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "58578925-3025-4070-823b-d44a161b2c53"
+        "projectId": "8b052de7-9062-4642-945e-feb3ad08c341"
       }
     },
-    "owner": "expobiling"
+    "owner": "oussamabenm"
   }
 }
