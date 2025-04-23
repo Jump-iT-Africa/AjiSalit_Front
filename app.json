@@ -11,7 +11,7 @@
     "splash": {
       "image": "./assets/images/splashs.png",
       "resizeMode": "cover",
-      "backgroundColor": "#fff"
+      "backgroundColor": "#ffffff"
     },
     "ios": {
       "googleServicesFile": "./google-services.json",
@@ -27,17 +27,13 @@
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/splashs.png",
-        "backgroundColor": "#ffffff",
-        "userInterfaceStyle": "light"
+        "backgroundColor": "#ffffff"
       },
       "package": "app.ajisalit.com",
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
-      ],
-      "config": {
-        "usesCleartextTraffic": true
-      }
+      ]
     },
     "plugins": [
       "expo-router",
