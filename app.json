@@ -17,7 +17,6 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "googleServicesFile": "./google-services.json",
       "supportsTablet": false,
       "bundleIdentifier": "app.ajisalit.com",
       "infoPlist": {
