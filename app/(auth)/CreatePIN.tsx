@@ -7,7 +7,6 @@ import AppGradient from '@/components/ui/AppGradient';
 import Color from '@/constants/Colors';
 import HeaderWithBack from '@/components/ui/HeaderWithToolTipAndback';
 import Whitelogo from "@/assets/images/whiteLogo.png";
-import { useToast } from 'react-native-toast-notifications';
 import { useDispatch } from 'react-redux';
 import { setPassword } from "@/store/slices/userSlice";
 import { Feather } from "@expo/vector-icons";
@@ -18,7 +17,6 @@ export default function CreatePIN() {
   const [lastVisibleIndex, setLastVisibleIndex] = useState(-1);
   const [tooltipVisible, setTooltipVisible] = useState(false);
   const timeoutRef = useRef(null);
-  const toast = useToast();
   const dispatch = useDispatch();
   const windowWidth = Dimensions.get('window').width;
 
