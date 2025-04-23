@@ -372,7 +372,6 @@ export default function CombinedCompanyForm({ onInputFocus, onLoadingModalChange
           placeholderTextColor="#888"
           value={formData.companyName}
           onChangeText={(text) => setFormData({ ...formData, companyName: text })}
-          maxLength={14}
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}
           className={`border border-[#2e752f] rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}

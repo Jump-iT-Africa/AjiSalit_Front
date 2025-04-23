@@ -1,6 +1,7 @@
 {
   "cli": {
     "version": ">= 15.0.10",
+    "requireCommit": true,
     "appVersionSource": "remote",
     "promptToConfigurePushNotifications": false
   },
