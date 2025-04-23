@@ -17,6 +17,7 @@
       "backgroundColor": "#fff"
     },
     "ios": {
+      "googleServicesFile": "./google-services.json",
       "supportsTablet": false,
       "bundleIdentifier": "app.ajisalit.com",
       "infoPlist": {
@@ -25,6 +26,7 @@
       }
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/splashs.png",
         "backgroundColor": "#ffffff",
@@ -34,7 +36,13 @@
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
-      ]
+      ],
+      "notification": {
+        "icon": "./assets/images/logooo.png",
+        "color": "#FFFFFF",
+        "androidMode": "default",
+        "androidCollapsedTitle": "Aji Salit"
+      }
     },
     "plugins": [
       "expo-router",
@@ -44,6 +52,15 @@
           "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
           "recordAudioAndroid": true
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/logooo.png",
+          "color": "#FFFFFF",
+          "androidMode": "default",
+          "androidCollapsedTitle": "Aji Salit"
         }
       ],
       "expo-font"
