@@ -5,14 +5,22 @@ import {
   Modal,
   TouchableOpacity,
   ScrollView,
+  FlatList,
   Image,
-  ActivityIndicator
+  ActivityIndicator,
+  SafeAreaView
 } from 'react-native';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Color from '@/constants/Colors';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import WhiteImage from "@/assets/images/ajisalit_white.png";
+import Noimages from "@/assets/images/noImages.png"
+import NoMoneyYellow from "@/assets/images/createProductIcons/noMoney-yellow.png";
+import PaidYellow from "@/assets/images/createProductIcons/paid-yellow.png";
+import AdvancedMoneyYellow from "@/assets/images/createProductIcons/givingMoney-yellow.png";
+
+
 
 
 const OrderVerificationModal = forwardRef(({
@@ -23,6 +31,10 @@ const OrderVerificationModal = forwardRef(({
   loading
 }, ref) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
+
+
+    console.log('hello', formData);
+    
 
   useImperativeHandle(ref, () => ({
     show: () => {
@@ -37,11 +49,33 @@ const OrderVerificationModal = forwardRef(({
     setIsModalVisible(false);
   };
 
-  // Format date for display
   const formatDate = (date) => {
     if (!(date instanceof Date)) return '';
     return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
   };
+
+
+
+
+  const statusOptions = [
+    {
+      id: 1,
+      label: 'غير خالص',
+      iconYellow: NoMoneyYellow,
+    },
+    {
+      id: 2,
+      label: 'تسبيق',
+      iconYellow: AdvancedMoneyYellow,
+    },
+    {
+      id: 3,
+      label: 'خالص',
+      iconYellow: PaidYellow,
+    },
+  ];
+
+
 
   return (
     <Modal
@@ -66,7 +100,7 @@ const OrderVerificationModal = forwardRef(({
             backgroundColor: '#F5F6F7',
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
-            height: '50%',
+            height: '58%',
             padding: 16
           }}
           onPress={(e) => e.stopPropagation()}
@@ -84,14 +118,14 @@ const OrderVerificationModal = forwardRef(({
             كولشي هو هذاك ؟
           </Text>
 
-          <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+          <ScrollView className="flex-1  " showsVerticalScrollIndicator={false}>
               <View className='bg-white flex justify-between items-center rounded-[20px] shadow-l p-8 mx-1 mt-4'>
                 <View className='flex-row-reverse gap-3 items-center'>
                     <View className="flex-row items-center justify-end mb-4">
                         <Text className="text-[#000] text-[12px] font-tajawal mr-2">
                         المبلغ الإجمالي : 
                         </Text>
-                        <FontAwesome name="money" size={24} color="#F5B225" />
+                        <FontAwesome name="money" size={24} color="#FD8900" />
                     </View>
                     <Text className="text-right text-[11px] font-bold mb-4 font-tajawal text-[#2F752F]">
                         {formData.price} درهم
@@ -103,33 +137,83 @@ const OrderVerificationModal = forwardRef(({
                         <Text className="text-[#000] text-[12px] font-tajawal mr-2">
                           تاريخ التسليم : 
                         </Text>
-                        <AntDesign name="calendar" size={24} color="#F5B225" />
+                        <AntDesign name="calendar" size={24} color="#FD8900" />
                     </View>
                     <Text className="text-right text-[11px] font-bold mb-4 font-tajawal text-[#2F752F]">
                         {formData.RecieveDate instanceof Date ? formatDate(formData.RecieveDate) : 'غير محدد'}
                     </Text>
                 </View>
+
+                <View className='flex-row-reverse gap-3 items-center'>
+                    <View className="flex-row items-center justify-end mb-4">
+                        <Text className="text-[#000] text-[12px] font-tajawal mr-2">
+                          الحالة : 
+                        </Text>
+                        {statusOptions.map((option) => (
+                          <View key={option?.id}>
+                              {option.label === formData.situation ?(
+                                <Image
+                                  source={option.iconYellow}
+                                  resizeMode='contain'
+                                  className='w-9 h-9'
+                                />
+                              )
+                              :(
+                                <View></View>
+                              )}
+                          </View>
+                        ))}
+                    </View>
+                    <Text className="text-right text-[11px] font-bold mb-4 font-tajawal text-[#2F752F]">
+                        {formData.situation}
+                    </Text>
+                </View>
               </View>
 
-            {/* Uploaded Images Gallery */}
-            {uploadedImages.length > 0 && (
-              <View className="mb-6">
-                <Text className="text-right text-[#000] text-[12px] mb-3 font-tajawal">الصور المرفقة:</Text>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  <View className="flex-row">
-                    {uploadedImages.map((image) => (
-                      <View key={image.id} className="mr-3 bg-gray-100 rounded-lg overflow-hidden w-20 h-20">
+              {uploadedImages.length > 0 ? (
+                <View style={{ marginVertical: 16 }} >
+                  <FlatList
+                    data={uploadedImages}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    keyExtractor={(item, index) => item.id || index.toString()}
+                    initialNumToRender={4}
+                    maxToRenderPerBatch={5}
+                    windowSize={5}
+                    removeClippedSubviews={true}
+                    snapToInterval={90} 
+                    decelerationRate="fast"
+                    renderItem={({ item }) => (
+                      <TouchableOpacity 
+                        style={{ 
+                          marginRight: 10, 
+                          backgroundColor: '#f0f0f0', 
+                          borderRadius: 10,
+                          width: 80, 
+                          height: 80, 
+                          overflow: 'hidden',
+                          marginVertical: 10
+                        }}
+                      >
                         <Image 
-                          source={{ uri: image.uri }} 
+                          source={{ uri: item.uri }} 
                           style={{ width: '100%', height: '100%' }} 
                           resizeMode="cover"
                         />
-                      </View>
-                    ))}
-                  </View>
-                </ScrollView>
-              </View>
-            )}
+                      </TouchableOpacity>
+                    )}
+                    style={{ height: 100 }}
+                  />
+                </View>
+              ) : (
+                <View className='w-full flex items-center mt-4'>
+                  <Image 
+                    source={Noimages}
+                    resizeMode='contain'
+                    className='flex items-center justify-center w-32 h-32'
+                  />
+                </View>
+              )}
           </ScrollView>
 
          
@@ -139,11 +223,11 @@ const OrderVerificationModal = forwardRef(({
                 closeModal();
                 if (onEdit) onEdit();
               }}
-              className="bg-[#F52525] rounded-full p-4 flex-row items-center justify-center"
+              className="bg-[#F52525] rounded-full p-2 flex-row items-center justify-center"
               style={{ width: '48%' }}
               disabled={loading}
             >
-              <Text className="text-white text-center font-tajawal text-[17.99px] m">تعديل</Text>
+              <Text className="text-white text-center font-tajawal text-[15px]">تعديل</Text>
               <AntDesign name="edit" size={20} color="white" style={{ marginRight: 8 }} />
             </TouchableOpacity>
 
@@ -152,7 +236,7 @@ const OrderVerificationModal = forwardRef(({
                 closeModal();
                 if (onConfirm) onConfirm();
               }}
-              className="bg-[#2e752f] rounded-full p-4 flex-row items-center justify-center"
+              className="bg-[#2e752f] rounded-full p-0 flex-row items-center justify-center"
               style={{ width: '48%' }}
               disabled={loading}
             >
@@ -160,11 +244,11 @@ const OrderVerificationModal = forwardRef(({
                 <ActivityIndicator color="#fff" size="small" />
               ) : (
                 <>
-                  <Text className="text-white text-center font-tajawal text-[17.99px]">ساليت</Text>
+                  <Text className="text-white text-center font-tajawal text-[15px] mr-2">ساليت</Text>
                   
                   <Image 
                     source={WhiteImage}
-                    className='w-6 h-6'
+                    className='w-8 h-8'
                     resizeMode='contain'
                   />
                 </>

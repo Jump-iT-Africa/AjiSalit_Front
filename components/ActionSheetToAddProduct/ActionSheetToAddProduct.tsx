@@ -13,7 +13,7 @@ import {
   Image,
   ActivityIndicator
 } from 'react-native';
-import ActionSheet from "react-native-actions-sheet";
+
 import { router } from 'expo-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { createOrder, resetOrderState } from '@/store/slices/CreateOrder';
@@ -28,6 +28,7 @@ import Noimages from "@/assets/images/noImages.png"
 import UniqueIdModal from '../QrCodeGeneration/GenerateQrCode';
 import PaymentStatus from './PaymenStatus';
 import OrderVerificationBottomSheet from './OrderVerificationBottomSheet';
+
 
 const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) => {
   const actionSheetRef = useRef(null);

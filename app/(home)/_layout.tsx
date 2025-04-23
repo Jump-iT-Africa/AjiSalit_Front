@@ -1,5 +1,4 @@
 // @ts-nocheck
-
 import React, { useRef, useState } from 'react';
 import {
   Alert,
@@ -11,7 +10,6 @@ import {
   Dimensions,
 } from 'react-native';
 import { CurvedBottomBarExpo } from 'react-native-curved-bottom-bar';
-import { NavigationContainer } from '@react-navigation/native';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
 import HomePage from "./index"; 
@@ -25,6 +23,8 @@ import { useSelector } from 'react-redux';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import {selectUserRole} from "@/store/slices/userSlice";
 // import OrderDetailsScreen from './OrderDetailsScreen'
+
+
 import { Stack } from "expo-router";
 import { createStackNavigator } from '@react-navigation/stack';
 const AppStack = createStackNavigator();
@@ -32,10 +32,6 @@ const AppStack = createStackNavigator();
 
 function MainTabs() {
   const role = useSelector(selectUserRole);
-  
-
-
-
   
   const actionSheetRef = useRef(null);
   const [isSheetVisible, setIsSheetVisible] = useState(false);
@@ -98,7 +94,6 @@ function MainTabs() {
         style={styles.bottomBar}
         shadowStyle={styles.shadow}
         height={80}
-        circleWidth={30}
         bgColor="white"
         initialRouteName="الرئيسية"
         borderTopLeftRight
@@ -128,7 +123,7 @@ function MainTabs() {
         )}
         tabBar={renderTabBar}
         width={Dimensions.get('window').width}
-        borderColor="green"
+        borderColor="transparent"
         borderWidth={1}
         id="main-navigator"
       >
@@ -175,12 +170,13 @@ export default function HomeLayouts() {
 const styles = StyleSheet.create({
   shadow: {
     shadowColor: '#DDDDDD',
-    shadowOffset: {
+    shadowOffset:{
       width: 0,
       height: 0,
     },
     shadowOpacity: 1,
     shadowRadius: 5,
+    
   },
   button: {
     flex: 1,
@@ -193,7 +189,8 @@ const styles = StyleSheet.create({
     paddingTop: 5,
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
-    overflow: 'hidden'
+    overflow: 'hidden',
+    borderRadius: 0
   },
   btnCircleUp: {
     width: 65,
@@ -213,11 +210,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 3,
     elevation: 4,
+    
   },
   tabbarItem: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    
   },
   tabContent: {
     alignItems: 'center',
@@ -227,6 +226,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
     fontWeight: '500',
-    textAlign: 'center'
+    textAlign: 'center',
+
   }
 });

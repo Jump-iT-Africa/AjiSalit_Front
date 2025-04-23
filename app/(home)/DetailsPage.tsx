@@ -15,7 +15,7 @@ import ClientPikUpButton from '@/components/DetialsPage/Client/Buttons/ClientPik
 import Viewshot from "react-native-view-shot";
 import { shareAsync } from "expo-sharing";
 import { Image } from "react-native";
-import DetailsOrdersNoImages from "@/assets/images/DetailsOrdersNoImages.png";
+import DetailsOrdersNoImages from "@/assets/images/noImages.png";
 import { selectCurrentOrder, selectUserOrders, setCurrentOrder, fetchORderById } from "@/store/slices/OrdersManagment";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSearchParams } from "expo-router/build/hooks";
@@ -207,9 +207,6 @@ useEffect(() => {
     );
   }
 
-
-  
-
   return (
     <>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -219,13 +216,7 @@ useEffect(() => {
               <Feather name="chevron-left" size={22} color="white" />
             </View>
           </TouchableOpacity>
-          <TooltipComponent
-            isVisible={tooltipVisible}
-            onClose={() => setTooltipVisible(false)}
-            onOpen={() => setTooltipVisible(true)}
-            content={'test test test'}
-            placement="bottom"
-          />
+         
         </View>
 
         {!orderData.images || orderData.images.length === 0 ? (
