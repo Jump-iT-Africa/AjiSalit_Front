@@ -37,9 +37,7 @@ export async function registerForPushNotificationsAsync() {
         "Permission not granted to get push token for push notification!"
       );
     }
-    const projectId =
-      Constants?.expoConfig?.extra?.eas?.projectId ??
-      Constants?.easConfig?.projectId;
+    const projectId = "58578925-3025-4070-823b-d44a161b2c53";
     if (!projectId) {
       throw new Error("Project ID not found");
     }
