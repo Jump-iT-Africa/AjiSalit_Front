@@ -10,7 +10,7 @@ import { router } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSelector, useDispatch } from 'react-redux';
 import { finishButtonPressed } from '@/store/slices/OrderDetailsSlice';
-import { updateOrderDate, setCurrentOrder } from '@/store/slices/OrdersManagment';
+import { updateOrderDate, setCurrentOrder, updateToDone } from '@/store/slices/OrdersManagment';
 import successLeon from '@/assets/images/successLeon.png'
 
 
@@ -30,6 +30,13 @@ export default function FinishedButton({orderData}) {
             
             dispatch(finishButtonPressed());
             
+
+            dispatch(updateToDone({
+                orderId: orderId,
+                status:"جاهزة للتسليم"
+            }));
+
+
             dispatch(updateOrderDate({
                 orderId: orderId,
                 dateData: { isFinished: true }
