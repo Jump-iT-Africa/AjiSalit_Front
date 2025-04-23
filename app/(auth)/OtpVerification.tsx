@@ -14,7 +14,6 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Feather } from "@expo/vector-icons";
-import { useToast } from "react-native-toast-notifications";
 import RegisterBackImage from "@/assets/images/register2.jpeg";
 import AppGradient from "../../components/ui/AppGradient";
 import TooltipComponent from "@/components/ui/TooltipComponent";
@@ -25,7 +24,6 @@ const OtpVerification: React.FC = () => {
   const [otp, setOtp] = useState("");
   const [timer, setTimer] = useState(6);
   const [otpText, setOtpText] = useState('تقدر تطلب كود جديد بعد ');
-  const toast = useToast();
   const inputRef = useRef<TextInput>(null); // <-- Create a reference
 
   const { phoneNumber } = useLocalSearchParams();
