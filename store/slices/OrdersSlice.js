@@ -56,6 +56,9 @@ const transformOrderData = (apiOrders) => {
   if (!apiOrders || !Array.isArray(apiOrders) || apiOrders.length === 0) {
     return [];
   }
+
+  console.log('after',formatDate("2025-04-24T00:00:00.000Z"));
+
   return apiOrders.map(order => ({
     orderCode: order.qrCode,
     status: order.status,
@@ -72,7 +75,9 @@ const transformOrderData = (apiOrders) => {
     pickupDate: formatDate(order.pickupDate),
     deliveryDate: formatDate(order.deliveryDate),
     isFinished: order.isFinished,
-    isPickUp: order.isPickUp
+    isPickUp: order.isPickUp,
+    isToday: isToday(order.deliveryDate),
+    rawDeliveryDate:order.deliveryDate
   }));
   
 };
@@ -88,6 +93,15 @@ const getAmountType = (situation) => {
     default:
       return 'unknown';
   }
+};
+
+const isToday = (dateString) => {
+  if (!dateString) return false;
+  const today = new Date();
+  const date = new Date(dateString);
+  return date.getDate() === today.getDate() &&
+         date.getMonth() === today.getMonth() &&
+         date.getFullYear() === today.getFullYear();
 };
 
 const formatDate = (dateString) => {
@@ -221,7 +235,32 @@ export const selectFilteredOrders = state => {
     });
   }
 
+  if (dateFilter) {
+    const filterDate = new Date(dateFilter);
+    
+    result = result.filter(order => {
+      if (!order.date || order.date === "غير محدد") return false;
+      
+      const [day, month, year] = order.date.split('/').map(Number);
+      const orderDate = new Date(year, month - 1, day);
+      
+      return orderDate.toDateString() === filterDate.toDateString();
+    });
+  }
 
+  result.sort((a, b) => {
+    if (a.isToday && !b.isToday) return -1;
+    if (!a.isToday && b.isToday) return 1;
+    
+    if (a.rawDeliveryDate && b.rawDeliveryDate) {
+      return new Date(a.rawDeliveryDate) - new Date(b.rawDeliveryDate);
+    }
+    
+    if (!a.rawDeliveryDate && b.rawDeliveryDate) return 1;
+    if (a.rawDeliveryDate && !b.rawDeliveryDate) return -1;
+    
+    return 0;
+  });
   
 
   console.log('result here', result)
