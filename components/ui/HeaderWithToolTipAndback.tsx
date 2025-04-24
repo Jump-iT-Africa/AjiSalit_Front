@@ -26,7 +26,7 @@ const HeaderWithBack: React.FC<HeaderWithBackProps> = ({
   return (
     <View className={containerClassName}>
       <TouchableOpacity onPress={onPress}>
-        <View className="bg-[#461e04b3] rounded-full w-8 h-8 flex justify-center items-center">
+        <View className="bg-[#524d4d8e] rounded-full w-8 h-8 flex justify-center items-center">
           <Feather name="chevron-left" size={22} color="white" />
         </View>
       </TouchableOpacity>

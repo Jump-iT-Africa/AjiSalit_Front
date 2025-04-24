@@ -68,7 +68,7 @@ const OrderCard = ({ item }) => {
             <View className="bg-gray-100 rounded-lg mx-1 p-2 items-center border border-gray-300 border-1">
               <Text className="text-gray-600 mb-1 font-tajawalregular">الحالة</Text>
               <Text className="text-base font-bold font-tajawal text-[12px]">
-                {item.label || "في طور الانجاز"}
+                {item.label || "جاهزة للتسليم"}
               </Text>
             </View>
           </View>

@@ -8,7 +8,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useSelector, useDispatch } from 'react-redux';
 import { pickupButtonPressed } from '@/store/slices/OrderDetailsSlice';
-import { updateOrderDate, setCurrentOrder } from '@/store/slices/OrdersManagment';
+import { updateOrderDate, setCurrentOrder,updateToPickUp } from '@/store/slices/OrdersManagment';
 import successLeon from '@/assets/images/successLeon.png'
 
 
@@ -34,6 +34,7 @@ export default function PickUpButton({orderData}) {
         if (orderIsFinished && !isPickedUp) {
             dispatch(pickupButtonPressed());
             
+
             dispatch(updateOrderDate({
                 orderId: orderId,
                 dateData: { isPickUp: true }
