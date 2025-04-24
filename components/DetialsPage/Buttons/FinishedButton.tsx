@@ -30,10 +30,9 @@ export default function FinishedButton({orderData}) {
             
             dispatch(finishButtonPressed());
             
-
             dispatch(updateToDone({
                 orderId: orderId,
-                status:"جاهزة للتسليم"
+                dateData: {"status": "جاهزة للتسليم" }
             }));
 
 
@@ -41,12 +40,14 @@ export default function FinishedButton({orderData}) {
                 orderId: orderId,
                 dateData: { isFinished: true }
             }));
+
             
             dispatch(setCurrentOrder({
                 ...currentOrder,
                 isFinished: true
             }));
             
+
             setIsModalVisible(true)
         }
     };

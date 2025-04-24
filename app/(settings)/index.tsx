@@ -6,6 +6,8 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import HeaderWithBack from '@/components/ui/HeaderWithToolTipAndback';
+import { router } from 'expo-router';
 
 const Settings = () => {
 
@@ -50,9 +52,10 @@ const Settings = () => {
 
   return (
     <SafeAreaView className='flex-1 '>
+      <HeaderWithBack onPress={() => router.push('(home)')} />
         <View className=''>
-            <View>
-                <Text>إعدادات</Text>
+            <View className='mx-auto my-10'>
+                <Text className='font-tajawal text-2xl text-[#F52525]'>إعدادات</Text>
             </View>
             <View>
             {settingsInfo.map((info)=>(

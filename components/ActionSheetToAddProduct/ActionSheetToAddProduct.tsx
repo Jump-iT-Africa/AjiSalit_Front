@@ -37,6 +37,8 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
 
   const { loading, error, success, currentOrder } = useSelector((state) => state.order);
 
+  
+
   const [formData, setFormData] = useState({
     price: '',
     RecieveDate: '',
@@ -55,6 +57,8 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
     fieldOfCompany: '',
     advancedAmount: '', 
   });
+  console.log("errors",errors);
+  
 
   const [step, setStep] = useState(1);
   const [formSubmitted, setFormSubmitted] = useState(false);
@@ -240,7 +244,7 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
     // const orderData = {
     //   price: parseFloat(formData.price),
     //   situation: formData.situation || "خالص",
-    //   status: "في طور الانجاز",
+    //   status: "جاهزة للتسليم",
     //   advancedAmount: formData.situation === 'تسبيق' ? formData.advancedAmount : null,
     //   deliveryDate: formatDateToIso(deliveryDate),
     //   pickupDate: formatDateToIso(pickupDate),
@@ -598,10 +602,14 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
         </View>
 
         {error && (
+        <>
+          {console.log("the Error is lharbaa:", error)}
           <Text className="text-red-500 text-center mt-2 font-tajawalregular">
             {typeof error === 'string' ? error : 'حدث خطأ أثناء إنشاء الطلب'}
           </Text>
-        )}
+        </>
+      )}
+
         
         {error ?  
         
