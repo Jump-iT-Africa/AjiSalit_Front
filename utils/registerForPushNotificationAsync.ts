@@ -8,7 +8,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useDispatch, useSelector } from "react-redux";
 
 export async function registerForPushNotificationsAsync() {
-  // const [expoPushToken, setExpoPushToken] = useState("");
+// const [expoPushToken, setExpoPushToken] = useState("");
 
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync("default", {

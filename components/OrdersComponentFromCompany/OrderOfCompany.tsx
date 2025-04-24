@@ -147,14 +147,17 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
       setIsConfirmed(true);
       setShowModal(false);
     };
-  
+    const borderStyle = item.isToday 
+    ? "bg-white rounded-3xl p-4 mb-3 shadow-md border-2 border-red-500 flex-row-reverse justify-between items-center" 
+    : "bg-white rounded-3xl p-4 mb-3 shadow-md border border-[#295f2b] flex-row-reverse justify-between items-center border-dotted";
+
     return (
       <View>
         <TouchableOpacity 
           activeOpacity={0.7}
           onPress={() => handleItemPress(item)}
           style={{ width: '100%' }}>
-          <View className="bg-white rounded-3xl p-4 mb-3 shadow-md border border-[#295f2b] flex-row-reverse justify-between items-center">
+          <View className={borderStyle}>
             <View>
               <View className="flex flex-row-reverse justify-between items-center mb-1">
                 <View className="flex flex-row-reverse items-center">

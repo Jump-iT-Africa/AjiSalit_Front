@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 
 import React, { useState, useRef, useEffect } from "react";
 import {
@@ -57,50 +57,84 @@ const Register: React.FC = () => {
   
   const formatPhoneNumber = (text: string) => {
     let cleaned = text.replace(/[^\d+]/g, '');
-
+  
     if (!cleaned) {
       return "+212 ";
     }
-
+  
     if (!cleaned.startsWith('+')) {
       cleaned = '+' + cleaned;
     }
     if (!cleaned.startsWith('+212')) {
       cleaned = '+212' + cleaned.slice(1);
     }
-
+  
+    
+    let remainder = '';
     if (cleaned.length > 4) {
-      let remainder = cleaned.slice(4);
-      cleaned = cleaned.slice(0, 4) + ' ' + remainder;
-      cleaned = cleaned.slice(0, 15);
+      remainder = cleaned.slice(4);
+      
+      
+      let maxLength = 4; 
+      if (remainder[0] === '0') {
+        
+        maxLength += 10;
+      } else if (['6', '7', '5'].includes(remainder[0])) {
+        
+        maxLength += 9;
+      }
+      
+      
+      cleaned = cleaned.slice(0, maxLength);
     }
-
+  
+    
+    if (cleaned.length > 4) {
+      remainder = cleaned.slice(4);
+      cleaned = cleaned.slice(0, 4) + ' ' + remainder;
+    }
+  
     return cleaned;
   };
   
-  // Removed the cleanPhoneForAPI function since we don't want to clean the phone number
-
+  
   const isValidMoroccanNumber = (number: string) => {
-    // We'll still need to test against a clean number for validation
+    
     const testNumber = number.replace(/\s/g, '');
     
-    if (!/^\+212\d{9,10}$/.test(testNumber)) {
-      return { isValid: false, message: "رقم الهاتف خاصو يبدا ب +212 و يكون فيه 9 أرقام أو 10" };
+    
+    if (!testNumber.startsWith('+212')) {
+      return { isValid: false, message: "رقم الهاتف خاصو يبدا ب +212" };
     }
-  
+    
     const remainingDigits = testNumber.slice(4); 
     const firstDigit = remainingDigits[0];
-    const firstTwoDigits = remainingDigits.slice(0, 2);
     
-    const validPrefixes = ['06', '07', '05'];
-    const validSingleDigits = ['6', '7', '5'];
     
-    if (!validPrefixes.includes(firstTwoDigits) && !validSingleDigits.includes(firstDigit)) {
-      return { isValid: false, message: "رقم الهاتف خاصو يبدا ب 06 ولا 07 ولا 05 ولا 6 ولا 7 ولا 5" };
+    if (['6', '7', '5'].includes(firstDigit)) {
+      
+      if (remainingDigits.length !== 9) {
+        return { isValid: false, message: "رقم الهاتف خاصو يكون فيه 9 أرقام بعد +212" };
+      }
+    }
+    
+    else if (['0'].includes(firstDigit)) {
+      const secondDigit = remainingDigits[1];
+      if (!['6', '7', '5'].includes(secondDigit)) {
+        return { isValid: false, message: "رقم الهاتف خاصو يبدا ب 06 ولا 07 ولا 05 بعد +212" };
+      }
+      
+      if (remainingDigits.length !== 10) {
+        return { isValid: false, message: "رقم الهاتف خاصو يكون فيه 10 أرقام بعد +212" };
+      }
+    } 
+    else {
+      return { isValid: false, message: "رقم الهاتف خاصو يبدا ب 6 ولا 7 ولا 5 ولا 06 ولا 07 ولا 05 بعد +212" };
     }
     
     return { isValid: true, message: "" };
   };
+  
   
   const handlePhoneNumberChange = (text: string) => {
     const formattedNumber = formatPhoneNumber(text);
@@ -163,7 +197,7 @@ const Register: React.FC = () => {
           pathname: '/InterPassword',
           params: {
             userName: error.UserName,
-            phoneNumber: phone  // Use the formatted phone number
+            phoneNumber: phone  
           }
         });
       } else {
