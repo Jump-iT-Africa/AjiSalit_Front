@@ -17,18 +17,25 @@ const App = () => {
       alert("You received a notification!");
     }
   }, [notification]);
+  
   return (
     <View className="flex-1">
       <ImageBackground source={HeroImage} resizeMode="cover" className="flex-1">
         <AppGradient colors={["rgba(0,0,0,0.0)", "#25000B"]}>
           <SafeAreaView className="flex-1 mx-5 my-12 justify-between">
-            <View>
+            <View className="flex-1" />
+            
+            <View className="mb-8">
               <CustomButton
                 onPress={() => router.push("register")}
-                title="باغي تسجل" textStyles="font-tajawal text-[14] "
+                title="باغي تسجل" 
+                textStyles="font-tajawal text-[14]"
               />
-              <Text className="text-white text-center mt-3font-[700] text-tajawal mt-3" 
-              onPress={()=>router.push('register')}  style={styles.textConfig}>
+              <Text 
+                className="text-white text-center mt-3 font-[700] text-tajawal" 
+                onPress={() => router.push('login')}  
+                style={styles.textConfig}
+              >
                 عندي حساب 
               </Text>
             </View>
@@ -42,7 +49,8 @@ const App = () => {
 
 const styles = StyleSheet.create({
   textConfig: {
-    fontFamily: 'TajawalRegular',  }
+    fontFamily: 'TajawalRegular',
+  }
 });
 
 export default App;

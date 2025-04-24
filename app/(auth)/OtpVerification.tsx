@@ -14,7 +14,7 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Feather } from "@expo/vector-icons";
-import RegisterBackImage from "@/assets/images/register2.jpeg";
+import RegisterBackImage from "@/assets/images/register2.jpg";
 import AppGradient from "../../components/ui/AppGradient";
 import TooltipComponent from "@/components/ui/TooltipComponent";
 import HeaderWithBack from "@/components/ui/HeaderWithToolTipAndback";
