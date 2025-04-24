@@ -442,6 +442,6 @@ export const selectCurrentOrder = (state) => state.orders.currentOrder;
 export const selectOrderLoading = (state) => state.orders.loading;
 export const selectOrderError = (state) => state.orders.error;
 export const selectOrderSuccess = (state) => state.orders.success;
-export const selectQrCodeSearchTerm = (fstate) => state.orders.qrCodeSearchTerm;
+export const selectQrCodeSearchTerm = (state) => state.orders.qrCodeSearchTerm;
 
 export default ordersSlice.reducer;
