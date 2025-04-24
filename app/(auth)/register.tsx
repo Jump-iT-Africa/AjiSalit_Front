@@ -19,7 +19,7 @@ import {
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Feather } from "@expo/vector-icons";
-import RegisterBackImage from "@/assets/images/register2.jpeg";
+import RegisterBackImage from "@/assets/images/register2.jpg";
 import RegisterFocusBackImage from "@/assets/images/register3.jpeg";
 import AppGradient from "../../components/ui/AppGradient";
 import HeaderWithBack from "@/components/ui/HeaderWithToolTipAndback";
@@ -228,23 +228,27 @@ const Register: React.FC = () => {
               />
           </View>
           
-          <Animated.View 
-            className="absolute w-full h-full"
-            style={{ opacity: fadeAnim }}
-          >
-            <ImageBackground
-              source={RegisterFocusBackImage}
-              resizeMode="cover"
-              className="flex-1"
-            >
-              <LinearGradient
-                colors={['#25000B', '#390000']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 1 }}
-                style={{ position: 'absolute', width: '100%', height: '100%', opacity: 0.40 }}
-              />
-            </ImageBackground>
-          </Animated.View>
+          <Animated.View className="absolute w-full h-full" style={{ opacity: fadeAnim }}>
+          <ImageBackground
+            source={RegisterFocusBackImage}
+            resizeMode="cover"
+            className="flex-1"
+          />
+          <LinearGradient
+            colors={['#25000B', '#390000']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={{ 
+              position: 'absolute', 
+              left: 0, 
+              right: 0, 
+              top: 0, 
+              bottom: 0, 
+              opacity: 0.40,
+              zIndex:1
+            }}
+          />
+        </Animated.View>
           
           <View className="flex-1">
             <AppGradient colors={["rgba(0,0,0,0.4)", "rgba(0,0,0,0.0)"]}>
