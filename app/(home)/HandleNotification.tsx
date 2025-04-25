@@ -8,7 +8,9 @@ import { useSelector } from "react-redux";
 export default function HandleNotification() {
     const userData = useSelector(selectUserData);
     const { expoPushToken } = useNotification();
-    const API_BASE_URL = 'https://www.ajisalit.com';
+    // const API_BASE_URL = 'https://www.ajisalit.com';
+    const API_BASE_URL = 'http://192.168.100.175:3000';
+
 
     useEffect(() => {
         async function updateUserToken() {
