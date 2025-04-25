@@ -269,9 +269,6 @@ export const selectFilteredOrders = state => {
 };
 
 
-
-
-
 export const HistoryOrders = state => {
   if (!state || !state.orders) {
     return [];
