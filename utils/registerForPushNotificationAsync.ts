@@ -37,17 +37,22 @@ export async function registerForPushNotificationsAsync() {
         "Permission not granted to get push token for push notification!"
       );
     }
-    const projectId =
-      Constants?.expoConfig?.extra?.eas?.projectId ??
-      Constants?.easConfig?.projectId;
-    if (!projectId) {
-      throw new Error("Project ID not found");
-    }
+    // const projectId =
+    //   Constants?.expoConfig?.extra?.eas?.projectId ??
+    //   Constants?.easConfig?.projectId;
+    // if (!projectId) {
+    //   throw new Error("Project ID not found");
+    // }
+    // 58578925-3025-4070-823b-d44a161b2c53
+    // 58578925-3025-4070-823b-d44a161b2c53
+    // console.log("Project id ++++++++++++++", projectId ,{tag:"eeeeee"});
+
     try {
-      console.log("Project id ", projectId);
+      // console.log("Project id ", projectId);
+
       const pushTokenString = (
         await Notifications.getExpoPushTokenAsync({
-          projectId,
+          projectId: "58578925-3025-4070-823b-d44a161b2c53",
         })
       ).data;
       console.log("Pushtokeeen", pushTokenString, {

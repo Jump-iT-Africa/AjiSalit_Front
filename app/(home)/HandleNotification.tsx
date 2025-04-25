@@ -8,7 +8,7 @@ import { useSelector } from "react-redux";
 export default function HandleNotification() {
     const userData = useSelector(selectUserData);
     const { expoPushToken } = useNotification();
-    const API_BASE_URL = 'http://192.168.100.175:3000';
+    const API_BASE_URL = 'https://www.ajisalit.com';
 
     useEffect(() => {
         async function updateUserToken() {
@@ -16,24 +16,24 @@ export default function HandleNotification() {
                 let expoToken = await AsyncStorage.getItem('notification-push')
                 let token = await AsyncStorage.getItem('token')
 
-                if(!expoToken && expoPushToken){
+                if (!expoToken && expoPushToken) {
                     expoToken = expoPushToken
-                }          
-                if(expoToken && userData.id && token){
+                }
+                if (expoToken && userData.id && token) {
                     let data = {
                         expoPushToken: expoToken
                     }
-                    console.log(`${API_BASE_URL}/user/${userData.id}`, {tag:"URL"})
+                    console.log(`${API_BASE_URL}/user/${userData.id}`, { tag: "URL" })
                     let response = await axios.put(`${API_BASE_URL}/user/${userData.id}`, data, {
                         headers: {
                             Authorization: `Bearer ${token}`
                         }
                     })
                     console.log(response)
-                    console.log("Response is ", response.data, {tag: 'Notification'});
+                    console.log("Response is ", response.data, { tag: 'Notification' });
                 }
             } catch (e) {
-                console.log("there's an error", e,  {tag: 'Notification'})
+                console.log("there's an error", e, { tag: 'Notification' })
             }
         }
         updateUserToken()

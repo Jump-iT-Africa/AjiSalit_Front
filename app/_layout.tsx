@@ -1,6 +1,6 @@
 import { Stack, router } from "expo-router";
 import React, { useState, useEffect } from "react";
-import { useFonts } from 'expo-font';
+import { useFonts } from  'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { View } from 'react-native';

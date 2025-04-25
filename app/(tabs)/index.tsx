@@ -10,13 +10,7 @@ import { useEffect } from "react";
 
 const App = () => {
   const router = useRouter();
-  const { notification } = useNotification();
 
-  useEffect(() => {
-    if (notification) {
-      alert("You received a notification!");
-    }
-  }, [notification]);
   return (
     <View className="flex-1">
       <ImageBackground source={HeroImage} resizeMode="cover" className="flex-1">

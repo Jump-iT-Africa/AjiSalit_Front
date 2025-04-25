@@ -37,8 +37,12 @@
       ],
       "config": {
         "usesCleartextTraffic": true
+      },
+      "notification": {
+        "icon": "./assets/images/ajisalit_notification.png"
       }
     },
+
     "plugins": [
       "expo-router",
       [
@@ -52,8 +56,10 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/images/logooo.png",
-          "color": "#ffffff"
+          "icon": "./assets/images/ajisalit_notification.png",
+          "color": "#ffffff",
+          "androidMode": "default",
+          "androidCollapsedTitle": "Aji Salit"
         }
       ]
     ],
