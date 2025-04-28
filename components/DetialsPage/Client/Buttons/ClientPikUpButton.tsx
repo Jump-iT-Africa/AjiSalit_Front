@@ -77,6 +77,9 @@ const ClientPikUpButton = () => {
                                 <Text className="text-black text-2xl text-center p-4 font-tajawalregular">
                                     تم إستلام طلبك بنجاح
                                 </Text>
+                                <Text className='font-tajawalregular text-[#FFA30E] text-l text-center'>
+                                شكرًا على ثقتك بنا، وكنتمناو نكونو عند حسن ظنك
+                                </Text>
                             </View>
                             <View className="w-full mt-4">
                                 <CustomButton

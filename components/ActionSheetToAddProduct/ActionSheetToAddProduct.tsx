@@ -275,7 +275,7 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
       price: parseFloat(formData.price),
       situation: formData.situation || "خالص",
       status: "في طور الانجاز",
-      advancedAmount: formData.situation === 'تسبيق' ? formData.advancedAmount : null,
+      advancedAmount: parseFloat(formData.advancedAmount),
       deliveryDate: formatDateToIso(deliveryDate),
       pickupDate: formatDateToIso(pickupDate),
       qrCode: newUniqueId,

@@ -35,31 +35,31 @@ export const saveUserToDB = async (userData) => {
   };
 
 
-  export const loginUser = async (credentials) => {
-    try {
-      console.log('Login attempt with this info:', credentials);
-      console.log('Password length:', credentials.password?.length || 0);
-          
-      const response = await axios.post(`${API_BASE_URL}/user/login`, credentials);
-     
+export const loginUser = async (credentials) => {
+  try {
+    console.log('Login attempt with this info:', credentials);
+    console.log('Password length:', credentials.password?.length || 0);
+        
+    const response = await axios.post(`${API_BASE_URL}/user/login`, credentials);
+    
 
-      if (response.data) {
-        await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
-        console.log('Setting auth state after login');
-        await AsyncStorage.setItem("isAuthenticated", "true");
-        console.log('Auth state set');
-      }
-      
-      return {
-        token: response.data.token,
-        user: response.data.user
-      };
-
-    } catch (error) {
-      console.log('Error in loginUser:', error.response?.data || error.message);
-      throw error;
+    if (response.data) {
+      await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
+      console.log('Setting auth state after login');
+      await AsyncStorage.setItem("isAuthenticated", "true");
+      console.log('Auth state set');
     }
-  };
+    
+    return {
+      token: response.data.token,
+      user: response.data.user
+    };
+
+  } catch (error) {
+    console.log('Error in loginUser:', error.response?.data || error.message);
+    throw error;
+  }
+};
 
 export const verifyNumber = async (phoneData) => {
   try {
@@ -87,6 +87,25 @@ export const verifyNumber = async (phoneData) => {
     throw error;
   }
 }
+
+
+export const updateUser = async (UserId,credentials) => {
+  try {
+    console.log('update user info:', credentials);
+    const token = await AsyncStorage.getItem('token')
+    const response = await axios.put(`${API_BASE_URL}/user/${UserId}`, credentials, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    
+    return response;
+
+  } catch (error) {
+    console.log('Error in updateUser:', error.response?.data || error.message);
+    throw error;
+  }
+};
 
 
 

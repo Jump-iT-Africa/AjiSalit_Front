@@ -1,6 +1,5 @@
-// @ts-nocheck
 
-import { View, Text, SafeAreaView } from 'react-native'
+import { View, Text, SafeAreaView,Image } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import ProfileHeader from "@/components/HomeHeader/ProfileHeader"
 import AddProductManualClient from '@/components/AddProductManualClient/AddproductManual'
@@ -14,7 +13,7 @@ import getAuthToken from "@/services/api"
 import getUserData from "@/services/api"
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {selectUserRole} from "@/store/slices/userSlice";
-
+import Wallet from "@/assets/images/wallet.png"
 
 const Home = () => {
   const checkStoredData = async () => {
@@ -62,7 +61,24 @@ const Home = () => {
           <Text className='text-end text-xl font-tajawal'>الطلبات المتوفرة</Text>
           </View>
           ):(
-            <View className='mt-8  w-full flex items-end'>
+            <View className='mt-4  w-full flex items-end'>
+              <View className='bg-white w-[95%] p-2 rounded-xl shadow mx-auto mb-4 flex-row justify-between items-center '>
+                  <View>
+                    <Image
+                      source={Wallet}
+                      resizeMode="contain"
+                      className='w-19 h-19'
+                    />
+                  </View>
+                  <View className='mr-2'>
+                      <View className='flex-row-reverse items-center gap-2'>
+                        <Text className='text-[24px] font-tajawal text-[#FAD513] '>25</Text>
+                        <Text className='font-tajawal text-[16px]'>درهم</Text>
+                      </View>
+                      <Text className='font-tajawalregular text-[12px] text-[#FAD513]'>رصيد ديالك قرب يسالي</Text>
+                  </View>
+              </View>
+
             <Text className='text-end text-xl font-tajawal'>الطلبات المتوفرة</Text>
           </View>
           )

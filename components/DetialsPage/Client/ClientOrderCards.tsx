@@ -1,6 +1,6 @@
 import { View, Text, Pressable, Modal, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
-import { FontAwesome5, Ionicons, MaterialIcons } from '@expo/vector-icons'
+import { FontAwesome5, Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons'
 import { useSelector, useDispatch } from 'react-redux'
 import { fetchOrderByQrCodeOrId,selectCurrentOrder } from '@/store/slices/OrdersManagment' 
 import { fetchOrders } from '@/store/slices/OrdersSlice'
@@ -167,31 +167,62 @@ const ClientOrderCards = ({ item, orderId }) => {
   const originalDeliveryDate = item?.originalDeliveryDate || formattedPickupDate;
   const wasEdited = item?.wasEdited || false;
   const companyName = item?.companyId?.name || "Ajisalit";
+  
+  const icons = [
+    {
+      id: 0,
+      icon: <FontAwesome5 name="cut" size={27} color="white" />,
+      name: "الخياطة"
+    },
+    {
+      id: 1,
+      icon: <Ionicons name="car-sport-outline" size={27} color="white" />,
+      name: "غسيل السيارات"
+    },
+    {
+      id: 2,
+      icon: <FontAwesome5 name="tshirt" size={27} color="#ffff" />,
+      name: "غسيل الملابس/التنظيف الجاف"
+    },
+    {
+      id: 3,
+      icon: <MaterialCommunityIcons name="bread-slice-outline" size={27} color="white" />,
+      name: "مخبزة"
+    },
+    {
+      id: 4,
+      icon: <MaterialIcons name="local-pharmacy" size={27} color="white" />,
+      name: "صيدلية"
+    },
+  ];
+
 
 
   
   return (
-    <View className='bg-white mx-3 my-3 rounded-lg p-2 border-t-4 border-[#f290fd]' style={styles.CardContainer}>
+    <View className='bg-white mx-3 my-3 rounded-lg p-2' style={styles.CardContainer}>
       <View className="flex-row items-end justify-end space-x-2 p-4 border-b border-gray-100">
         <View className='flex-row-reverse items-center justify-between w-full'>
-          <View className='flex-row items-end justify-end space-x-2'>
+          <View className='flex-row items-center justify-center space-x-2 '>
             <View className="flex items-end ">
-              <Text className={`text-lg font-bold text-[${orderTypeColor}] font-tajawal`}>{orderType}</Text>
-              <Text className="text-black text-sm ">#{orderCode}</Text>
+              <Text className={`text-lg font-bold text-[${orderTypeColor}] font-tajawal text-[#2e752f]`}>{orderType}</Text>
+              <Text className="text-black text-sm ">{orderCode}</Text>
             </View>
-            <View className={`w-11 h-11 rounded bg-[${orderTypeBgColor}] items-center justify-center`}>
-              <FontAwesome5 name="cut" size={20} color={orderTypeColor}/>
-            </View>
+              {icons.filter(icon => icon.name === item.customerField).map((icon) => (
+                <View key={icon.id} className={`w-11 h-11 rounded items-center justify-center bg-[#F52525]`}>
+                  {icon.icon}
+                </View>
+              ))}
           </View>
           <TouchableOpacity style={{ backgroundColor: currentColor, paddingHorizontal: 20, paddingVertical: 8, borderRadius: 50 }}>
-            <Text className="text-white font-bold text-center font-tajawalregular text-xs">{orderStatus}</Text>
+            <Text className="text-white font-bold text-center font-tajawalregular text-xs pt-1">{orderStatus}</Text>
           </TouchableOpacity>
         </View>
       </View>
 
       {/* Company information if available */}
       {item?.companyId && (
-        <View className="flex-row-reverse items-center border-b border-gray-100 px-4 py-2">
+        <View className="flex-row-reverse items-center border-b border-gray-100 px-4 ">
           <Text className="font-tajawalregular text-gray-600">الشركة: </Text>
           <Text className="font-tajawal font-semibold">{companyName}</Text>
           {/* {item?.companyId?.phoneNumber && (
@@ -204,32 +235,33 @@ const ClientOrderCards = ({ item, orderId }) => {
         <View className="flex-1">
           <View className="bg-gray-100 rounded-lg mx-1 p-2 items-center border border-gray-300 border-1">
             <Text className=" text-gray-600 mb-1 font-tajawalregular ">الباقي</Text>
-            <Text className="text-base font-bold font-tajawal text-[13px]">{remainingAmount} درهم</Text>
+            <Text className="text-base font-bold font-tajawal text-[13px] text-[#2F752F]">{remainingAmount} درهم</Text>
           </View>
         </View>
 
         <View className="flex-1">
-          <View className="bg-gray-100 rounded-lg mx-1 p-2 items-center border border-gray-300 border-1">
-            <Text className=" text-cyan-500 mb-1 font-tajawalregular font-[12px]">التسبيق</Text>
-            <Text className="text-base font-bold font-tajawal text-[13px]">{paidAmount} درهم</Text>
+          <View className="bg-[#2F752F] rounded-lg mx-1 p-2 items-center border border-gray-300 border-1">
+            <Text className=" text-[#fff] mb-1 font-tajawalregular font-[12px]">التسبيق</Text>
+            <Text className="text-base font-bold font-tajawal text-[13px] text-[#FAD513]">{paidAmount} درهم</Text>
           </View>
         </View>
 
         <View className="flex-1">
           <View className="bg-gray-100 rounded-lg mx-1 p-2 items-center border border-gray-300 border-1">
             <Text className=" text-gray-600 mb-1 font-tajawalregular text-[13px]">إجمالي</Text>
-            <Text className="text-base font-bold font-tajawal text-[13px]">{totalAmount} درهم</Text>
+            <Text className="text-base font-bold font-tajawal text-[13px] text-[#2F752F]">{totalAmount} درهم</Text>
           </View>
         </View>
       </View>
 
       <View className="flex-row justify-between items-center p-3 mt-1 mx-2 bg-gray-100 border border-gray-300 border-1 rounded-lg mb-2">
+        
         <Pressable 
           className="flex-row items-center" 
           onPress={() => setModalVisible(true)}
         >
-          <Text className="text-cyan-500 mr-1 font-tajawalregular text-[10px] mt-0">سجل التعديلات</Text>
-          <Ionicons name="information-circle-outline" size={18} color="#00bcd4" />
+          {/* <Text className="text-[#000] mr-1 font-tajawalregular text-[10px] mt-0">سجل التعديلات</Text>
+          <Ionicons name="information-circle-outline" size={18} color="#00bcd4" /> */}
         </Pressable>
         
         <View className="flex-row items-center">
@@ -239,8 +271,10 @@ const ClientOrderCards = ({ item, orderId }) => {
               <MaterialIcons name="edit" size={16} color="#ffb300" />
             </View>
           )}
-          <View>
-            <Text className="text-sm text-black mr-2 font-tajawalregular mt-2">{formattedDeliveryDate}</Text>
+          <View className='flex items-end space-x-0'>
+            <Text className="text-3xl mr-1 font-tajawal text-[12px] flex-1">تم التعديل</Text>
+            
+            <Text className="text-sm text-black mr-2 font-tajawalregular">{formattedDeliveryDate}</Text>
             {wasEdited && (
               <Text className="text-sm text-gray-400 mr-2 font-tajawalregular line-through">{formattedDeliveryDate}</Text>
             )}

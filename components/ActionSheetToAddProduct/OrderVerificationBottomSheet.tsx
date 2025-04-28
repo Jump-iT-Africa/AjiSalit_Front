@@ -168,6 +168,23 @@ const OrderVerificationModal = forwardRef(({
                         {formData.situation}
                     </Text>
                 </View>
+
+                    {formData.advancedAmount ?
+                      <View className='flex-row-reverse gap-3 items-center'>
+                      <View className="flex-row items-center justify-end mb-4">
+                          <Text className="text-[#000] text-[12px] font-tajawal mr-2">
+                          مبلغ التسبيق :
+                          </Text>
+                      </View>
+                      <Text className="text-right text-[11px] font-bold mb-4 font-tajawal text-[#2F752F]">
+                          {formData.advancedAmount} درهم 
+                      </Text>
+                      </View>
+                      :
+                        null
+                    }
+
+
               </View>
 
               {uploadedImages.length > 0 ? (

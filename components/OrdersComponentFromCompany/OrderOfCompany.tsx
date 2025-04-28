@@ -201,8 +201,8 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
                 style={{
                   width: 30,
                   height: 30,
-                  opacity: isConfirmed || item.isFinished ? 1 : 1,
-                  tintColor: isConfirmed || item.isFinished ? 'red' : '#808080',
+                  opacity: item.isFinished ? 1 : 1,
+                  tintColor: item.isFinished ? undefined : 'gray',
                 }}
                 resizeMode='contain'
               />

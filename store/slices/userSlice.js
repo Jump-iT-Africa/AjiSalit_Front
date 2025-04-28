@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { saveUserToDB, loginUser, getAuthToken, getUserData, verifyNumber } from '@/services/api';
+import { saveUserToDB, loginUser, getAuthToken, getUserData, verifyNumber, updateUser } from '@/services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {clearCurrentOrder} from "@/store/slices/OrdersManagment"
 
@@ -119,6 +119,31 @@ export const logoutUser = createAsyncThunk(
     return true;
   }
 );
+
+
+
+export const UpdateUser = createAsyncThunk(
+  'user/UpdateUser',
+
+  async (credentials, { rejectWithValue }) => {
+    try {
+
+      console.log('info to update', credentials);
+      const user = await AsyncStorage.getItem('user');
+
+      console.log('user id info', user.id);
+      const userData = JSON.parse(user);
+      
+      const response = await updateUser(userData.id, credentials);
+      
+      console.log('response of updated user:', response);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
 
 const initialState = {
   id: '',
@@ -344,6 +369,7 @@ export const selectUserData = (state) => {
   return { id, Fname,Lname,companyName, phoneNumber, role, city, field, ice, ownRef, listRefs };
 };
 export const selectUserRole = (state) => state.user.role;
+export const selectUser = (state) => state.user;
 export const selectLoading = (state) => state.user.loading;
 export const selectError = (state) => state.user.error;
 export const selectVerificationLoading = (state) => state.user.verificationLoading;

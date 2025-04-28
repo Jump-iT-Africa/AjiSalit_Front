@@ -33,7 +33,7 @@ const App = () => {
               />
               <Text 
                 className="text-white text-center mt-3 font-[700] text-tajawal" 
-                onPress={() => router.push('login')}  
+                onPress={() => router.push('register')}  
                 style={styles.textConfig}
               >
                 عندي حساب 

@@ -169,6 +169,9 @@ useEffect(() => {
     }
   };
 
+
+ 
+
   const [tooltipVisible, setTooltipVisible] = useState(false);
   
   const containerClassName = Platform.OS === 'ios'
@@ -241,7 +244,7 @@ useEffect(() => {
               remainingAmount={remaining}
               deliveryDate={orderData?.deliveryDate}
               currency="درهم"
-              situation={orderData?.label}
+              situation={orderData?.label || orderData?.situation}
               images={orderData?.images || []}
               onDateChange={handleDateChange}
               orderId={orderData?.id}

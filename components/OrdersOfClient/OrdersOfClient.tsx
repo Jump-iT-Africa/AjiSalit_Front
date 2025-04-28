@@ -29,6 +29,8 @@ const OrdersOfClient = ({ SearchCode }) => {
   // console.log('Orders loaded:', ordersLoaded);
   // console.log('Last refresh time:', new Date(lastRefreshTime).toLocaleTimeString());
 
+  console.log('all orders if cluent', orders);
+  
   useEffect(() => {
     setSearchTerm(SearchCode);
   }, [SearchCode]);
