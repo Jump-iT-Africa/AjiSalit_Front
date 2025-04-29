@@ -11,23 +11,28 @@ import { useDispatch, useSelector } from 'react-redux';
 import CustomButton from '@/components/ui/CustomButton';
 import WhiteLogo from '@/assets/images/ajisalit_white.png';
 import { UpdateUser,selectUser } from '@/store/slices/userSlice'; 
+import {selectUserRole} from "@/store/slices/userSlice";
+
+
 
 const Profile = () => {
     const dispatch = useDispatch();
     const user = useSelector(selectUser); 
-    
     const [profileImage, setProfileImage] = useState(null);
     const [Fname, setFname] = useState('');
     const [Lname, setLname] = useState('');
+    const [companyName, setCompanyName] = useState('');
     const [password, setPassword] = useState('******');
     const [modalVisible, setModalVisible] = useState(false);
     const [loading, setLoading] = useState(false);
+    const role = useSelector(selectUserRole);
+        
 
-    
     useEffect(() => {
       if (user) {
         setFname(user.Fname || '');
         setLname(user.Lname || '');
+        setCompanyName(user.companyName || '');
         if (user.profileImage) {
           setProfileImage(user.profileImage);
         }
@@ -111,6 +116,7 @@ const Profile = () => {
         const updateData = {
           Fname,
           Lname,
+          companyName
         };
 
         
@@ -204,7 +210,20 @@ const Profile = () => {
                       className={`border border-[#2e752f] rounded-lg p-3 text-black text-right bg-white font-tajawalregular shadow`}
                     />
                   </View>
+                  
                 </View>
+                <View className='w-[100%] mt-4'>
+                    <View className='flex justify-center items-end'>
+                      <Text className=' text-start font-tajawalregular mb-2 text-[#2e752f]'>إسم الشركة</Text>
+                    </View>
+                    <TextInput
+                      placeholder="إسم الشركة"
+                      value={companyName}
+                      onChangeText={setCompanyName}
+                      placeholderTextColor="#888"
+                      className={`border border-[#2e752f] rounded-lg p-3 text-black text-right bg-white font-tajawalregular shadow`}
+                    />
+                  </View>
                 <View className='w-full flex items-center pt-4'>
                   <TouchableOpacity 
                     onPress={handleUpdateUser}
@@ -222,7 +241,7 @@ const Profile = () => {
                   </TouchableOpacity>
                 </View>
               </View>
-              <View>
+              {/* <View>
                 <View className='flex items-end justify-end mt-4 '>
                   <Text className='font-bold text-l text-[#F52525] text-end font-tajawal'>
                     معلومات الأمان
@@ -241,7 +260,7 @@ const Profile = () => {
                     className='border border-[#2e752f] rounded-lg p-3 text-black text-right bg-white font-tajawalregular shadow'
                   />
                 </View>
-              </View>
+              </View> */}
             </View>
           </View>
         </View>

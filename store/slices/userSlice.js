@@ -120,24 +120,23 @@ export const logoutUser = createAsyncThunk(
   }
 );
 
-
-
 export const UpdateUser = createAsyncThunk(
   'user/UpdateUser',
-
   async (credentials, { rejectWithValue }) => {
     try {
-
       console.log('info to update', credentials);
       const user = await AsyncStorage.getItem('user');
-
-      console.log('user id info', user.id);
       const userData = JSON.parse(user);
       
-      const response = await updateUser(userData.id, credentials);
+      const updatedUserData = await updateUser(userData.id, credentials);
       
-      console.log('response of updated user:', response);
-      return response;
+      if (updatedUserData) {
+        const updatedUser = { ...userData, ...updatedUserData };
+        await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+      }
+      
+      console.log('response of updated user:', updatedUserData);
+      return updatedUserData;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }
@@ -158,7 +157,7 @@ const initialState = {
   ownRef: '',
   refBy: '',
   listRefs: [],
-  
+  profileImage: null, 
   token: null,
   isAuthenticated: false,  
 
@@ -221,7 +220,6 @@ const userSlice = createSlice({
     
     resetUserState: () => initialState,
     
-    // Reset verification state (useful when navigating away from the verification screen)
     resetVerificationState: (state) => {
       state.verificationLoading = false;
       state.verificationSuccess = false;
@@ -257,6 +255,7 @@ const userSlice = createSlice({
       state.ice = user.ice || null;
       state.ownRef = user.ownRef || '';
       state.listRefs = user.listRefs || [];
+      state.profileImage = user.profileImage || null;
     });
 
     builder.addCase(registerUser.rejected, (state, action) => {
@@ -266,7 +265,7 @@ const userSlice = createSlice({
     });
 
 
-    // Login
+    // Loginx
     builder.addCase(login.pending, (state) => {
       state.loading = true;
       state.error = null;
@@ -289,6 +288,7 @@ const userSlice = createSlice({
       state.ice = user?.ice || null;
       state.ownRef = user?.ownRef || '';
       state.listRefs = user?.listRefs || [];
+      state.profileImage = user.profileImage || null;
     });
     builder.addCase(login.rejected, (state, action) => {
       state.loading = false;
@@ -317,13 +317,13 @@ const userSlice = createSlice({
       state.ice = user.ice || null;
       state.ownRef = user.ownRef || '';
       state.listRefs = user.listRefs || [];
+      state.profileImage = user.profileImage || null;
     });
     builder.addCase(restoreAuthState.rejected, (state) => {
       state.loading = false;
       state.isAuthenticated = false;
     });
     
-    // Phone verification cases
     builder.addCase(verifyPhoneNumber.pending, (state) => {
       state.verificationLoading = true;
       state.verificationSuccess = false;
@@ -343,6 +343,30 @@ const userSlice = createSlice({
       state.error = action.payload;
     });
     
+    builder.addCase(UpdateUser.pending, (state) => {
+      state.loading = true;
+      state.error = null;
+    });
+    builder.addCase(UpdateUser.fulfilled, (state, action) => {
+      state.loading = false;
+      
+      if (action.payload) {
+        Object.keys(action.payload).forEach(key => {
+          if (key in state) {
+            state[key] = action.payload[key];
+          }
+        });
+        
+        if (action.payload.Fname) state.Fname = action.payload.Fname;
+        if (action.payload.companyName) state.companyName = action.payload.companyName;
+        if (action.payload.Lname) state.Lname = action.payload.Lname;
+        if (action.payload.profileImage) state.profileImage = action.payload.profileImage;
+      }
+    });
+    builder.addCase(UpdateUser.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.payload;
+    });
   }
 });
 
@@ -365,8 +389,8 @@ export default userSlice.reducer;
 export const selectIsAuthenticated = (state) => state.user.isAuthenticated;
 export const selectToken = (state) => state.user.token;
 export const selectUserData = (state) => {
-  const { id, Fname,Lname,companyName, phoneNumber, role, city, field, ice, ownRef, listRefs } = state.user;
-  return { id, Fname,Lname,companyName, phoneNumber, role, city, field, ice, ownRef, listRefs };
+  const { id, Fname, Lname, companyName, phoneNumber, role, city, field, ice, ownRef, listRefs, profileImage } = state.user;
+  return { id, Fname, Lname, companyName, phoneNumber, role, city, field, ice, ownRef, listRefs, profileImage };
 };
 export const selectUserRole = (state) => state.user.role;
 export const selectUser = (state) => state.user;

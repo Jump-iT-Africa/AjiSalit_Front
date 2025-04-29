@@ -1,4 +1,4 @@
-import { View, Text, Pressable, Modal, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native'
+import { View, Text, Pressable, Modal, TouchableOpacity, StyleSheet, ActivityIndicator, TouchableWithoutFeedback } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
 import { FontAwesome5, Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons'
 import { useSelector, useDispatch } from 'react-redux'
@@ -16,6 +16,7 @@ const EditHistoryModal = ({ visible, onClose, orderCode, reason,newDate }) => {
       visible={visible}
       onRequestClose={onClose}
     >
+      <TouchableWithoutFeedback onPress={onClose}>
       <View className="flex-1 justify-center items-center bg-black/50">
         <View className="w-11/12 bg-white rounded-lg overflow-hidden">
           <View className={`bg-[#2F752F] p-4 flex-row items-center justify-between`}>
@@ -49,6 +50,7 @@ const EditHistoryModal = ({ visible, onClose, orderCode, reason,newDate }) => {
           </View>
         </View>
       </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 };

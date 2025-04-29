@@ -88,21 +88,34 @@ export const verifyNumber = async (phoneData) => {
   }
 }
 
-
-export const updateUser = async (UserId,credentials) => {
+export const updateUser = async (UserId, credentials) => {
   try {
     console.log('update user info:', credentials);
-    const token = await AsyncStorage.getItem('token')
-    const response = await axios.put(`${API_BASE_URL}/user/${UserId}`, credentials, {
+    const token = await AsyncStorage.getItem('token');
+    
+    const formData = { ...credentials };
+    
+    if (formData.profileImage && formData.profileImage.length > 50) {
+      console.log('Image data length:', formData.profileImage.length);
+      console.log('Image data prefix:', formData.profileImage.substring(0, 50) + '...');
+    }
+    
+    const response = await axios.put(`${API_BASE_URL}/user/${UserId}`, formData, {
       headers: {
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
       }
     });
     
-    return response;
-
+    console.log('API response for user update:', JSON.stringify(response.data));
+    
+    return response.data;
   } catch (error) {
-    console.log('Error in updateUser:', error.response?.data || error.message);
+    console.log('Error in updateUser API call:', error);
+    if (error.response) {
+      console.log('Error response data:', error.response.data);
+      console.log('Error response status:', error.response.status);
+    }
     throw error;
   }
 };
