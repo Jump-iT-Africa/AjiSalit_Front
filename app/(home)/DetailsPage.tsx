@@ -20,11 +20,17 @@ import { selectCurrentOrder, selectUserOrders, setCurrentOrder, fetchORderById }
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSearchParams } from "expo-router/build/hooks";
 
+
+
 export default function DetailsPage() {
 
   const [remaining, setRemaining] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [orderData, setOrderData] = useState(null);
+  const router = useRouter();
+  
+  const currentOrder = useSelector(selectCurrentOrder);
+  const userOrders = useSelector(selectUserOrders);
 
   console.log('order to be fetched', orderData);
   
@@ -32,34 +38,32 @@ export default function DetailsPage() {
   const dispatch = useDispatch();
   const [role, setRole] = useState(null);
 
-useEffect(() => {
-  const loadRole = async () => {
-    try {
-      const storedRole = await AsyncStorage.getItem('user');
-      if (storedRole) {
-        const role =  JSON.parse(storedRole);
-        setRole(role.role);
+
+  useEffect(() => {
+    const loadRole = async () => {
+      try {
+        const storedRole = await AsyncStorage.getItem('user');
+        if (storedRole) {
+          const role =  JSON.parse(storedRole);
+          setRole(role.role);
+        }
+      } catch (error) {
+        console.log("Error loading role from AsyncStorage:", error);
       }
-    } catch (error) {
-      console.log("Error loading role from AsyncStorage:", error);
-    }
-  };
-  
-  loadRole();
-}, []);
-
-
+    };
+    loadRole();
+  }, []);
   
   console.log('role from details is', role);
   
   const {ItemID} = useLocalSearchParams();
   console.log('this is the id of the command from details', ItemID);
   
-  const router = useRouter();
-  
-  
-  const currentOrder = useSelector(selectCurrentOrder);
-  const userOrders = useSelector(selectUserOrders);
+
+  const params = useLocalSearchParams();
+  console.log('All params:', params);
+
+
 
   useEffect(() => {
     console.log('Current order updated:', currentOrder);
@@ -77,7 +81,10 @@ useEffect(() => {
           return;
         }
         
-        if (ItemID) {
+
+
+        // this block of code is not working you should fine a solution to the item id its null
+          if (ItemID) {
           console.log("Looking for order with ID:", ItemID);
           
           const foundOrder = userOrders.find(order => 
@@ -110,9 +117,10 @@ useEffect(() => {
         
         try {
           const storedOrder = await AsyncStorage.getItem('lastScannedOrder');
+          
           if (storedOrder) {
             const parsedOrder = JSON.parse(storedOrder);
-            // console.log("Using order from AsyncStorage:", parsedOrder);
+            console.log("Using order from AsyncStorage:", parsedOrder);
             dispatch(setCurrentOrder(parsedOrder));
             setOrderData(parsedOrder);
           } else {
@@ -135,7 +143,7 @@ useEffect(() => {
   useEffect(() => {
     if (!orderData) return;
     
-    if (orderData.situation === 'خالص') {
+    if (orderData.situation === 'خالص' || orderData.label === 'خالص') {
       setRemaining(0);
     } else {
       setRemaining((orderData.price || 0) - (orderData.advancedAmount || 0));
@@ -242,7 +250,8 @@ useEffect(() => {
               totalAmount={orderData?.price || 0}
               paidAmount={orderData?.advancedAmount || 0}
               remainingAmount={remaining}
-              deliveryDate={orderData?.deliveryDate}
+              deliveryDate={orderData?.deliveryDate || orderData?.newDate} 
+              newDate={orderData?.newDate}
               currency="درهم"
               situation={orderData?.label || orderData?.situation}
               images={orderData?.images || []}

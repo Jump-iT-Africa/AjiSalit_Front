@@ -14,7 +14,8 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
 const OrderCard = ({ item }) => {
 
-
+  console.log('item here', item);
+  
   const icons = [
     {
       id: 0,
@@ -58,13 +59,21 @@ const OrderCard = ({ item }) => {
   const handleNavigateToDetails = async (item) => {
     
     try {
+      console.log('the whole item is ', item);
+      
       await AsyncStorage.setItem('lastScannedOrder', JSON.stringify(item));
       
     } catch (storageError) {
       console.log("Failed to store order in AsyncStorage:", storageError);
     }
-   
-      router.push('/DetailsPage');
+    
+    
+      router.push({
+        pathname:'/DetailsPage',
+        params:{
+          ItemID: item.id
+        }     
+      });
   };
 
   const customerDisplay = item.customerName || "كليان";

@@ -77,6 +77,9 @@ const transformOrderData = (apiOrders) => {
     isFinished: order.isFinished,
     isPickUp: order.isPickUp,
     isToday: isToday(order.deliveryDate),
+    newDate: formatDate(order.newDate),
+    isDateChanged: order.isDateChanged,
+    ChangeDateReason: order.ChangeDateReason,
     rawDeliveryDate:order.deliveryDate
   }));
   

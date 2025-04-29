@@ -21,15 +21,39 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Color from '@/constants/Colors';
 import Noimages from "@/assets/images/noImages.png";
+import NoOrdersExists from "@/components/NoOrderExists/NoOrdersExists";
 
 
 const OrderDetailsModal = ({ isVisible, onClose, orderData }) => {
   
 
-  console.log('order data', orderData);
+  console.log('This is Order Data ', orderData);
   
 
-
+const formatDate = (dateValue) => {
+    console.log('date to be formatted', dateValue);
+    
+    if (typeof dateValue === 'string' && /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dateValue)) {
+      return dateValue;
+    }
+    
+    if (dateValue instanceof Date) {
+      return `${dateValue.getDate()}/${dateValue.getMonth() + 1}/${dateValue.getFullYear()}`;
+    }
+    
+    if (typeof dateValue === 'string' && dateValue) {
+      try {
+        const dateObj = new Date(dateValue);
+        if (!isNaN(dateObj.getTime())) { // Check if valid date
+          return `${dateObj.getDate()}/${dateObj.getMonth() + 1}/${dateObj.getFullYear()}`;
+        }
+      } catch (error) {
+        console.log('Error parsing date:', error);
+      }
+    }
+    
+    return ''; 
+  };
   
 
   return (
@@ -113,12 +137,12 @@ const OrderDetailsModal = ({ isVisible, onClose, orderData }) => {
               <View className='flex-row-reverse gap-3 items-center'>
                 <View className="flex-row items-center justify-end mb-4">
                   <Text className="text-[#000] text-[10px] font-tajawal mr-2">
-                    تاريخ التسليم : 
+                     التسليم تاريخ: 
                   </Text>
                   <AntDesign name="calendar" size={20} color="#F5B225" />
                 </View>
                 <Text className="text-right text-[11px] font-bold mb-4 font-tajawal text-[#2F752F]">
-                  {orderData?.pickupDate }
+                  {formatDate(orderData?.rawDeliveryDate)}  
                 </Text>
               </View>
             </View>
@@ -210,13 +234,15 @@ export default function OrderHistory() {
     );
   };
 
-  if (!filteredOrders) {
-    return (
-      <View className={`flex-1 justify-center items-center`}>
-        <ActivityIndicator size="large" color="#295f2b" />
-      </View>
-    );
-  }
+  // if (filteredOrders.length === 0) {
+  //   return (
+  //     <View className={`flex-1 justify-center items-center`}>
+  //       <NoOrdersExists />
+  //     </View>
+  //   );
+  // }
+
+
 
   return (
     <SafeAreaView className={`flex-1 bg-gray-100 p-9`}>
@@ -233,18 +259,24 @@ export default function OrderHistory() {
           />
         </View>
       </View>
-      <FlashList
-        data={filteredOrders || []}
-        renderItem={renderOrderItem}
-        estimatedItemSize={100}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        showsVerticalScrollIndicator={false}
-        ListFooterComponent={<View className={`h-[100px]`} />}
-      />
-      
-      
+    {filteredOrders.length === 0 ?
+      ( 
+        <View className={`flex-1 justify-center items-center`}>
+          <NoOrdersExists />
+        </View>
+      ):(
+          <FlashList
+            data={filteredOrders || []}
+            renderItem={renderOrderItem}
+            estimatedItemSize={100}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+            showsVerticalScrollIndicator={false}
+            ListFooterComponent={<View className={`h-[100px]`} />}
+          />
+        )}
+        
       <OrderDetailsModal
         isVisible={modalVisible}
         onClose={() => setModalVisible(false)}

@@ -14,13 +14,14 @@ const OrderDetailsCard = ({
   paidAmount = 50, 
   remainingAmount = 100, 
   deliveryDate,
+  newDate,
   currency = "درهم",
   situation,
   orderId, 
   onDateChange = (newDate, reason) => {}
 }) => {
 
-  console.log(orderId);
+  console.log("this is the new date",newDate);
 
   const formatDate = (dateValue) => {
     console.log('date to be formatted', dateValue);
@@ -98,9 +99,11 @@ const OrderDetailsCard = ({
         orderId: orderId,
         dateData: {
           isDateChanged: true,
-          deliveryDate: formattedForAPI,
+          newDate: formattedForAPI,
           ChangeDateReason: reason 
         }
+
+
       })).unwrap();
       
       const localStoragValuue = await AsyncStorage.getItem('lastScannedOrder');
@@ -175,7 +178,9 @@ const OrderDetailsCard = ({
         </View>
         <View className="flex-1 mx-3 items-end justify-between">
           <Text className="text-gray-800 text-right font-tajawalregular text-xs">تاريخ التسليم:</Text>
-          <Text className="font-bold text-green-700 text-right font-tajawalregular text-xs">{formatDate(deliveryDate)} </Text>
+          <Text className="font-bold text-green-700 text-right font-tajawalregular text-xs">
+            {formatDate(newDate) || formatDate(deliveryDate)}
+          </Text>
         </View>
         <TouchableOpacity className="ml-2" onPress={() => setModalVisible(true)}>
           <Feather name="edit" size={21} color="#2e752f"/>

@@ -49,8 +49,8 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
   const [ordersLoaded, setOrdersLoaded] = useState(false);
   const pickupButtonClicked = useSelector(state => state.buttons.pickupButtonClicked);
   const isPickedUp = pickupButtonClicked;
-  const allOrders = useSelector(state => state.orders.orders); // Get all orders from redux store
-  const searchTerm = useSelector(state => state.orders.searchTerm); // Get search term from redux store
+  const allOrders = useSelector(state => state.orders.orders);
+  const searchTerm = useSelector(state => state.orders.searchTerm);
  
   console.log('search code', SearchCode);
   
@@ -61,11 +61,13 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
     }
   }, [SearchCode, dispatch]);
 
+
   useEffect(() => {
     if (statusFilter !== undefined && statusFilter !== null) {
       dispatch(setStatusFilter(statusFilter));
     }
   }, [statusFilter, dispatch]);
+
 
   useEffect(() => {
     if (isAuthenticated && token) {
@@ -83,6 +85,7 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
     }
   }, [dispatch, isAuthenticated, token]);
 
+
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     dispatch(fetchOrders())
@@ -95,7 +98,6 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
         setRefreshing(false);
       });
   }, [dispatch]);
-
 
   
   const handleItemPress = async (item) => {
@@ -112,8 +114,10 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
   };
 
 
-
   const OrderItem = ({ item }) => {
+
+
+    
 
     console.log('this is item', item);
     
@@ -186,7 +190,7 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
                     <Text className="text-gray-900 font-tajawalregular text-[#295f2b]">{item.customerDisplayName}</Text>
                   </View>
                   <View className='flex flex-row gap-1 mr-2'>
-                    <Text className="text-black">{item.date}</Text>
+                    <Text className="text-black">{item.newDate === 'غير محدد' ? item.date : item.newDate}</Text>
                     <AntDesign name="calendar" size={15} color="#F52525" />
                   </View>
                 </View>

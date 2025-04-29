@@ -7,7 +7,8 @@ import { fetchOrders } from '@/store/slices/OrdersSlice'
 
 
 
-const EditHistoryModal = ({ visible, onClose, orderCode }) => {
+const EditHistoryModal = ({ visible, onClose, orderCode, reason,newDate }) => {
+
   return (
     <Modal
       animationType="fade"
@@ -37,12 +38,12 @@ const EditHistoryModal = ({ visible, onClose, orderCode }) => {
               <View className="flex-row-reverse items-center justify-between">
                 <Text className="text-right font-tajawal font-bold">خياط</Text>
                 <View className="bg-amber-500 px-3 py-0 rounded-full">
-                  <Text className="text-amber-100 font-tajawal text-xs pt-2">12/03/2025</Text>
+                  <Text className="text-amber-100 font-tajawal text-xs pt-2">{newDate}</Text>
                 </View>
               </View>
               <View className="flex-row-reverse items-center mt-2">
                 <MaterialIcons name="schedule" size={18} color="gray" />
-                <Text className="text-right font-tajawalregular text-gray-600 mr-2">غياب الخياط بسبب المرض</Text>
+                <Text className="text-right font-tajawalregular text-gray-600 mr-2">{reason || 'مول الشركة محددش سبب التأجيل'}</Text>
               </View>
             </View>
           </View>
@@ -70,13 +71,12 @@ const ClientOrderCards = ({ item, orderId }) => {
   useEffect(() => {
     if (!item) return;
     
-    if (item.situation === 'خالص') {
+    if (item.situation === 'خالص' || item.label === 'خالص') {
       setRemaining(0);
     } else {
       setRemaining((item.price || 0) - (item.advancedAmount || 0));
     }
   }, [item]);
-
   
   if (!item) {
     return (
@@ -87,12 +87,19 @@ const ClientOrderCards = ({ item, orderId }) => {
     );
   }
 
+  console.log('this item for client', item);
+  
   
   const orderCode = item?.qrCode || item?.orderCode || "HFH83923nsh";
-  const orderType = item?.customerField;
+  const orderType = item?.customerField || item?.companyField;
   const orderTypeColor = item?.orderTypeColor || "#d83ce9";
   const orderTypeBgColor = item?.orderTypeBgColor || "#f290fd";
+  const totalAmount = item?.price || 150;
+  const paidAmount = item?.advancedAmount || 0;
+  const remainingAmount = remaining;
   
+  const customerField = item.customerField
+
   let orderStatus = item?.label || item?.situation;
 
   useEffect(()=>
@@ -110,12 +117,7 @@ const ClientOrderCards = ({ item, orderId }) => {
       }
     },[])
   
-  const totalAmount = item?.price || 150;
-  const paidAmount = item?.advancedAmount || 0;
-  const remainingAmount = remaining;
   
-  const customerField = item.customerField
-
   
   let formattedPickupDate = "08/03/2025";
   if (item?.pickupDate) {
@@ -162,10 +164,11 @@ const ClientOrderCards = ({ item, orderId }) => {
   
   const formattedDeliveryDate = formatDate(item.deliveryDate);
   
-
-
   const originalDeliveryDate = item?.originalDeliveryDate || formattedPickupDate;
-  const wasEdited = item?.wasEdited || false;
+
+  const isDateChanged = item?.isDateChanged || false;
+  console.log('is date changed', isDateChanged);
+  
   const companyName = item?.companyId?.name || "Ajisalit";
   
   const icons = [
@@ -221,15 +224,7 @@ const ClientOrderCards = ({ item, orderId }) => {
       </View>
 
       {/* Company information if available */}
-      {item?.companyId && (
-        <View className="flex-row-reverse items-center border-b border-gray-100 px-4 ">
-          <Text className="font-tajawalregular text-gray-600">الشركة: </Text>
-          <Text className="font-tajawal font-semibold">{companyName}</Text>
-          {/* {item?.companyId?.phoneNumber && (
-            <Text className="ml-auto font-tajawalregular text-gray-500">{item.companyId.phoneNumber}</Text>
-          )} */}
-        </View>
-      )}
+      
 
       <View className="flex-row justify-between p-2">
         <View className="flex-1">
@@ -260,25 +255,32 @@ const ClientOrderCards = ({ item, orderId }) => {
           className="flex-row items-center" 
           onPress={() => setModalVisible(true)}
         >
-          {/* <Text className="text-[#000] mr-1 font-tajawalregular text-[10px] mt-0">سجل التعديلات</Text>
-          <Ionicons name="information-circle-outline" size={18} color="#00bcd4" /> */}
-        </Pressable>
-        
-        <View className="flex-row items-center">
-          {wasEdited && (
-            <View className="flex-row items-center bg-amber-50 px-2 py-1 rounded-full mt-1 mr-1">
-              <Text className="text-sm text-amber-500 mr-1 font-tajawalregular text-[8px] ">تم التعديل</Text>
-              <MaterialIcons name="edit" size={16} color="#ffb300" />
+          {isDateChanged && (
+            <View className='flex-row items-center'>
+              <Text className="text-amber-500 mr-1 font-tajawalregular text-[10px] mt-0">سجل التعديلات</Text>
+              <Ionicons name="information-circle-outline" size={18} color="#FFA30E" />
             </View>
           )}
-          <View className='flex items-end space-x-0'>
-            <Text className="text-3xl mr-1 font-tajawal text-[12px] flex-1">تم التعديل</Text>
+        </Pressable>
+        
+        <View className="flex-row items-center ">
+          {isDateChanged && (
+            <View className="flex-row items-center bg-amber-50 px-2 py-1 rounded-full mt-0 mr-1">
+              <Text className="text-sm text-amber-500 mr-1 font-tajawalregular text-[6px] ">تم التعديل</Text>
+              <MaterialIcons name="edit" size={8} color="#ffb300" />
+            </View>
+          )}
+
+            <View className='flex items-end space-x-0'>
+              {isDateChanged ? (
+                <Text className="text-sm text-black mr-2 font-tajawalregular">{formatDate(item.newDate)}</Text>
+              ):(
+              
+               <Text className="text-sm text-black mr-2 font-tajawalregular ">{formattedDeliveryDate}</Text>
+              )}
+            </View>          
             
-            <Text className="text-sm text-black mr-2 font-tajawalregular">{formattedDeliveryDate}</Text>
-            {wasEdited && (
-              <Text className="text-sm text-gray-400 mr-2 font-tajawalregular line-through">{formattedDeliveryDate}</Text>
-            )}
-          </View>
+
           <View className="bg-green-100 p-3 rounded-lg">
             <Ionicons name="calendar-outline" size={24} color="#4A8646" />
           </View>
@@ -286,9 +288,11 @@ const ClientOrderCards = ({ item, orderId }) => {
       </View>
 
       <EditHistoryModal 
-        visible={modalVisible} 
-        onClose={() => setModalVisible(false)} 
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
         orderCode={orderCode}
+        newDate={formatDate(item.newDate)} 
+        reason={item.ChangeDateReason}        
       />
     </View>
   );

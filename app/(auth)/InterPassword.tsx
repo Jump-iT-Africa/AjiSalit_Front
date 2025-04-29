@@ -218,7 +218,7 @@ export default function interPassword() {
         
         {/* Error message display */}
         {errorMessage ? (
-          <Text className="text-[#2e752f] text-center text-[16px] mt-4 font-tajawal">
+          <Text className="text-[#FAD513] text-center text-[16px] mt-4 font-tajawal">
             {errorMessage}
           </Text>
         ) : null}

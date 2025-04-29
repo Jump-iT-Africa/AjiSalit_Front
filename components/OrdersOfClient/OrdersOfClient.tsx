@@ -50,7 +50,6 @@ const OrdersOfClient = ({ SearchCode }) => {
     if (authCheck) {
       return dispatch(fetchOrders())
         .then(response => {
-          // console.log("Orders fetched successfully:", response);
           setOrdersLoaded(true);
           setLastRefreshTime(Date.now());
           if (isRefreshing) setRefreshing(false);
@@ -91,6 +90,10 @@ const OrdersOfClient = ({ SearchCode }) => {
       (order.customerName && order.customerDisplayName?.toLowerCase().includes(searchTerm.toLowerCase()))
     );
   }, [searchTerm, orders]);
+
+
+  console.log('whole orders again', filteredOrders);
+  
 
   if (loading && !refreshing && !ordersLoaded) {
     return (
