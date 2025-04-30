@@ -122,27 +122,60 @@ export const logoutUser = createAsyncThunk(
 
 export const UpdateUser = createAsyncThunk(
   'user/UpdateUser',
-  async (credentials, { rejectWithValue }) => {
+  async (credentials, { rejectWithValue, getState }) => {
     try {
       console.log('info to update', credentials);
       const user = await AsyncStorage.getItem('user');
       const userData = JSON.parse(user);
+      console.log('this is the content of UserData id', user);
       
-      const updatedUserData = await updateUser(userData.id, credentials);
+      // Try multiple ID fields - this is where your issue is
+      const userId = userData.id || userData._id;
+      
+      if (!userId) {
+        console.error('No user ID found in stored user data:', userData);
+        
+        // Fallback to the ID in Redux state
+        const state = getState();
+        const stateUserId = state.user.id;
+        
+        if (!stateUserId) {
+          return rejectWithValue('User ID not found');
+        }
+        
+        console.log('Using ID from Redux state instead:', stateUserId);
+        const updatedUserData = await updateUser(stateUserId, credentials);
+        
+        if (updatedUserData) {
+          const updatedUser = { ...userData, ...updatedUserData, id: stateUserId };
+          await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+        }
+        
+        console.log('response of updated user:', updatedUserData);
+        return updatedUserData;
+      }
+      
+      console.log('Updating user with ID:', userId);
+      const updatedUserData = await updateUser(userId, credentials);
       
       if (updatedUserData) {
-        const updatedUser = { ...userData, ...updatedUserData };
+        // Make sure we preserve the ID in the updated user object
+        const updatedUser = { 
+          ...userData, 
+          ...updatedUserData,
+          id: userId  // Ensure ID is preserved
+        };
         await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
       }
       
       console.log('response of updated user:', updatedUserData);
       return updatedUserData;
     } catch (error) {
+      console.log('Update user error:', error);
       return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
-
 
 const initialState = {
   id: '',

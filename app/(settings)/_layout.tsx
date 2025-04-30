@@ -7,6 +7,7 @@ export default function Settings() {
           animation: 'fade'
         }}>
           <Stack.Screen name="index"/>
+          <Stack.Screen name="UpdatePassword"/>
         </Stack>
       
   );

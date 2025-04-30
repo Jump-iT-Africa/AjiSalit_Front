@@ -119,7 +119,7 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
 
     
 
-    console.log('this is item', item);
+    // console.log('this is item', item);
     
     const [isGray, setIsGray] = useState(true);
     const [isConfirmed, setIsConfirmed] = useState(false);

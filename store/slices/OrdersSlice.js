@@ -266,7 +266,7 @@ export const selectFilteredOrders = state => {
   });
   
 
-  console.log('result here', result)
+  // console.log('result here', result)
   
   return result;
 };
@@ -335,7 +335,7 @@ export const HistoryOrders = state => {
 
   
 
-  console.log('result here', result)
+  // console.log('result here', result)
   
   return result;
 };

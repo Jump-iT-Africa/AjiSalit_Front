@@ -10,10 +10,11 @@ import HeaderWithBack from '@/components/ui/HeaderWithToolTipAndback';
 import { router, useNavigation } from 'expo-router';
 import { logoutUser } from '@/store/slices/userSlice'; 
 import { useDispatch } from 'react-redux';
+import coloredLogo from '@/assets/images/coloredLogo.png'
 
 
 const Settings = () => {
-  const navigation = useNavigation(); // <-- use navigation
+  const navigation = useNavigation(); 
   const dispatch = useDispatch();
 
   const settingsInfo =[
@@ -25,9 +26,9 @@ const Settings = () => {
     },
     {
       id:2,
-      name: "إشعارات",
-      icon: <Ionicons name="notifications-circle-sharp" size={21} color="#2e752f" />,
-      redirection: "/adasd"
+      name: "الرمز السري",
+      icon: <Ionicons name="key-sharp" size={20} color="#2e752f" />,
+      redirection: "/UpdatePassword"
     },
     {
       id:3,

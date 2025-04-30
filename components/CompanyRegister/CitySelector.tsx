@@ -14,13 +14,18 @@ import {
 import Color from "@/constants/Colors";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Feather from '@expo/vector-icons/Feather';
+import regionsAndCitiesData from "@/constants/Cities/Cities.json";
+
+
 
 const CitySelector = ({ 
   onCitySelect, 
   initialValue = "", 
+  selectedCity = "",  // Add this prop to receive the selected city
   errors = {}, 
   isSubmitted = false,
-  regionsAndCities 
+  regionsAndCities,
+  isRequired = true
 }) => {
   const [searchText, setSearchText] = useState("");
   const [filteredCities, setFilteredCities] = useState([]);
@@ -28,8 +33,17 @@ const CitySelector = ({
   const [hasStartedTyping, setHasStartedTyping] = useState(false);
   const [notFound, setNotFound] = useState(false);
   const [minimumCharsReached, setMinimumCharsReached] = useState(false);
-  const [selectedCity, setSelectedCity] = useState(initialValue);
+  const [localSelectedCity, setLocalSelectedCity] = useState(initialValue || selectedCity);
   const [isModalVisible, setIsModalVisible] = useState(false);
+
+  // Update local state when props change
+  useEffect(() => {
+    if (selectedCity) {
+      setLocalSelectedCity(selectedCity);
+    } else if (initialValue) {
+      setLocalSelectedCity(initialValue);
+    }
+  }, [selectedCity, initialValue]);
 
   const searchTimeout = useRef(null);
   const MIN_CHARS = 4;
@@ -109,7 +123,7 @@ const CitySelector = ({
 
   const selectCity = (city) => {
     Keyboard.dismiss();
-    setSelectedCity(city.names.ar);
+    setLocalSelectedCity(city.names.ar);
     onCitySelect(city);
     setIsModalVisible(false);  // Close the modal after selection
   };
@@ -191,9 +205,8 @@ const CitySelector = ({
         className="text-right text-gray-700 mb-2 font-tajawal text-[12px]"
         style={{ color: Color.green }}
       >
-        المدينة: <Text className="text-red-500">*</Text>
+        المدينة: {isRequired && <Text className="text-red-500">*</Text>}
       </Text>
-      
       <TouchableOpacity
         onPress={openBottomSheet}
         className={`border ${
@@ -203,10 +216,10 @@ const CitySelector = ({
         <AntDesign name="down" size={16} color="#888" />
         <Text
           className={`text-right flex-1 font-tajawal ${
-            selectedCity ? "text-black" : "text-gray-400"
+            localSelectedCity ? "text-black" : "text-gray-400"
           }`}
         >
-          {selectedCity || "اختر مدينتك"}
+          {localSelectedCity || "اختر مدينتك"}
         </Text>
       </TouchableOpacity>
   

@@ -90,20 +90,17 @@ export const verifyNumber = async (phoneData) => {
 
 export const updateUser = async (UserId, credentials) => {
   try {
-    console.log('update user info:', credentials);
+    console.log('this is user id:', UserId);
     const token = await AsyncStorage.getItem('token');
     
-    const formData = { ...credentials };
+    console.log('here is my token', token);
     
-    if (formData.profileImage && formData.profileImage.length > 50) {
-      console.log('Image data length:', formData.profileImage.length);
-      console.log('Image data prefix:', formData.profileImage.substring(0, 50) + '...');
-    }
+    const formData = { ...credentials };
     
     const response = await axios.put(`${API_BASE_URL}/user/${UserId}`, formData, {
       headers: {
         Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       }
     });
     

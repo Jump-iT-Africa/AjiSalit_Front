@@ -223,7 +223,7 @@ export default function DetailsPage() {
       <ScrollView showsVerticalScrollIndicator={false}>
         <View className={containerClassName}>
           <TouchableOpacity onPress={() => router.replace('(home)')}>
-            <View className="bg-[#461e04b3] rounded-full w-8 h-8 flex justify-center items-center">
+            <View className="bg-[#959393b3] rounded-full w-8 h-8 flex justify-center items-center">
               <Feather name="chevron-left" size={22} color="white" />
             </View>
           </TouchableOpacity>

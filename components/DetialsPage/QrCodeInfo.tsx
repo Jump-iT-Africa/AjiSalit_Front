@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent:'space-between',
         borderWidth: 1.5,
-        borderColor: Colors.red,
+        borderColor: Colors.gray,
         borderRadius: 50,
         padding: 0,
         paddingRight: 0,
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
         paddingLeft:20        
     },
     copyButton: {
-        backgroundColor: Colors.red,
+        backgroundColor: Colors.gray,
         width: 60,
         height: 60,
         borderRadius: 50,

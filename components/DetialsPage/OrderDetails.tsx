@@ -1,7 +1,7 @@
 // @ts-nocheck
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform, Modal, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Platform, Modal, TextInput,TouchableWithoutFeedback } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Feather from '@expo/vector-icons/Feather';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -89,10 +89,48 @@ const OrderDetailsCard = ({
   };
   
   const saveChanges = async () => {
-    const dateParts = selectedDate.split('/');
-    const formattedForAPI = dateParts.length === 3 
-      ? `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}` 
-      : selectedDate;
+    // Get formatted date - use current date if no date is selected
+    let formattedForAPI;
+    
+    if (!selectedDate) {
+      // No date selected, use current date
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      formattedForAPI = `${year}-${month}-${day}`;
+    } else {
+      // Format the selected date to ensure YYYY-MM-DD format
+      const dateParts = selectedDate.split('/');
+      if (dateParts.length === 3) {
+        // Convert from DD/MM/YYYY to YYYY-MM-DD
+        const day = dateParts[0].padStart(2, '0');
+        const month = dateParts[1].padStart(2, '0');
+        const year = dateParts[2];
+        formattedForAPI = `${year}-${month}-${day}`;
+      } else {
+        // If the date is already in another format, try to parse it correctly
+        try {
+          const dateObj = new Date(selectedDate);
+          if (!isNaN(dateObj.getTime())) {
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            formattedForAPI = `${year}-${month}-${day}`;
+          } else {
+            throw new Error("Invalid date format");
+          }
+        } catch (error) {
+          console.log("Date parsing error:", error);
+          // Fallback to current date if parsing fails
+          const today = new Date();
+          const year = today.getFullYear();
+          const month = String(today.getMonth() + 1).padStart(2, '0');
+          const day = String(today.getDate()).padStart(2, '0');
+          formattedForAPI = `${year}-${month}-${day}`;
+        }
+      }
+    }
     
     try {
       const result = await dispatch(updateOrderDate({
@@ -102,8 +140,6 @@ const OrderDetailsCard = ({
           newDate: formattedForAPI,
           ChangeDateReason: reason 
         }
-
-
       })).unwrap();
       
       const localStoragValuue = await AsyncStorage.getItem('lastScannedOrder');
@@ -112,8 +148,11 @@ const OrderDetailsCard = ({
       
       console.log('Date updated successfully:', result);
       setUpdateStatus('تم تحديث التاريخ بنجاح');
+      console.log('Date sent to API:', formattedForAPI); // Debug log to verify format
       
-      onDateChange(selectedDate, reason);
+      // Use the correct date format for the callback
+      const displayDate = selectedDate || formatDateForDisplay(new Date());
+      onDateChange(displayDate, reason);
       
       setTimeout(() => {
         setUpdateStatus('');
@@ -128,6 +167,13 @@ const OrderDetailsCard = ({
         setUpdateStatus('');
       }, 3000);
     }
+  };
+  
+  const formatDateForDisplay = (date) => {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
   };
 
   

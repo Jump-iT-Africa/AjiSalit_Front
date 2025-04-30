@@ -1,19 +1,30 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, SafeAreaView, Image, StyleSheet, TouchableOpacity, Modal, Pressable, TextInput, Alert } from 'react-native';
+import { 
+  View, 
+  Text, 
+  SafeAreaView, 
+  Image, 
+  StyleSheet, 
+  TouchableOpacity, 
+  Modal, 
+  TextInput, 
+  Alert, 
+  ScrollView, 
+  KeyboardAvoidingView,
+  Platform
+} from 'react-native';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import DefaultImage from '@/assets/images/profilePage.jpeg';
-import LeonImage from "@/assets/images/noImages.png";
 import HeaderWithBack from '@/components/ui/HeaderWithToolTipAndback';
 import Feather from '@expo/vector-icons/Feather';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useDispatch, useSelector } from 'react-redux';
-import CustomButton from '@/components/ui/CustomButton';
 import WhiteLogo from '@/assets/images/ajisalit_white.png';
-import { UpdateUser,selectUser } from '@/store/slices/userSlice'; 
-import {selectUserRole} from "@/store/slices/userSlice";
-
-
+import { UpdateUser, selectUser } from '@/store/slices/userSlice'; 
+import { selectUserRole } from "@/store/slices/userSlice";
+import CitySelector from '@/components/CompanyRegister/CitySelector';
+import regionsAndCitiesData from "@/constants/Cities/Cities.json";
+import CompanyFieldDropDown from '@/components/CompanyRegister/CompanyFieldDropDown';
 
 const Profile = () => {
     const dispatch = useDispatch();
@@ -22,22 +33,39 @@ const Profile = () => {
     const [Fname, setFname] = useState('');
     const [Lname, setLname] = useState('');
     const [companyName, setCompanyName] = useState('');
-    const [password, setPassword] = useState('******');
+    const [field, setfield] = useState(''); 
     const [modalVisible, setModalVisible] = useState(false);
     const [loading, setLoading] = useState(false);
     const role = useSelector(selectUserRole);
+    const [selectedCity, setSelectedCity] = useState('');
+    const [errors, setErrors] = useState({});
+    const [isSubmitted, setIsSubmitted] = useState(false);
         
-
     useEffect(() => {
       if (user) {
         setFname(user.Fname || '');
         setLname(user.Lname || '');
         setCompanyName(user.companyName || '');
+        setfield(user.field || ''); 
+        if (user.city) {
+          setSelectedCity(user.city);
+        }
+        
         if (user.profileImage) {
           setProfileImage(user.profileImage);
         }
       }
     }, [user]);
+
+    const handleCitySelect = (city) => {
+      setSelectedCity(city.names.ar);
+      setErrors((prev) => ({ ...prev, city: "" }));
+    };
+
+    const handleFieldSelect = (fieldName) => {
+      setfield(fieldName);
+      setErrors((prev) => ({ ...prev, field: "" }));
+    };
 
     const takePhoto = async () => {
       try {
@@ -89,7 +117,6 @@ const Profile = () => {
       }
     };
 
-    
     const uriToBase64 = async (uri) => {
       try {
         const response = await fetch(uri);
@@ -109,161 +136,217 @@ const Profile = () => {
       }
     };
 
+    const validateForm = () => {
+      const newErrors = {};
+      
+      if (!Fname.trim()) {
+        newErrors.fname = "الرجاء إدخال الإسم";
+      }
+      
+      if (!Lname.trim()) {
+        newErrors.lname = "الرجاء إدخال اللقب";
+      }
+      
+      if (!selectedCity) {
+        newErrors.city = "الرجاء اختيار المدينة";
+      }
+      
+      setErrors(newErrors);
+      setIsSubmitted(true);
+      
+      return Object.keys(newErrors).length === 0;
+    };
+
     const handleUpdateUser = async () => {
       try {
+        if (!validateForm()) {
+          return;
+        }
+        
         setLoading(true);
         
         const updateData = {
           Fname,
           Lname,
-          companyName
+          companyName,
+          field,
+          city: selectedCity,
         };
 
         
         if (profileImage && !profileImage.startsWith('http')) {
-          
           const base64Image = await uriToBase64(profileImage);
           if (base64Image) {
             updateData.profileImage = `data:image/jpeg;base64,${base64Image}`;
           }
         }
-        console.log('info user ', updateData);
-        
         
         const resultAction = await dispatch(UpdateUser(updateData));
         
         if (UpdateUser.fulfilled.match(resultAction)) {
-          Alert.alert('Success', 'User information updated successfully');
+          Alert.alert('نجاح', 'تم تحديث معلومات المستخدم بنجاح');
         } else {
           if (resultAction.payload) {
-            Alert.alert('Error', resultAction.payload);
+            Alert.alert('خطأ', resultAction.payload);
           } else {
-            Alert.alert('Error', 'Failed to update user information');
+            Alert.alert('خطأ', 'فشل في تحديث معلومات المستخدم');
           }
         }
       } catch (error) {
         console.error('Error updating user:', error);
-        Alert.alert('Error', 'An unexpected error occurred');
+        Alert.alert('خطأ', 'حدث خطأ غير متوقع');
       } finally {
         setLoading(false);
       }
     };
 
     return (
-      <SafeAreaView className="flex-1 bg-white">
+      <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
         <HeaderWithBack onPress={() => router.push('(home)')} />
-        
-        <View className="px-4">
-          <View className="mx-auto my-2">
-            <Text className="font-bold text-xl text-[#F52525] text-center font-tajawal">معلومات الحساب</Text>
-          </View>
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+          <ScrollView 
+            contentContainerStyle={{ flexGrow: 1 }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View className="px-4">
+              <View className="mx-auto my-2">
+                <Text className="font-bold text-xl text-[#F52525] text-center font-tajawal">معلومات الحساب</Text>
+              </View>
 
-          <View className="items-center justify-center my-4">
-            <TouchableOpacity 
-              onPress={() => setModalVisible(true)}
-              className="mb-2"
-            >
-              <View className="relative">
-                <Image 
-                  source={profileImage ? {uri: profileImage} : DefaultImage} 
-                  className="rounded-full bg-gray-200"
-                  style={styles.profileImage}
-                />
-                <View className="absolute bottom-0 right-0 bg-white p-2 rounded-full border border-gray-200">
-                  <Feather name="camera" size={20} color="black" />
+              <View className="items-center justify-center my-4">
+                <TouchableOpacity 
+                  onPress={() => setModalVisible(true)}
+                  className="mb-2"
+                >
+                  <View className="relative">
+                    <Image 
+                      source={profileImage ? {uri: profileImage} : DefaultImage} 
+                      className="rounded-full bg-gray-200"
+                      style={styles.profileImage}
+                    />
+                    <View className="absolute bottom-0 right-0 bg-white p-2 rounded-full border border-gray-200">
+                      <Feather name="camera" size={20} color="black" />
+                    </View>
+                  </View>
+                </TouchableOpacity>
+                <Text className="font-bold text-lg mt-2 font-tajawalregular">
+                  {Fname} {Lname}
+                </Text>
+              </View>
+
+              <View className="items-end mt-2 pb-32">
+                <View style={{ width: '100%' }}>
+                  <View>
+                    <View className='flex items-end justify-end mb-4'>
+                      <Text className='font-bold text-l text-[#F52525] text-end font-tajawal'>المعلومات الشخصية</Text>
+                    </View>
+                    <View className='flex-row-reverse justify-between w-full'>
+                      <View className='w-[49%]'>
+                        <View className='flex justify-center items-end'>
+                          <Text className='text-start font-tajawalregular mb-2 text-[#2e752f]'>إسم</Text>
+                        </View>
+                        <TextInput
+                          placeholder="الإسم"
+                          value={Fname}
+                          onChangeText={(text) => {
+                            setFname(text);
+                            setErrors((prev) => ({ ...prev, fname: "" }));
+                          }}
+                          placeholderTextColor="#888"
+                          className={`border ${errors.fname && isSubmitted ? 'border-[#F52525]' : 'border-[#2e752f]'} rounded-lg p-3 text-black text-right bg-white font-tajawalregular shadow`}
+                        />
+                        {errors.fname && isSubmitted && (
+                          <Text className="text-[#F52525] text-right text-xs mt-1 font-tajawalregular">
+                            {errors.fname}
+                          </Text>
+                        )}
+                      </View>
+                      <View className='w-[49%]'>
+                        <View className='flex justify-center items-end'>
+                          <Text className='text-start font-tajawalregular mb-2 text-[#2e752f]'>اللقب</Text>
+                        </View>
+                        <TextInput
+                          placeholder="اللقب"
+                          value={Lname}
+                          onChangeText={(text) => {
+                            setLname(text);
+                            setErrors((prev) => ({ ...prev, lname: "" }));
+                          }}
+                          placeholderTextColor="#888"
+                          className={`border ${errors.lname && isSubmitted ? 'border-[#F52525]' : 'border-[#2e752f]'} rounded-lg p-3 text-black text-right bg-white font-tajawalregular shadow`}
+                        />
+                        {errors.lname && isSubmitted && (
+                          <Text className="text-[#F52525] text-right text-xs mt-1 font-tajawalregular">
+                            {errors.lname}
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+                    <View className='flex-row-reverse justify-between w-full'>
+                      <View className='w-[49%] mt-3'>
+                          <View className='flex justify-center items-end'>
+                            <Text className='text-start font-tajawalregular mb-2 text-[#2e752f]'>إسم الشركة</Text>
+                          </View>
+                          <TextInput
+                            placeholder="إسم الشركة"
+                            value={companyName}
+                            onChangeText={setCompanyName}
+                            placeholderTextColor="#888"
+                            className={`border border-[#2e752f] rounded-lg p-3 text-black text-right bg-white font-tajawalregular shadow`}
+                          />
+                      </View>
+                      <View className='w-[49%] mt-4'>
+                        <View className='flex justify-center items-end'>
+                        </View>
+                        <CitySelector 
+                          onCitySelect={handleCitySelect} 
+                          regionsAndCities={regionsAndCitiesData}
+                          initialValue={selectedCity}
+                          selectedCity={selectedCity}
+                          errors={errors}
+                          isSubmitted={isSubmitted}
+                          isRequired={false}
+                        />
+                      </View>
+                    </View>
+                    <View className='mt-0'>
+                      <View className='flex justify-center items-end'>
+                        <Text className='text-start font-tajawalregular mb-2 text-[#2e752f]'>مجال الشركة</Text>
+                      </View>
+                      <CompanyFieldDropDown
+                        errors={errors}
+                        isSubmitted={isSubmitted}
+                        initialValue={field}
+                        selectedField={field}
+                        onFieldSelect={handleFieldSelect}
+                        isRequired={false}
+                      />
+                    </View>
+                    <View className='w-full flex items-center pt-4 mb-10'>
+                      <TouchableOpacity 
+                        onPress={handleUpdateUser}
+                        disabled={loading}
+                        className="flex-row items-center bg-[#F52525] rounded-full px-12 py-3 w-[50%] justify-center space-x-2"
+                      >
+                        <Text className="text-white font-tajawal text-[12px]">
+                          {loading ? 'جاري التأكيد...' : 'تأكيد'}
+                        </Text>
+                        <Image
+                          source={WhiteLogo}
+                          className="w-8 h-8"
+                          resizeMode="contain"
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
                 </View>
               </View>
-            </TouchableOpacity>
-            <Text className="font-bold text-lg mt-2 font-tajawalregular">
-              {Fname} {Lname}
-            </Text>
-          </View>
-
-          <View className="items-end mt-2">
-            <View>
-              <View>
-                <View className='flex items-end justify-end mb-4'>
-                  <Text className='font-bold text-l text-[#F52525] text-end font-tajawal'>المعلومات الشخصية</Text>
-                </View>
-                <View className='flex-row-reverse justify-between w-full '>
-                  <View className='w-[49%]'>
-                    <View className='flex justify-center items-end'>
-                      <Text className='text-start font-tajawalregular mb-2 text-[#2e752f]'>إسم</Text>
-                    </View>
-                    <TextInput
-                      placeholder="الإسم"
-                      value={Fname}
-                      onChangeText={setFname}
-                      placeholderTextColor="#888"
-                      className={`border border-[#2e752f] rounded-lg p-3 text-black text-right bg-white font-tajawalregular shadow`}
-                    />
-                  </View>
-                  <View className='w-[49%]'>
-                    <View className='flex justify-center items-end'>
-                      <Text className=' text-start font-tajawalregular mb-2 text-[#2e752f]'>اللقب</Text>
-                    </View>
-                    <TextInput
-                      placeholder="اللقب"
-                      value={Lname}
-                      onChangeText={setLname}
-                      placeholderTextColor="#888"
-                      className={`border border-[#2e752f] rounded-lg p-3 text-black text-right bg-white font-tajawalregular shadow`}
-                    />
-                  </View>
-                  
-                </View>
-                <View className='w-[100%] mt-4'>
-                    <View className='flex justify-center items-end'>
-                      <Text className=' text-start font-tajawalregular mb-2 text-[#2e752f]'>إسم الشركة</Text>
-                    </View>
-                    <TextInput
-                      placeholder="إسم الشركة"
-                      value={companyName}
-                      onChangeText={setCompanyName}
-                      placeholderTextColor="#888"
-                      className={`border border-[#2e752f] rounded-lg p-3 text-black text-right bg-white font-tajawalregular shadow`}
-                    />
-                  </View>
-                <View className='w-full flex items-center pt-4'>
-                  <TouchableOpacity 
-                    onPress={handleUpdateUser}
-                    disabled={loading}
-                    className="flex-row items-center bg-[#F52525] rounded-full px-12 py-3 w-[50%] justify-center space-x-2"
-                  >
-                    <Text className="text-white font-tajawal text-[14px]">
-                      {loading ? 'جاري التأكيد...' : 'تأكيد'}
-                    </Text>
-                    <Image
-                      source={WhiteLogo}
-                      className="w-8 h-8"
-                      resizeMode="contain"
-                    />
-                  </TouchableOpacity>
-                </View>
-              </View>
-              {/* <View>
-                <View className='flex items-end justify-end mt-4 '>
-                  <Text className='font-bold text-l text-[#F52525] text-end font-tajawal'>
-                    معلومات الأمان
-                  </Text>
-                </View>
-                <View>
-                  <View className='flex justify-center items-end'>
-                    <Text className='text-start font-tajawalregular mb-2 text-[#2e752f]'>الرمز السري </Text>
-                  </View>
-                  <TextInput
-                    placeholder="الرمز السري"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                    placeholderTextColor="#888"
-                    className='border border-[#2e752f] rounded-lg p-3 text-black text-right bg-white font-tajawalregular shadow'
-                  />
-                </View>
-              </View> */}
             </View>
-          </View>
-        </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
 
         <Modal
           animationType="slide"
