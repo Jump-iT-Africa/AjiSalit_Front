@@ -153,7 +153,7 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
     };
 
     const borderStyle = item.isToday 
-    ? "bg-white rounded-3xl p-4 mb-3 shadow-md border-2 border-red-500 flex-row-reverse justify-between items-center border-dotted" 
+    ? "bg-white rounded-3xl p-4 mb-3 shadow-md border-2 border-[#FD8900] flex-row-reverse justify-between items-center border" 
     : "bg-white rounded-3xl p-4 mb-3 shadow-md border border-[#295f2b] flex-row-reverse justify-between items-center ";
 
     return (

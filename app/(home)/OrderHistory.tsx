@@ -247,8 +247,10 @@ export default function OrderHistory() {
   return (
     <SafeAreaView className={`flex-1 bg-gray-100 p-9`}>
       <View className="px-4">
-        <ProfileHeader />
-        <View className="mt-2 mb-4">
+        <View className="mb-10">
+          <ProfileHeader />
+        </View>
+        {/* <View className="mt-2 mb-4">
           <SearchBar 
             onSearch={(text) => {
               
@@ -257,7 +259,7 @@ export default function OrderHistory() {
               
             }} 
           />
-        </View>
+        </View> */}
       </View>
     {filteredOrders.length === 0 ?
       ( 
@@ -265,16 +267,16 @@ export default function OrderHistory() {
           <NoOrdersExists />
         </View>
       ):(
-          <FlashList
-            data={filteredOrders || []}
-            renderItem={renderOrderItem}
-            estimatedItemSize={100}
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-            }
-            showsVerticalScrollIndicator={false}
-            ListFooterComponent={<View className={`h-[100px]`} />}
-          />
+            <FlashList
+              data={filteredOrders || []}
+              renderItem={renderOrderItem}
+              estimatedItemSize={100}
+              refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+              }
+              showsVerticalScrollIndicator={false}
+              ListFooterComponent={<View className={`h-[100px] `} />}
+            />
         )}
         
       <OrderDetailsModal

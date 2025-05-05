@@ -61,8 +61,8 @@ const Home = () => {
           <Text className='text-end text-xl font-tajawal'>الطلبات المتوفرة</Text>
           </View>
           ):(
-            <View className='mt-4  w-full flex items-end'>
-              <View className='bg-white w-[95%] p-2 rounded-xl shadow mx-auto mb-4 flex-row justify-between items-center '>
+              <View className='mt-4  w-full flex items-end'>
+                <View className='bg-white w-[100%] p-2 rounded-xl shadow mx-auto mb-4 flex-row justify-between items-center '>
                   <View>
                     <Image
                       source={Wallet}
@@ -77,8 +77,7 @@ const Home = () => {
                       </View>
                       <Text className='font-tajawalregular text-[12px] text-[#FAD513]'>رصيد ديالك قرب يسالي</Text>
                   </View>
-              </View>
-
+                </View>
             <Text className='text-end text-xl font-tajawal'>الطلبات المتوفرة</Text>
           </View>
           )
@@ -86,7 +85,7 @@ const Home = () => {
         }
          
         </View>
-        <View className='px-4'>
+        {/* <View className='px-4'>
           <SearchBar
             onSearch={(newSearchCode) => {
               setSearchCode(newSearchCode);
@@ -95,7 +94,7 @@ const Home = () => {
             onFilter={handleStatusFilter}
             placeholder="بحث..."
           />
-        </View>
+        </View> */}
         {/* <View className='pt-2'> */}
           {/* {role === 'company' &&
             <DateFiler
