@@ -121,9 +121,9 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
 
     // console.log('this is item', item);
     
-    const [isGray, setIsGray] = useState(true);
-    const [isConfirmed, setIsConfirmed] = useState(false);
+    const [localFinished, setLocalFinished] = useState(item.isFinished);
     const [showModal, setShowModal] = useState(false);
+
 
     const getStatusColor = (type) => {
       switch (type) {
@@ -138,23 +138,32 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
       }
     };
 
+    useEffect(() => {
+      setLocalFinished(item.isFinished);
+    }, [item.isFinished]);
+  
     const handleConfirm = () => {
+      setLocalFinished(true);
+      
       dispatch(finishButtonPressed());
       dispatch(markOrderFinished(item.id));
       dispatch(updateOrderDate({
         orderId: item.id,
         dateData: {
           isFinished: true
-         } 
-    }));
-      setIsGray(!isGray);
-      setIsConfirmed(true);
+        } 
+      }));
+      
       setShowModal(false);
+      
+      setTimeout(() => {
+        dispatch(fetchOrders());
+      }, 500);
     };
 
     const borderStyle = item.isToday 
-    ? "bg-white rounded-3xl p-4 mb-3 shadow-md border-2 border-[#FD8900] flex-row-reverse justify-between items-center border" 
-    : "bg-white rounded-3xl p-4 mb-3 shadow-md border border-[#295f2b] flex-row-reverse justify-between items-center ";
+    ? "bg-white rounded-3xl p-4 mb-3 border-2 border-[#FD8900] flex-row-reverse justify-between items-center border" 
+    : "bg-white rounded-3xl p-4 mb-3 border border-[#295f2b] flex-row-reverse justify-between items-center ";
 
     return (
       <View>
@@ -197,22 +206,22 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
               </View>
             </View>
             <Pressable 
-              onPress={() => !isConfirmed && setShowModal(true)}
-              disabled={isConfirmed || item.isFinished}
-            >
-              <Image 
-                source={AjiSalit}
-                style={{
-                  width: 30,
-                  height: 30,
-                  opacity: item.isFinished ? 1 : 1,
-                  tintColor: item.isFinished ? undefined : 'gray',
-                }}
-                resizeMode='contain'
-              />
-            </Pressable>
+            onPress={() => !localFinished && setShowModal(true)}
+            disabled={localFinished}
+          >
+            <Image 
+              source={AjiSalit}
+              style={{
+                width: 30,
+                height: 30,
+                // Use localFinished for immediate visual feedback
+                tintColor: localFinished ? undefined : 'gray',
+              }}
+              resizeMode='contain'
+            />
+          </Pressable>
           </View>
-        </TouchableOpacity>
+        </TouchableOpacity> 
 
         <Modal
           animationType="fade"
@@ -223,7 +232,6 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
               <Text style={styles.modalText} className='font-tajawalregular'>واش متأكد بغي تأكد الطلب ؟</Text>
-              
               <View style={styles.buttonContainer}>
                 <Pressable
                   style={[styles.button, styles.buttonConfirm]}
@@ -247,7 +255,7 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
   };
 
   const renderOrder = useCallback(({ item }) => {
-    return <OrderItem item={item} />;
+    return <OrderItem key={`${item.id}-${item.isFinished}`} item={item} />;
   }, []);
 
   if (loading && !refreshing && !ordersLoaded) {
@@ -315,6 +323,8 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
         data={filteredOrders || []}
         renderItem={renderOrder}
         estimatedItemSize={200}
+        extraData={filteredOrders.map(order => order.isFinished).join(',')}
+        keyExtractor={item => `${item.id}-${item.isFinished ? 'finished' : 'unfinished'}`}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
@@ -338,7 +348,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 35,
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: 'red',
     shadowOffset: {
       width: 0,
       height: 2

@@ -55,7 +55,7 @@ const UniqueIdModal = ({ visible, onClose, uniqueId }:any) => {
             backgroundColor: '#F5F6F7',
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
-            height: '70%',
+            height: '80%',
             padding: 16,
             
           }}
@@ -65,11 +65,11 @@ const UniqueIdModal = ({ visible, onClose, uniqueId }:any) => {
 
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
-              <View className='flex-row items-center justify-between w-full'>
+              <View className='flex-row items-center justify-center w-full'>
                 <TouchableOpacity style={styles.closeButton} onPress={onClose}>
                 </TouchableOpacity>
                 
-                <Text style={styles.title} className='font-tajawalregular' >رمز الطلب</Text>
+                <Text style={styles.title} className='font-tajawalregular text-center' >رمز الطلب</Text>
               </View>
               
               <Text style={styles.subTitle} className='font-tajawalregular'>
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
   modalContent: {
     width: '95%',
     borderRadius: 15,
-    padding: 20,
+    padding: 0,
     alignItems: 'center',
   },
  

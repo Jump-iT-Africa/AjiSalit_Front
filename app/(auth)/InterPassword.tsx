@@ -77,7 +77,6 @@ export default function interPassword() {
     }
   };
 
-  // Single function to handle login
   const handleLogin = (pinCode) => {
     setIsLoading(true);
     setErrorMessage('');
@@ -106,14 +105,15 @@ export default function interPassword() {
         console.log('Login error:', err);
         setIsLoading(false);
         setErrorMessage('كلمة المرور غير صحيحة');
+        setCode('');
         console.log('login failed');
         
-        // Show error animation
         setIsError(true);
         Vibration.vibrate([0, 400]);
         
         setTimeout(() => {
           setIsError(false);
+            setCode('');
         }, 1000);
       });
   };
@@ -189,11 +189,11 @@ export default function interPassword() {
           className="w-40 h-40 mb-12"
         />
         <Text className="text-white font-tajawal text-center mb-8 text-xl px-10 ">
-          سلام {userName}, دخل كود سري للتطبيق باش تكمل.
+          سلام {userName}
         </Text>
         
         {/* PIN Dots */}
-        <View className="flex-row justify-center items-center space-x-5 mb-12">
+        <View className="flex-row justify-center items-center space-x-5 mb-8">
           {[...Array(PIN_LENGTH)].map((_, index) => (
             <View key={index} className="w-5 h-5 justify-center items-center">
               {index === lastVisibleIndex ? (
@@ -218,7 +218,7 @@ export default function interPassword() {
         
         {/* Error message display */}
         {errorMessage ? (
-          <Text className="text-[#FAD513] text-center text-[16px] mt-4 font-tajawal">
+          <Text className="text-[#FAD513] text-center text-[16px] mt-4 font-tajawal ">
             {errorMessage}
           </Text>
         ) : null}

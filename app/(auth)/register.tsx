@@ -193,13 +193,15 @@ const Register: React.FC = () => {
     if (error) {
       console.log(error);
       if (error.message === "Phone number already exists") {
-        router.navigate({
-          pathname: '/InterPassword',
-          params: {
-            userName: error.UserName,
-            phoneNumber: phone  
-          }
-        });
+        setTimeout(() => {
+          router.navigate({
+            pathname: '/InterPassword',
+            params: {
+              userName: error.UserName,
+              phoneNumber: phone
+            }
+          })
+        }, 500);
       } else {
         setErrorMessage(error.message || "حدث خطأ ما");
       }
@@ -301,11 +303,15 @@ const Register: React.FC = () => {
                       )}
                     </TouchableOpacity>
                   </View>
-                  {errorMessage ? (
-                      <Text className="text-[#F52525] text-center text-[12px] mb-4 font-tajawal">
-                        {errorMessage}
+                  {errorMessage === "Phone number already exists" ? (
+                      <Text className="text-[#2e752f] text-center text-[12px] mb-4 font-tajawal">
+                        رقم الهاتف موجود بالفعل
                       </Text>
-                    ) : null}
+                    ) : (
+                    <Text className="text-[#F52525] text-center text-[12px] mb-4 font-tajawal">
+                      {errorMessage}
+                    </Text>
+                  )}
                 </View>
               </SafeAreaView>
             </AppGradient>

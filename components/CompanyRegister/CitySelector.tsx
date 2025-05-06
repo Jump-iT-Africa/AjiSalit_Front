@@ -25,7 +25,8 @@ const CitySelector = ({
   errors = {}, 
   isSubmitted = false,
   regionsAndCities,
-  isRequired = true
+  isRequired = true,
+  borderColor = "#2e752f"
 }) => {
   const [searchText, setSearchText] = useState("");
   const [filteredCities, setFilteredCities] = useState([]);
@@ -210,12 +211,12 @@ const CitySelector = ({
       <TouchableOpacity
         onPress={openBottomSheet}
         className={`border ${
-          errors.city && isSubmitted ? "border-red-500" : "border-[#2e752f]"
-        } rounded-lg p-3 bg-white flex-row justify-between items-center`}
+          errors.city && isSubmitted ? `border-red-500` : `border-[${borderColor}]`
+        } rounded-lg p-3 bg-white flex-row justify-between items-center font-light`}
       >
         <AntDesign name="down" size={16} color="#888" />
         <Text
-          className={`text-right flex-1 font-tajawal ${
+          className={`text-right flex-1 font-tajawalregular ${
             localSelectedCity ? "text-black" : "text-gray-400"
           }`}
         >

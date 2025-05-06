@@ -181,7 +181,7 @@ export const selectDateFilter = state => state?.orders?.dateFilter || null;
 export const selectFilteredOrders = state => {
   if (!state || !state.orders) {
     return [];
-  }
+  } 
   
   const { items, searchTerm, statusFilter, dateFilter } = state.orders;
   

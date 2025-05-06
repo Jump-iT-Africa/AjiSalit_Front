@@ -32,7 +32,6 @@
         <category android:name="android.intent.category.DEFAULT"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="aji-salit"/>
-        <data android:scheme="app.ajisalit.com"/>
         <data android:scheme="exp+ajisalit"/>
       </intent-filter>
     </activity>

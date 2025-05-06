@@ -25,6 +25,9 @@ import { selectUserRole } from "@/store/slices/userSlice";
 import CitySelector from '@/components/CompanyRegister/CitySelector';
 import regionsAndCitiesData from "@/constants/Cities/Cities.json";
 import CompanyFieldDropDown from '@/components/CompanyRegister/CompanyFieldDropDown';
+import Color from "@/constants/Colors";
+import CustomButton from '@/components/ui/CustomButton';
+
 
 const Profile = () => {
     const dispatch = useDispatch();
@@ -40,7 +43,10 @@ const Profile = () => {
     const [selectedCity, setSelectedCity] = useState('');
     const [errors, setErrors] = useState({});
     const [isSubmitted, setIsSubmitted] = useState(false);
+    const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
         
+
+
     useEffect(() => {
       if (user) {
         setFname(user.Fname || '');
@@ -184,7 +190,8 @@ const Profile = () => {
         const resultAction = await dispatch(UpdateUser(updateData));
         
         if (UpdateUser.fulfilled.match(resultAction)) {
-          Alert.alert('نجاح', 'تم تحديث معلومات المستخدم بنجاح');
+          // Show success modal when update is successful
+          setIsSuccessModalVisible(true);
         } else {
           if (resultAction.payload) {
             Alert.alert('خطأ', resultAction.payload);
@@ -202,7 +209,7 @@ const Profile = () => {
 
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
-        <HeaderWithBack onPress={() => router.push('(home)')} />
+        <HeaderWithBack onPress={() => router.back()} />
         <KeyboardAvoidingView 
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
@@ -215,7 +222,6 @@ const Profile = () => {
               <View className="mx-auto my-2">
                 <Text className="font-bold text-xl text-[#F52525] text-center font-tajawal">معلومات الحساب</Text>
               </View>
-
               <View className="items-center justify-center my-4">
                 <TouchableOpacity 
                   onPress={() => setModalVisible(true)}
@@ -244,7 +250,7 @@ const Profile = () => {
                       <Text className='font-bold text-l text-[#F52525] text-end font-tajawal'>المعلومات الشخصية</Text>
                     </View>
                     <View className='flex-row-reverse justify-between w-full'>
-                      <View className='w-[49%]'>
+                      <View className='w-[47%]'>
                         <View className='flex justify-center items-end'>
                           <Text className='text-start font-tajawalregular mb-2 text-[#2e752f]'>إسم</Text>
                         </View>
@@ -256,7 +262,7 @@ const Profile = () => {
                             setErrors((prev) => ({ ...prev, fname: "" }));
                           }}
                           placeholderTextColor="#888"
-                          className={`border ${errors.fname && isSubmitted ? 'border-[#F52525]' : 'border-[#2e752f]'} rounded-lg p-3 text-black text-right bg-white font-tajawalregular shadow`}
+                          className={`border ${errors.fname && isSubmitted ? 'border-[#F52525]' : 'border-[#9ca3af]'} rounded-lg p-3 text-black text-right bg-white font-tajawalregular `}
                         />
                         {errors.fname && isSubmitted && (
                           <Text className="text-[#F52525] text-right text-xs mt-1 font-tajawalregular">
@@ -264,7 +270,7 @@ const Profile = () => {
                           </Text>
                         )}
                       </View>
-                      <View className='w-[49%]'>
+                      <View className='w-[47%]'>
                         <View className='flex justify-center items-end'>
                           <Text className='text-start font-tajawalregular mb-2 text-[#2e752f]'>اللقب</Text>
                         </View>
@@ -276,7 +282,7 @@ const Profile = () => {
                             setErrors((prev) => ({ ...prev, lname: "" }));
                           }}
                           placeholderTextColor="#888"
-                          className={`border ${errors.lname && isSubmitted ? 'border-[#F52525]' : 'border-[#2e752f]'} rounded-lg p-3 text-black text-right bg-white font-tajawalregular shadow`}
+                          className={`border ${errors.lname && isSubmitted ? 'border-[#F52525]' : 'border-[#9ca3af]'} rounded-lg p-3 text-black text-right bg-white font-tajawalregular `}
                         />
                         {errors.lname && isSubmitted && (
                           <Text className="text-[#F52525] text-right text-xs mt-1 font-tajawalregular">
@@ -286,19 +292,25 @@ const Profile = () => {
                       </View>
                     </View>
                     <View className='flex-row-reverse justify-between w-full'>
-                      <View className='w-[49%] mt-3'>
-                          <View className='flex justify-center items-end'>
-                            <Text className='text-start font-tajawalregular mb-2 text-[#2e752f]'>إسم الشركة</Text>
-                          </View>
-                          <TextInput
-                            placeholder="إسم الشركة"
-                            value={companyName}
-                            onChangeText={setCompanyName}
-                            placeholderTextColor="#888"
-                            className={`border border-[#2e752f] rounded-lg p-3 text-black text-right bg-white font-tajawalregular shadow`}
-                          />
+                      {role === 'company' ? 
+                      <View className='w-[47%] mt-3'>
+                      <View className='flex justify-center items-end'>
+                        <Text className='text-start font-tajawalregular mb-2 text-[#2e752f]'>إسم الشركة</Text>
                       </View>
-                      <View className='w-[49%] mt-4'>
+                      <TextInput
+                        placeholder="إسم الشركة"
+                        value={companyName}
+                        onChangeText={setCompanyName}
+                        placeholderTextColor="#888"
+                        className={`border border-[#9ca3af] rounded-lg p-3 text-black text-right bg-white font-tajawalregular `}
+                      />
+                    </View>
+
+                    :null
+                    
+                    }
+                      
+                      <View className={`${role === 'company' ? 'w-[47%]' :  'w-[100%]'} mt-4`}>
                         <View className='flex justify-center items-end'>
                         </View>
                         <CitySelector 
@@ -309,10 +321,12 @@ const Profile = () => {
                           errors={errors}
                           isSubmitted={isSubmitted}
                           isRequired={false}
+                          borderColor='#9ca3af'
                         />
                       </View>
                     </View>
-                    <View className='mt-0'>
+                    {role === 'company' ?
+                    <View className='mt-0' >
                       <View className='flex justify-center items-end'>
                         <Text className='text-start font-tajawalregular mb-2 text-[#2e752f]'>مجال الشركة</Text>
                       </View>
@@ -323,15 +337,19 @@ const Profile = () => {
                         selectedField={field}
                         onFieldSelect={handleFieldSelect}
                         isRequired={false}
+                        borderColor='#9ca3af'
                       />
                     </View>
+                    :
+                      null
+                    }
                     <View className='w-full flex items-center pt-4 mb-10'>
                       <TouchableOpacity 
                         onPress={handleUpdateUser}
                         disabled={loading}
                         className="flex-row items-center bg-[#F52525] rounded-full px-12 py-3 w-[50%] justify-center space-x-2"
                       >
-                        <Text className="text-white font-tajawal text-[12px]">
+                        <Text className="text-white font-tajawal text-[14px]">
                           {loading ? 'جاري التأكيد...' : 'تأكيد'}
                         </Text>
                         <Image
@@ -348,6 +366,7 @@ const Profile = () => {
           </ScrollView>
         </KeyboardAvoidingView>
 
+        {/* Photo Selection Modal */}
         <Modal
           animationType="slide"
           transparent={true}
@@ -380,6 +399,69 @@ const Profile = () => {
               </TouchableOpacity>
             </View>
           </View>
+        </Modal>
+
+        {/* Success Modal */}
+        <Modal
+          visible={isSuccessModalVisible}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setIsSuccessModalVisible(false)}
+        >
+          <TouchableOpacity 
+            style={{ flex: 1, backgroundColor: 'rgba(47, 117, 47, 0.48)' }}
+            activeOpacity={1}
+          >
+            <TouchableOpacity 
+              activeOpacity={1}
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                backgroundColor: 'white',
+                borderTopLeftRadius: 20,
+                borderTopRightRadius: 20,
+                height: '60%',
+                padding: 16
+              }}
+            >
+              <View style={{ 
+                width: 60, 
+                height: 5, 
+                backgroundColor: Color.green, 
+                borderRadius: 5, 
+                alignSelf: 'center',
+                marginBottom: 10
+              }} />
+              
+              <View className="flex-1 items-center justify-center h-full py-8">
+                <Image 
+                  source={require('@/assets/images/happyLeon.png')}
+                  style={{ width: 240, height: 240 }}
+                  resizeMode="contain"
+                />
+                <Text className="text-center text-black text-2xl font-tajawal font-bold" style={styles.FontText}>
+                  مبروك!
+                </Text>
+                <Text className="text-gray-700 text-base text-center p-2 font-tajawalregular">
+                  تم تحديث معلوماتك بنجاح.
+                </Text>
+                <View className="w-full mt-8">
+                  <CustomButton
+                    onPress={() => {
+                      setIsSuccessModalVisible(false);
+                      router.replace("/(home)");
+                    }}
+                    title="انتقل للصفحة الرئيسية"
+                    textStyles="text-sm font-tajawal px-2 py-0 text-white pt-2"
+                    containerStyles="w-[90%] m-auto bg-[#F52525] rounded-full p-3"
+                    disabled={false}
+                  />
+                </View>
+              </View>
+            </TouchableOpacity>
+          </TouchableOpacity>
         </Modal>
       </SafeAreaView>
     );

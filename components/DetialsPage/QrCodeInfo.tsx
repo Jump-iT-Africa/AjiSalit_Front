@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
         paddingLeft:20        
     },
     copyButton: {
-        backgroundColor: Colors.gray,
+        backgroundColor: Colors.green,
         width: 60,
         height: 60,
         borderRadius: 50,

@@ -35,7 +35,7 @@ export const login = createAsyncThunk(
       console.log('Login response form login method:', response);
       
       await AsyncStorage.setItem('token', response.token);
-      await AsyncStorage.setItem('user', JSON.stringify(response.user));
+      await AsyncStorage.setItem('user', JSON.stringify(response.user || response));
       
 
       
@@ -127,15 +127,14 @@ export const UpdateUser = createAsyncThunk(
       console.log('info to update', credentials);
       const user = await AsyncStorage.getItem('user');
       const userData = JSON.parse(user);
+      console.log('this is the saved user ', userData);
       console.log('this is the content of UserData id', user);
       
-      // Try multiple ID fields - this is where your issue is
       const userId = userData.id || userData._id;
       
       if (!userId) {
         console.error('No user ID found in stored user data:', userData);
         
-        // Fallback to the ID in Redux state
         const state = getState();
         const stateUserId = state.user.id;
         

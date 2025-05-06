@@ -18,6 +18,7 @@ const CompanyFieldDropDown = ({
   errors,
   isSubmitted,
   isRequired = true,
+  borderColor = "#2e752f"
 }) => {
   const [localSelectedField, setLocalSelectedField] = useState(initialValue || selectedField);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -44,18 +45,17 @@ const CompanyFieldDropDown = ({
     Keyboard.dismiss();
     closeModal();
   };
-
   return (
     <View className="mb-3">
       <TouchableOpacity
         onPress={openModal}
         className={`border ${
-          isSubmitted && isRequired && !localSelectedField ? 'border-red-500' : 'border-[#2e752f]'
+          isSubmitted && isRequired && !localSelectedField ? 'border-red-500' : `border-[${borderColor}]`
         } rounded-lg p-3 bg-white flex-row justify-between items-center`}
       >
         <AntDesign name="down" size={16} color="#888" />
         <Text
-          className={`text-right flex-1 font-tajawal ${
+          className={`text-right flex-1 font-tajawalregular ${
             localSelectedField ? "text-black" : "text-gray-400"
           }`}
         >
