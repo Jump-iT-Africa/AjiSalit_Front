@@ -1,8 +1,9 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit';
 import { saveUserToDB, loginUser, getAuthToken, getUserData, verifyNumber, updateUser } from '@/services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {clearCurrentOrder} from "@/store/slices/OrdersManagment"
 
+// Async thunks remain unchanged
 export const registerUser = createAsyncThunk(
   'user/register',
   async (userData, { rejectWithValue }) => {
@@ -26,7 +27,6 @@ export const registerUser = createAsyncThunk(
 
 export const login = createAsyncThunk(
   'user/login',
-
   async (credentials, { rejectWithValue }) => {
     try {
       console.log('password is', credentials.password);
@@ -37,11 +37,9 @@ export const login = createAsyncThunk(
       await AsyncStorage.setItem('token', response.token);
       await AsyncStorage.setItem('user', JSON.stringify(response.user || response));
       
-
-      
       return {
         token: response.token,
-        user: response.user || response.data ||  response.data.user
+        user: response.user || response.data || response.data.user
       };
 
     } catch (error) {
@@ -50,6 +48,7 @@ export const login = createAsyncThunk(
   }
 );
 
+// Other thunks remain unchanged
 export const restoreAuthState = createAsyncThunk(
   'user/restore',
   async (_, { rejectWithValue }) => {
@@ -71,7 +70,6 @@ export const restoreAuthState = createAsyncThunk(
     }
   }
 );
-
 
 export const verifyPhoneNumber = createAsyncThunk(
   'user/verify',
@@ -133,7 +131,7 @@ export const UpdateUser = createAsyncThunk(
       const userId = userData.id || userData._id;
       
       if (!userId) {
-        console.error('No user ID found in stored user data:', userData);
+        console.log('No user ID found in stored user data:', userData);
         
         const state = getState();
         const stateUserId = state.user.id;
@@ -192,7 +190,6 @@ const initialState = {
   profileImage: null, 
   token: null,
   isAuthenticated: false,  
-
   password: '',
   
   loading: false,
@@ -206,6 +203,7 @@ const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
+    // Reducers remain unchanged
     setPhoneNumber: (state, action) => {
       state.phoneNumber = action.payload;
     },
@@ -233,7 +231,6 @@ const userSlice = createSlice({
       state.ownRef = ownRef;
       state.refBy = refBy;
     },
-    
     logout: (state) => {
       Object.assign(state, initialState);
       
@@ -249,9 +246,7 @@ const userSlice = createSlice({
       state.error = null;
       state.success = false;
     },
-    
     resetUserState: () => initialState,
-    
     resetVerificationState: (state) => {
       state.verificationLoading = false;
       state.verificationSuccess = false;
@@ -265,6 +260,7 @@ const userSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    // ExtraReducers remain unchanged
     builder.addCase(registerUser.pending, (state) => {
       state.loading = true;
       state.error = null;
@@ -289,15 +285,13 @@ const userSlice = createSlice({
       state.listRefs = user.listRefs || [];
       state.profileImage = user.profileImage || null;
     });
-
     builder.addCase(registerUser.rejected, (state, action) => {
       state.loading = false;
       state.error = action.payload;
       state.isAuthenticated = false;
     });
 
-
-    // Loginx
+    // Login
     builder.addCase(login.pending, (state) => {
       state.loading = true;
       state.error = null;
@@ -356,6 +350,7 @@ const userSlice = createSlice({
       state.isAuthenticated = false;
     });
     
+    // Other cases
     builder.addCase(verifyPhoneNumber.pending, (state) => {
       state.verificationLoading = true;
       state.verificationSuccess = false;
@@ -418,16 +413,32 @@ export const {
 
 export default userSlice.reducer;
 
-export const selectIsAuthenticated = (state) => state.user.isAuthenticated;
-export const selectToken = (state) => state.user.token;
-export const selectUserData = (state) => {
-  const { id, Fname, Lname, companyName, phoneNumber, role, city, field, ice, ownRef, listRefs, profileImage } = state.user;
-  return { id, Fname, Lname, companyName, phoneNumber, role, city, field, ice, ownRef, listRefs, profileImage };
-};
-export const selectUserRole = (state) => state.user.role;
-export const selectUser = (state) => state.user;
-export const selectLoading = (state) => state.user.loading;
-export const selectError = (state) => state.user.error;
-export const selectVerificationLoading = (state) => state.user.verificationLoading;
-export const selectVerificationSuccess = (state) => state.user.verificationSuccess;
-export const selectVerificationData = (state) => state.user.verificationData;
+// Basic selectors
+const selectUser = state => state.user;
+export const selectIsAuthenticated = state => state.user.isAuthenticated;
+export const selectToken = state => state.user.token;
+export const selectUserRole = state => state.user.role;
+export const selectLoading = state => state.user.loading;
+export const selectError = state => state.user.error;
+export const selectVerificationLoading = state => state.user.verificationLoading;
+export const selectVerificationSuccess = state => state.user.verificationSuccess;
+export const selectVerificationData = state => state.user.verificationData;
+
+// Memoized selector for userData
+export const selectUserData = createSelector(
+  [selectUser],
+  (user) => ({
+    id: user.id,
+    Fname: user.Fname,
+    Lname: user.Lname,
+    companyName: user.companyName,
+    phoneNumber: user.phoneNumber,
+    role: user.role,
+    city: user.city, 
+    field: user.field,
+    ice: user.ice,
+    ownRef: user.ownRef,
+    listRefs: user.listRefs,
+    profileImage: user.profileImage
+  })
+);

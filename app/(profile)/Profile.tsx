@@ -11,7 +11,9 @@ import {
   Alert, 
   ScrollView, 
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  TouchableWithoutFeedback,
+  Touchable
 } from 'react-native';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
@@ -20,7 +22,7 @@ import HeaderWithBack from '@/components/ui/HeaderWithToolTipAndback';
 import Feather from '@expo/vector-icons/Feather';
 import { useDispatch, useSelector } from 'react-redux';
 import WhiteLogo from '@/assets/images/ajisalit_white.png';
-import { UpdateUser, selectUser } from '@/store/slices/userSlice'; 
+import { UpdateUser, selectUserData } from '@/store/slices/userSlice'; 
 import { selectUserRole } from "@/store/slices/userSlice";
 import CitySelector from '@/components/CompanyRegister/CitySelector';
 import regionsAndCitiesData from "@/constants/Cities/Cities.json";
@@ -29,9 +31,10 @@ import Color from "@/constants/Colors";
 import CustomButton from '@/components/ui/CustomButton';
 
 
+
 const Profile = () => {
     const dispatch = useDispatch();
-    const user = useSelector(selectUser); 
+    const user = useSelector(selectUserData); 
     const [profileImage, setProfileImage] = useState(null);
     const [Fname, setFname] = useState('');
     const [Lname, setLname] = useState('');
@@ -44,6 +47,7 @@ const Profile = () => {
     const [errors, setErrors] = useState({});
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
+    const [isChanged , setIsChanged] = useState(false);
         
 
 
@@ -349,8 +353,8 @@ const Profile = () => {
                         disabled={loading}
                         className="flex-row items-center bg-[#F52525] rounded-full px-12 py-3 w-[50%] justify-center space-x-2"
                       >
-                        <Text className="text-white font-tajawal text-[14px]">
-                          {loading ? 'جاري التأكيد...' : 'تأكيد'}
+                        <Text className="text-white font-tajawal text-[13px]">
+                          {loading ? 'جاري التأكيد' : 'تأكيد'}
                         </Text>
                         <Image
                           source={WhiteLogo}
@@ -373,7 +377,7 @@ const Profile = () => {
           visible={modalVisible}
           onRequestClose={() => setModalVisible(false)}
         >
-          <View style={styles.centeredView}>
+          <TouchableOpacity style={styles.centeredView} onPress={() => setModalVisible(false)}>
             <View style={styles.modalView}>
               <Text style={styles.modalTitle} className='font-tajawal text-[#2e752f]'>تحديث الصورة الشخصية</Text>
               
@@ -398,70 +402,67 @@ const Profile = () => {
                 <Text style={styles.cancelButtonText} className='font-tajawalregular'>إلغاء</Text>
               </TouchableOpacity>
             </View>
-          </View>
+          </TouchableOpacity>
         </Modal>
 
-        {/* Success Modal */}
         <Modal
           visible={isSuccessModalVisible}
           transparent={true}
           animationType="slide"
           onRequestClose={() => setIsSuccessModalVisible(false)}
         >
-          <TouchableOpacity 
-            style={{ flex: 1, backgroundColor: 'rgba(47, 117, 47, 0.48)' }}
-            activeOpacity={1}
-          >
-            <TouchableOpacity 
-              activeOpacity={1}
-              style={{
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                backgroundColor: 'white',
-                borderTopLeftRadius: 20,
-                borderTopRightRadius: 20,
-                height: '60%',
-                padding: 16
-              }}
-            >
-              <View style={{ 
-                width: 60, 
-                height: 5, 
-                backgroundColor: Color.green, 
-                borderRadius: 5, 
-                alignSelf: 'center',
-                marginBottom: 10
-              }} />
-              
-              <View className="flex-1 items-center justify-center h-full py-8">
-                <Image 
-                  source={require('@/assets/images/happyLeon.png')}
-                  style={{ width: 240, height: 240 }}
-                  resizeMode="contain"
-                />
-                <Text className="text-center text-black text-2xl font-tajawal font-bold" style={styles.FontText}>
-                  مبروك!
-                </Text>
-                <Text className="text-gray-700 text-base text-center p-2 font-tajawalregular">
-                  تم تحديث معلوماتك بنجاح.
-                </Text>
-                <View className="w-full mt-8">
-                  <CustomButton
-                    onPress={() => {
-                      setIsSuccessModalVisible(false);
-                      router.replace("/(home)");
-                    }}
-                    title="انتقل للصفحة الرئيسية"
-                    textStyles="text-sm font-tajawal px-2 py-0 text-white pt-2"
-                    containerStyles="w-[90%] m-auto bg-[#F52525] rounded-full p-3"
-                    disabled={false}
-                  />
+          <TouchableWithoutFeedback onPress={() => setIsSuccessModalVisible(false)}>
+            <View style={{ flex: 1, backgroundColor: 'rgba(47, 117, 47, 0.48)' }}>
+              <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
+                <View style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  backgroundColor: 'white',
+                  borderTopLeftRadius: 20,
+                  borderTopRightRadius: 20,
+                  height: '60%',
+                  padding: 16
+                }}>
+                  <View style={{ 
+                    width: 60, 
+                    height: 5, 
+                    backgroundColor: Color.green, 
+                    borderRadius: 5, 
+                    alignSelf: 'center',
+                    marginBottom: 10
+                  }} />
+                  
+                  <View className="flex-1 items-center justify-center h-full py-8">
+                    <Image 
+                      source={require('@/assets/images/happyLeon.png')}
+                      style={{ width: 240, height: 240 }}
+                      resizeMode="contain"
+                    />
+                    <Text className="text-center text-[#2e752f] text-2xl font-tajawal font-bold" style={styles.FontText}>
+                      مبروك!
+                    </Text>
+                    <Text className="text-gray-700 text-base text-center p-2 font-tajawalregular">
+                      تم تحديث معلوماتك بنجاح.
+                    </Text>
+                    <View className="w-full mt-8">
+                      <CustomButton
+                        onPress={() => {
+                          setIsSuccessModalVisible(false);
+                          router.replace("/(home)");
+                        }}
+                        title="انتقل للصفحة الرئيسية"
+                        textStyles="text-sm font-tajawal px-2 py-0 text-white pt-2"
+                        containerStyles="w-[90%] m-auto bg-[#F52525] rounded-full p-3"
+                        disabled={false}
+                      />
+                    </View>
+                  </View>
                 </View>
-              </View>
-            </TouchableOpacity>
-          </TouchableOpacity>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
         </Modal>
       </SafeAreaView>
     );

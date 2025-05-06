@@ -78,8 +78,10 @@ const BottomSheetComponent = forwardRef<BottomSheetComponentRef, BottomSheetComp
           return false;
         };
 
-        BackHandler.addEventListener('hardwareBackPress', onBackPress);
-        return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+        // Fixed BackHandler event listener management
+        const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+        return () => subscription.remove(); // The correct way to remove the listener
       }, [closeOnPressBack, isOpen])
     );
 
@@ -130,9 +132,7 @@ const BottomSheetComponent = forwardRef<BottomSheetComponentRef, BottomSheetComp
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
             >
-             <ScrollView style={{ flex: 1 }}>
-               {children}
-             </ScrollView>
+              {children}
             </ContentComponent>
           </BottomSheetModal>
       </BottomSheetModalProvider>

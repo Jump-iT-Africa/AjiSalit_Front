@@ -34,10 +34,9 @@ const UpdatePassword = () => {
           </View>
 
           <View style={styles.card}>
-            {/* Current Password */}
             <View style={styles.inputContainer}>
               <View style={styles.labelContainer}>
-                <Text style={styles.label}>الكود الحالي</Text>
+                <Text style={styles.label} className='font-bold'>الكود الحالي</Text>
               </View>
 
               <View style={styles.inputWrapper}>
@@ -61,12 +60,10 @@ const UpdatePassword = () => {
               </View>
             </View>
 
-            {/* New Password */}
             <View style={styles.inputContainer}>
               <View style={styles.labelContainer}>
                 <Text style={styles.label}>الكود الجديد</Text>
               </View>
-
               <View style={styles.inputWrapper}>
                 <TextInput
                   value={newPassword}
@@ -116,7 +113,6 @@ const UpdatePassword = () => {
             </View>
           </View>
 
-          {/* Mascot Image */}
           <View style={styles.mascotContainer}>
             <Image 
               source={require('@/assets/images/LeonEdit.png')} 
@@ -124,8 +120,6 @@ const UpdatePassword = () => {
               resizeMode="contain"
             />
           </View>
-
-          {/* Action Buttons */}
           <View style={styles.buttonContainer}>
             <TouchableOpacity 
               style={styles.cancelButton}
@@ -150,26 +144,33 @@ const UpdatePassword = () => {
 }
 
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
     backgroundColor: '#f8f8f8',
   },
+
   safeArea: {
     flex: 1,
   },
+
   content: {
     flex: 1,
   },
+
   titleContainer: {
-    marginVertical: 16,
+    marginBottom: 20,
+    marginTop:-19,
     alignItems: 'center',
   },
+
   title: {
     fontSize: 22,
     color: '#F52525',
     fontFamily: 'Tajawal',
     fontWeight: 'bold',
   },
+
   card: {
     backgroundColor: '#fff',
     width: '90%',
@@ -179,28 +180,39 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
-    padding: 16,
+    padding: 6,
+    paddingLeft: 16,
+    paddingRight: 16,
+    paddingBottom: 16,  
   },
+
   inputContainer: {
     width: '100%',
-    marginTop: 12,
+    marginTop: 0,
   },
+
   labelContainer: {
     alignItems: 'flex-end',
     marginBottom: 8,
   },
+
   label: {
-    fontFamily: 'TajawalRegular',
+    fontFamily: 'Tajawal',
+    marginTop:10,
     color: '#2e752f',
-    fontSize: 16,
+    fontSize: 14,
+    fontWeight: "bold",
+    marginRight:5
   },
+
   inputWrapper: {
     position: 'relative',
   },
-  input: {
+
+  input:{
     backgroundColor: '#efefef',
     borderRadius: 20,
-    paddingVertical: 18,
+    paddingVertical: 13,
     paddingHorizontal: 20,
     textAlign: 'right',
     fontFamily: 'TajawalRegular',
@@ -208,22 +220,24 @@ const styles = StyleSheet.create({
     color: '#000',
     borderWidth: 0,
   },
-  eyeIcon: {
+  
+  eyeIcon:{
     position: 'absolute',
     top: '50%',
     transform: [{ translateY: -12 }],
     left: 16,
   },
-  mascotContainer: {
+  mascotContainer:{
     alignItems: 'center',
-    marginTop: 30,
+    marginTop:10,
     marginBottom: 20,
   },
-  mascotImage: {
-    width: 180,
-    height: 180,
+  mascotImage:{
+    width:260,
+    height: 260,
+    objectFit:"contain",
   },
-  buttonContainer: {
+  buttonContainer:{
     flexDirection: 'row',
     justifyContent: 'center',
     marginTop: 10,

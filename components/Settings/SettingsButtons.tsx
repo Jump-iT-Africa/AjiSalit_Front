@@ -5,8 +5,7 @@ import TooltipComponent from '../ui/TooltipComponent';
 
 const SettingsButtons = ({ children, content, onPress }) => {
   return (
-    <TouchableOpacity onPress={onPress} className='bg-white  rounded-lg p-4 flex-row-reverse gap-x-2 items-center mb-4 w-[90%] mx-auto shadow-sm'>
-      
+    <TouchableOpacity onPress={onPress} className='bg-white rounded-lg p-4 flex-row-reverse gap-x-2 items-center mb-4 w-[90%] mx-auto shadow-sm'>
       <View>
         {children}
       </View>

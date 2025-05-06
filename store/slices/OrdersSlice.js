@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -22,8 +22,6 @@ export const fetchOrders = createAsyncThunk(
         return rejectWithValue('User data not available');
       }
       
-      
-
       const role = getState().role.role;
     
       let queryParam = '';
@@ -80,7 +78,7 @@ const transformOrderData = (apiOrders) => {
     newDate: formatDate(order.newDate),
     isDateChanged: order.isDateChanged,
     ChangeDateReason: order.ChangeDateReason,
-    rawDeliveryDate:order.deliveryDate
+    rawDeliveryDate: order.deliveryDate
   }));
   
 };
@@ -149,28 +147,29 @@ const ordersSlice = createSlice({
       state.success = false;
     },
   },
-    extraReducers: (builder) => {
-      builder
-        .addCase(fetchOrders.pending, (state) => {
-          state.loading = true;
-          state.error = null;
-          console.log('Fetch orders pending');
-        })
-        .addCase(fetchOrders.fulfilled, (state, action) => {
-          state.loading = false;
-          // console.log('Fetch orders fulfilled:', action.payload);
-          state.items = transformOrderData(action.payload);
-        })
-        .addCase(fetchOrders.rejected, (state, action) => {
-          state.loading = false;
-          state.error = action.payload || 'Failed to fetch orders';
-          console.log('Fetch orders rejected:', action.error);
-        });
-    }
-    });
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchOrders.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+        console.log('Fetch orders pending');
+      })
+      .addCase(fetchOrders.fulfilled, (state, action) => {
+        state.loading = false;
+        // console.log('Fetch orders fulfilled:', action.payload);
+        state.items = transformOrderData(action.payload);
+      })
+      .addCase(fetchOrders.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || 'Failed to fetch orders';
+        console.log('Fetch orders rejected:', action.error);
+      });
+  }
+});
 
 export const { setSearchTerm, setStatusFilter, setDateFilter, markOrderFinished, resetOrdersState } = ordersSlice.actions;
 
+// Basic selectors
 export const selectAllOrders = state => state?.orders?.items || [];
 export const selectOrdersLoading = state => state?.orders?.loading || false;
 export const selectOrdersError = state => state?.orders?.error || null;
@@ -178,99 +177,84 @@ export const selectSearchTerm = state => state?.orders?.searchTerm || '';
 export const selectStatusFilter = state => state?.orders?.statusFilter || null;
 export const selectDateFilter = state => state?.orders?.dateFilter || null;
 
-export const selectFilteredOrders = state => {
-  if (!state || !state.orders) {
-    return [];
-  } 
-  
-  const { items, searchTerm, statusFilter, dateFilter } = state.orders;
-  
-  if (!items || !Array.isArray(items)) {
-    return [];
-  }
-  
+// Memoized selectors for derived data
+// First, create simple input selectors
+const getOrderItems = state => state?.orders?.items || [];
+const getSearchTerm = state => state?.orders?.searchTerm || '';
+const getStatusFilter = state => state?.orders?.statusFilter || null;
+const getDateFilter = state => state?.orders?.dateFilter || null;
 
-
-  // let result = items;
-  //here i return only order with is pickup and is finised are both true
-  let result = items.filter(order => !(order.isFinished === true && order.isPickUp === true));
-  
-
-  if (searchTerm) {
-    result = result.filter(order => 
-      order.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customerDisplayName.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }
-  
-  if (statusFilter) {
-    let typeToFilter;
-    
-    switch(statusFilter) {
-      case 'خالص':
-        typeToFilter = 'paid';
-        break;
-      case 'غير خالص':
-        typeToFilter = 'unpaid';
-        break;
-      case 'تسبيق':
-        typeToFilter = 'installment';
-        break;
-      default:
-        typeToFilter = null;
+// Now create memoized complex selectors
+export const selectFilteredOrders = createSelector(
+  [getOrderItems, getSearchTerm, getStatusFilter, getDateFilter],
+  (items, searchTerm, statusFilter, dateFilter) => {
+    if (!items || !Array.isArray(items)) {
+      return [];
     }
     
-    if (typeToFilter) {
-      result = result.filter(order => order.type === typeToFilter);
-    }
-  }
-  
-  if (dateFilter) {
-    const filterDate = new Date(dateFilter);
+    // Filter for orders that aren't both finished and picked up
+    let result = items.filter(order => !(order.isFinished === true && order.isPickUp === true));
     
-    result = result.filter(order => {
-      if (!order.date || order.date === "غير محدد") return false;
+    if (searchTerm) {
+      result = result.filter(order => 
+        order.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.customerDisplayName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    if (statusFilter) {
+      let typeToFilter;
       
-      const [day, month, year] = order.date.split('/').map(Number);
-      const orderDate = new Date(year, month - 1, day);
+      switch(statusFilter) {
+        case 'خالص':
+          typeToFilter = 'paid';
+          break;
+        case 'غير خالص':
+          typeToFilter = 'unpaid';
+          break;
+        case 'تسبيق':
+          typeToFilter = 'installment';
+          break;
+        default:
+          typeToFilter = null;
+      }
       
-      return orderDate.toDateString() === filterDate.toDateString();
+      if (typeToFilter) {
+        result = result.filter(order => order.type === typeToFilter);
+      }
+    }
+    
+    if (dateFilter) {
+      const filterDate = new Date(dateFilter);
+      
+      result = result.filter(order => {
+        if (!order.date || order.date === "غير محدد") return false;
+        
+        const [day, month, year] = order.date.split('/').map(Number);
+        const orderDate = new Date(year, month - 1, day);
+        
+        return orderDate.toDateString() === filterDate.toDateString();
+      });
+    }
+
+    // Sort by today's orders first, then by date
+    result.sort((a, b) => {
+      if (a.isToday && !b.isToday) return -1;
+      if (!a.isToday && b.isToday) return 1;
+      
+      if (a.rawDeliveryDate && b.rawDeliveryDate) {
+        return new Date(a.rawDeliveryDate) - new Date(b.rawDeliveryDate);
+      }
+      
+      if (!a.rawDeliveryDate && b.rawDeliveryDate) return 1;
+      if (a.rawDeliveryDate && !b.rawDeliveryDate) return -1;
+      
+      return 0;
     });
+    
+    return result;
   }
-
-  if (dateFilter) {
-    const filterDate = new Date(dateFilter);
-    
-    result = result.filter(order => {
-      if (!order.date || order.date === "غير محدد") return false;
-      
-      const [day, month, year] = order.date.split('/').map(Number);
-      const orderDate = new Date(year, month - 1, day);
-      
-      return orderDate.toDateString() === filterDate.toDateString();
-    });
-  }
-
-  result.sort((a, b) => {
-    if (a.isToday && !b.isToday) return -1;
-    if (!a.isToday && b.isToday) return 1;
-    
-    if (a.rawDeliveryDate && b.rawDeliveryDate) {
-      return new Date(a.rawDeliveryDate) - new Date(b.rawDeliveryDate);
-    }
-    
-    if (!a.rawDeliveryDate && b.rawDeliveryDate) return 1;
-    if (a.rawDeliveryDate && !b.rawDeliveryDate) return -1;
-    
-    return 0;
-  });
-  
-
-  // console.log('result here', result)
-  
-  return result;
-};
-
+);
 
 export const HistoryOrders = state => {
   if (!state || !state.orders) {
@@ -341,6 +325,60 @@ export const HistoryOrders = state => {
 };
 
 
-
+export const selectHistoryOrders = createSelector(
+  [getOrderItems, getSearchTerm, getStatusFilter, getDateFilter],
+  (items, searchTerm, statusFilter, dateFilter) => {
+    if (!items || !Array.isArray(items)) {
+      return [];
+    }
+    
+    // Filter for orders that are both finished and picked up
+    let result = items.filter(order => (order.isFinished === true && order.isPickUp === true));
+    
+    if (searchTerm) {
+      result = result.filter(order => 
+        order.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.customerDisplayName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    if (statusFilter) {
+      let typeToFilter;
+      
+      switch(statusFilter) {
+        case 'خالص':
+          typeToFilter = 'paid';
+          break;
+        case 'غير خالص':
+          typeToFilter = 'unpaid';
+          break;
+        case 'تسبيق':
+          typeToFilter = 'installment';
+          break;
+        default:
+          typeToFilter = null;
+      }
+      
+      if (typeToFilter) {
+        result = result.filter(order => order.type === typeToFilter);
+      }
+    }
+    
+    if (dateFilter) {
+      const filterDate = new Date(dateFilter);
+      
+      result = result.filter(order => {
+        if (!order.date || order.date === "غير محدد") return false;
+        
+        const [day, month, year] = order.date.split('/').map(Number);
+        const orderDate = new Date(year, month - 1, day);
+        
+        return orderDate.toDateString() === filterDate.toDateString();
+      });
+    }
+    
+    return result;
+  }
+);
 
 export default ordersSlice.reducer;

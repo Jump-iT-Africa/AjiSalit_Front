@@ -13,6 +13,10 @@ export const saveUserToDB = async (userData) => {
       console.log('With payload:', JSON.stringify(userData));
       const response = await axios.post(`${API_BASE_URL}/user/register`, userData);
       
+
+
+      console.log('this is the response from the register user', response.data.user);
+      
       if (response.data && response.data.token) {
       console.log('shshs2');
         await AsyncStorage.setItem("token", response.data.token);
@@ -42,9 +46,10 @@ export const loginUser = async (credentials) => {
         
     const response = await axios.post(`${API_BASE_URL}/user/login`, credentials);
     
-
+  
+    
     if (response.data) {
-      await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
+      await AsyncStorage.setItem("user", response.data.user);
       console.log('Setting auth state after login');
       await AsyncStorage.setItem("isAuthenticated", "true");
       console.log('Auth state set');

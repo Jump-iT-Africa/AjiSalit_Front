@@ -11,12 +11,16 @@ import {
   selectOrderError,
   selectCurrentOrder
 } from '@/store/slices/OrdersManagment';
+import RestrictedAccessModal from "@/components/AccessNotAllowed/RestrictedAccessModal";
+
 
 export default function Scanner() {
   const [flashEnabled, setFlashEnabled] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastScannedCode, setLastScannedCode] = useState(null);
   const [cameraReady, setCameraReady] = useState(false);
+  // Add state for the restricted access modal
+  const [restrictedModalVisible, setRestrictedModalVisible] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef(null);
   const sound = useRef(null);
@@ -25,7 +29,8 @@ export default function Scanner() {
   const reduxLoading = useSelector(selectOrderLoading);
   const reduxError = useSelector(selectOrderError);
   const currentOrder = useSelector(selectCurrentOrder);
-  
+  const isNavigatingRef = useRef(false);
+
   const isDisabled = isProcessing;
 
   useEffect(() => {
@@ -71,18 +76,18 @@ export default function Scanner() {
     setFlashEnabled(prevState => !prevState);
   };
 
-  let lastScanTime = 0;
-  const DEBOUNCE_TIME = 3000;
+  const lastScanTimeRef = useRef(0);
+  const lastScannedCodeRef = useRef(null);
+  const DEBOUNCE_TIME = 5000;
 
   const handleBarcodeScanned = ({ data }) => {
     const now = Date.now();
-    if (data === lastScannedCode && now - lastScanTime < DEBOUNCE_TIME) {
+    if (data === lastScannedCodeRef.current && now - lastScanTimeRef.current < DEBOUNCE_TIME) {
       return;
     }
-    
     console.log("QR Code scanned:", data);
-    setLastScannedCode(data);
-    lastScanTime = now;
+    lastScannedCodeRef.current = data;
+    lastScanTimeRef.current = now;
     processScannedData(data);
   };
 
@@ -97,7 +102,7 @@ export default function Scanner() {
   };
 
   const processScannedData = async (data) => {
-    if (isDisabled) {
+    if (isProcessing || isNavigatingRef.current) {
       console.log("Processing already in progress. Ignoring scan.");
       return;
     }
@@ -114,7 +119,6 @@ export default function Scanner() {
       console.log("Dispatching fetchOrderByQrCodeOrId with:", data);
       await playSuccessSound();
       
-      
       const result = await dispatch(fetchOrderByQrCodeOrId(data));
       
       if (fetchOrderByQrCodeOrId.fulfilled.match(result)) {
@@ -122,6 +126,8 @@ export default function Scanner() {
         console.log("Order fetched successfully:", order);
         
         if (order) {
+          isNavigatingRef.current = true;
+          
           setTimeout(() => {
             try {
               router.replace({
@@ -138,8 +144,9 @@ export default function Scanner() {
                 "حدث خطأ أثناء الانتقال إلى صفحة التفاصيل",
                 [{ text: "حسنًا" }]
               );
+              isNavigatingRef.current = false;
             }
-          }, 200);
+          }, 500); 
         }
       } else if (reduxError) {
         console.log("Error from Redux:", reduxError);
@@ -148,6 +155,17 @@ export default function Scanner() {
           "لم يتم العثور على الطلب",
           [{ text: "حسنًا" }]
         );
+        setIsProcessing(false);
+      }
+      else {
+        console.log('naah nta machi client ola mol charika');
+        // Show the restricted access modal instead of alert
+        setRestrictedModalVisible(true);
+        
+        // Reset processing state after modal auto-closes
+        setTimeout(() => {
+          setIsProcessing(false);
+        }, 1500); // A bit longer than the modal display time to ensure smooth transition
       }
     } catch (error) {
       console.log("Error in processScannedData:", error);
@@ -156,11 +174,19 @@ export default function Scanner() {
         "حدث خطأ أثناء البحث عن الطلب",
         [{ text: "موافق" }]
       );
+      setIsProcessing(false);
     } finally {
-      setTimeout(() => {
-        setIsProcessing(false);
-      }, 1000);
+      if (!isNavigatingRef.current) {
+        setTimeout(() => {
+          setIsProcessing(false);
+        }, 2000);
+      }
     }
+  };
+
+  // Handler to close the restricted access modal
+  const handleCloseRestrictedModal = () => {
+    setRestrictedModalVisible(false);
   };
 
   if (!permission) {
@@ -224,6 +250,12 @@ export default function Scanner() {
           <Text style={styles.loadingText}>جاري تهيئة الكاميرا...</Text>
         </View>
       )}
+
+      {/* Add the RestrictedAccessModal component */}
+      <RestrictedAccessModal 
+        visible={restrictedModalVisible}
+        onClose={handleCloseRestrictedModal}
+      />
     </SafeAreaView>
   );
 }

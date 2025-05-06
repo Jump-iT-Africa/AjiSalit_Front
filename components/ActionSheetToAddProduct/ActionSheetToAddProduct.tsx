@@ -56,7 +56,7 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
     advancedAmount: '', 
   });
   
-  // Add state for checkbox
+  
   const [isDatePickerEnabled, setIsDatePickerEnabled] = useState(false);
   
   const [step, setStep] = useState(1);
@@ -68,6 +68,9 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [uniqueId, setUniqueId] = useState('');
   const [showIdModal, setShowIdModal] = useState(false);
+  const [photoCounter, setPhotoCounter] = useState(1);
+
+
 
   useImperativeHandle(ref, () => ({
     show: () => {
@@ -81,7 +84,7 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
 
   const [uploadedImages, setUploadedImages] = useState([]);
 
-  // Reset redux state when component unmounts
+  
   useEffect(() => {
     return () => {
       dispatch(resetOrderState());
@@ -89,32 +92,35 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
   }, [dispatch]);
 
   const takePhoto = async () => {
-    try {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      if (status !== 'granted') {
-        alert(' يرجى تمكينها في إعدادات جهازك لاستخدام الكاميرا!');
-        return;
-      }
-      
-      const result = await ImagePicker.launchCameraAsync({
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      });
-
-      if (!result.canceled) {
-        const newImage = {
-          id: Date.now(),
-          uri: result.assets[0].uri,
-          name: `photo_${Date.now()}.jpg`,
-          size: `${Math.round(result.assets[0].fileSize / 1024)}kb`,
-        };
-        setUploadedImages([...uploadedImages, newImage]);
-      }
-    } catch (error) {
-      console.log('Error taking photo:', error);
+  try {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      alert(' يرجى تمكينها في إعدادات جهازك لاستخدام الكاميرا!');
+      return;
     }
-  };
+    
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const newImage = {
+        id: Date.now(), 
+        uri: result.assets[0].uri,
+        name: `photo_${photoCounter}.jpg`,
+        size: `${Math.round(result.assets[0].fileSize / 1024)}kb`,
+      };
+      
+      setUploadedImages([...uploadedImages, newImage]);
+      
+      setPhotoCounter(prevCounter => prevCounter + 1);
+    }
+  } catch (error) {
+    console.log('Error taking photo:', error);
+  }
+};
 
   const removeImage = (id) => {
     const newImages = uploadedImages.filter(img => img.id !== id);
@@ -144,7 +150,7 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
       });
       step1Animation.setValue(1);
       step2Animation.setValue(0);
-      // Reset checkbox state
+      
       setIsDatePickerEnabled(false);
     }, 300);
     if (onClose) onClose();
@@ -195,7 +201,7 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
       newErrors.price = '';
     }
 
-    // We're using the default selectedDate when needed, so we don't need to show errors
+    
     newErrors.RecieveDate = '';
 
     setErrors(newErrors);
@@ -206,7 +212,7 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
     let valid = true;
     let newErrors = { ...errors };
 
-    // We're using the default selectedDate when needed, so we don't need to show errors
+    
     newErrors.RecieveDate = '';
 
     setErrors(newErrors);
@@ -227,99 +233,120 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
     verificationSheetRef.current?.show();
   };
 
-  // Format a date to YYYY-MM-DD string for the backend
+  
   const formatDateForBackend = (date) => {
     if (!(date instanceof Date)) return '';
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   };
 
-  // Add this function to validate and format dates to YYYY-MM-DD
+  
+
 const validateAndFormatDate = (date) => {
+  
   if (!date) return '';
   
   try {
-    // If it's already a Date object, format it properly
+    
     if (date instanceof Date) {
-      // Check if it's a valid date (not Invalid Date)
+      
       if (isNaN(date.getTime())) {
         console.error('Invalid date object');
         return '';
       }
       
-      // Format as YYYY-MM-DD
+      
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
     }
     
-    // If it's a string, try to parse it
-    if (typeof date === 'string') {
-      // Handle different formats and convert to YYYY-MM-DD
-      // Simple regex to check if it's already in YYYY-MM-DD format
-      const isoFormatRegex = /^\d{4}-\d{2}-\d{2}$/;
-      if (isoFormatRegex.test(date)) {
-        return date; // It's already in the correct format
-      }
-      
-      // Try to parse the date
-      const parsedDate = new Date(date);
-      if (isNaN(parsedDate.getTime())) {
-        console.error('Could not parse date string:', date);
-        return '';
-      }
-      
-      // Format as YYYY-MM-DD
-      const year = parsedDate.getFullYear();
-      const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
-      const day = String(parsedDate.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
+    
+    const isoFormatRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (typeof date === 'string' && isoFormatRegex.test(date)) {
+      return date;
     }
     
-    console.error('Unsupported date format:', date);
-    return '';
+    
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) {
+      console.error('Could not parse date string:', date);
+      return '';
+    }
+    
+    const year = parsedDate.getFullYear();
+    const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+    const day = String(parsedDate.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   } catch (error) {
     console.error('Error formatting date:', error);
     return '';
   }
 };
 
+
+const formatDateToYYYYMMDD = (date) => {
+  if (!date) return '';
+  
+  let dateObject;
+  
+  
+  if (typeof date === 'string') {
+    dateObject = new Date(date);
+  } else if (date instanceof Date) {
+    dateObject = date;
+  } else {
+    console.error('Invalid date format:', date);
+    return '';
+  }
+  
+  
+  if (isNaN(dateObject.getTime())) {
+    console.error('Invalid date:', date);
+    return '';
+  }
+  
+  
+  const year = dateObject.getFullYear();
+  const month = String(dateObject.getMonth() + 1).padStart(2, '0');
+  const day = String(dateObject.getDate()).padStart(2, '0');
+  
+  return `${year}-${month}-${day}`;
+};
+
+
 const processOrderSubmission = () => {
   const newUniqueId = generateUniqueId(12);
   setUniqueId(newUniqueId);
   
-  let deliveryDate = null;
-  if (isDatePickerEnabled) {
-    deliveryDate = formData.RecieveDate || selectedDate; 
-  }
+  const today = new Date();
   
-  let pickupDate = null;
-  if (deliveryDate) {
-    pickupDate = new Date(deliveryDate);
-    pickupDate.setDate(pickupDate.getDate() + 2);
-  }
   
-  // Validate and format dates before submitting
-  const formattedDeliveryDate = deliveryDate ? validateAndFormatDate(deliveryDate) : '';
-  const formattedPickupDate = pickupDate ? validateAndFormatDate(pickupDate) : '';
+  const deliveryDate = isDatePickerEnabled ? (formData.RecieveDate || selectedDate) : today;
+  const formattedDeliveryDate = formatDateToYYYYMMDD(deliveryDate);
+  
+  
+  const pickupDateObj = new Date(deliveryDate);
+  pickupDateObj.setDate(pickupDateObj.getDate() + 2);
+  const formattedPickupDate = formatDateToYYYYMMDD(pickupDateObj);
+  
   
   const orderData = {
     price: parseFloat(formData.price),
     situation: formData.situation || "خالص",
     status: "في طور الانجاز",
-    advancedAmount: parseFloat(formData.advancedAmount) || 0,
-    // Use validated and properly formatted dates
-    deliveryDate: formattedDeliveryDate,
-    pickupDate: formattedPickupDate,
+    advancedAmount: parseFloat(formData.advancedAmount) || null,
+    deliveryDate: formattedDeliveryDate, 
+    pickupDate: formattedPickupDate,     
     qrCode: newUniqueId,
     isFinished: false,
     isPickUp: false
   };
-
+  
   console.log("Component - Order data before dispatch:", JSON.stringify(orderData));
   
-  // Double check that dates are in the correct format before dispatching
-  if (isDatePickerEnabled && !formattedDeliveryDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+  
+  if (!formattedDeliveryDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
     alert('خطأ في تنسيق التاريخ. يرجى التأكد من أن التاريخ بتنسيق YYYY-MM-DD');
     return;
   }
@@ -353,10 +380,28 @@ const processOrderSubmission = () => {
     setShowCalendar(false);
   };
 
-  // Format a date for display (DD/MM/YYYY)
+  
   const formatDateForDisplay = (date) => {
-    if (!(date instanceof Date)) return '';
-    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+    if (!date) return "";
+    
+    let dateObject;
+    
+    
+    if (typeof date === 'string') {
+      dateObject = new Date(date);
+    } else if (date instanceof Date) {
+      dateObject = date;
+    } else {
+      return "";
+    }
+    
+    
+    if (isNaN(dateObject.getTime())) {
+      return "";
+    }
+    
+    
+    return `${dateObject.getDate()}/${dateObject.getMonth() + 1}/${dateObject.getFullYear()}`;
   };
 
   const handleStatusChange = (status, advancedAmount) => {
