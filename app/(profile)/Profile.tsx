@@ -13,11 +13,10 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
-  Touchable
 } from 'react-native';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
-import DefaultImage from '@/assets/images/profilePage.jpeg';
+import DefaultImage from '@/assets/images/imagePlaceHolder.jpg';
 import HeaderWithBack from '@/components/ui/HeaderWithToolTipAndback';
 import Feather from '@expo/vector-icons/Feather';
 import { useDispatch, useSelector } from 'react-redux';
@@ -36,23 +35,29 @@ const Profile = () => {
     const dispatch = useDispatch();
     const user = useSelector(selectUserData); 
     const [profileImage, setProfileImage] = useState(null);
+    const [initialProfileImage, setInitialProfileImage] = useState(null);
     const [Fname, setFname] = useState('');
+    const [initialFname, setInitialFname] = useState('');
     const [Lname, setLname] = useState('');
+    const [initialLname, setInitialLname] = useState('');
     const [companyName, setCompanyName] = useState('');
+    const [initialCompanyName, setInitialCompanyName] = useState('');
     const [field, setfield] = useState(''); 
+    const [initialField, setInitialField] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
     const [loading, setLoading] = useState(false);
     const role = useSelector(selectUserRole);
     const [selectedCity, setSelectedCity] = useState('');
+    const [initialSelectedCity, setInitialSelectedCity] = useState('');
     const [errors, setErrors] = useState({});
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
-    const [isChanged , setIsChanged] = useState(false);
+    const [isChanged, setIsChanged] = useState(false);
         
-
-
+    // Save initial values when component loads
     useEffect(() => {
       if (user) {
+        // Set current values
         setFname(user.Fname || '');
         setLname(user.Lname || '');
         setCompanyName(user.companyName || '');
@@ -60,12 +65,35 @@ const Profile = () => {
         if (user.city) {
           setSelectedCity(user.city);
         }
-        
         if (user.profileImage) {
           setProfileImage(user.profileImage);
         }
+        
+        // Save initial values to compare against
+        setInitialFname(user.Fname || '');
+        setInitialLname(user.Lname || '');
+        setInitialCompanyName(user.companyName || '');
+        setInitialField(user.field || '');
+        setInitialSelectedCity(user.city || '');
+        setInitialProfileImage(user.profileImage || null);
       }
     }, [user]);
+
+    // Check if any field has changed from initial value
+    useEffect(() => {
+      const hasChanges = 
+        Fname !== initialFname ||
+        Lname !== initialLname || 
+        companyName !== initialCompanyName ||
+        field !== initialField ||
+        selectedCity !== initialSelectedCity ||
+        profileImage !== initialProfileImage;
+      
+      setIsChanged(hasChanges);
+    }, [
+      Fname, Lname, companyName, field, selectedCity, profileImage,
+      initialFname, initialLname, initialCompanyName, initialField, initialSelectedCity, initialProfileImage
+    ]);
 
     const handleCitySelect = (city) => {
       setSelectedCity(city.names.ar);
@@ -151,14 +179,19 @@ const Profile = () => {
       
       if (!Fname.trim()) {
         newErrors.fname = "الرجاء إدخال الإسم";
+        setIsChanged(false)
       }
       
       if (!Lname.trim()) {
         newErrors.lname = "الرجاء إدخال اللقب";
+        setIsChanged(false)
+
       }
       
       if (!selectedCity) {
         newErrors.city = "الرجاء اختيار المدينة";
+        setIsChanged(false)
+
       }
       
       setErrors(newErrors);
@@ -196,6 +229,15 @@ const Profile = () => {
         if (UpdateUser.fulfilled.match(resultAction)) {
           // Show success modal when update is successful
           setIsSuccessModalVisible(true);
+          
+          // Update initial values to reflect new state after successful update
+          setInitialFname(Fname);
+          setInitialLname(Lname);
+          setInitialCompanyName(companyName);
+          setInitialField(field);
+          setInitialSelectedCity(selectedCity);
+          setInitialProfileImage(profileImage);
+          setIsChanged(false);
         } else {
           if (resultAction.payload) {
             Alert.alert('خطأ', resultAction.payload);
@@ -350,8 +392,8 @@ const Profile = () => {
                     <View className='w-full flex items-center pt-4 mb-10'>
                       <TouchableOpacity 
                         onPress={handleUpdateUser}
-                        disabled={loading}
-                        className="flex-row items-center bg-[#F52525] rounded-full px-12 py-3 w-[50%] justify-center space-x-2"
+                        disabled={loading || !isChanged}
+                        className={`flex-row items-center ${isChanged ? 'bg-[#F52525]' : 'bg-[#9ca3af]' } rounded-full px-12 py-3 w-[50%] justify-center space-x-2`}
                       >
                         <Text className="text-white font-tajawal text-[13px]">
                           {loading ? 'جاري التأكيد' : 'تأكيد'}
@@ -450,10 +492,9 @@ const Profile = () => {
                       <CustomButton
                         onPress={() => {
                           setIsSuccessModalVisible(false);
-                          router.replace("/(home)");
                         }}
-                        title="انتقل للصفحة الرئيسية"
-                        textStyles="text-sm font-tajawal px-2 py-0 text-white pt-2"
+                        title="رجوع"
+                        textStyles="text-lg font-tajawal px-2 py-0 text-white pt-2"
                         containerStyles="w-[90%] m-auto bg-[#F52525] rounded-full p-3"
                         disabled={false}
                       />

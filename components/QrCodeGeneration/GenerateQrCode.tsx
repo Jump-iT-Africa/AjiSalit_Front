@@ -6,7 +6,7 @@ import QRCode from 'react-native-qrcode-svg';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import Colors from '@/constants/Colors';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import Divider from '../ui/Devider';
+// import Divider from '../ui/Devider';
 import * as Clipboard from 'expo-clipboard';
 import CustomButton from '../ui/CustomButton';
 import { router } from 'expo-router';
@@ -65,14 +65,14 @@ const UniqueIdModal = ({ visible, onClose, uniqueId }:any) => {
 
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
-              <View className='flex-row items-center justify-center w-full'>
+              <View className='flex-row items-center justify-end w-full'>
                 <TouchableOpacity style={styles.closeButton} onPress={onClose}>
                 </TouchableOpacity>
                 
-                <Text style={styles.title} className='font-tajawalregular text-center' >رمز الطلب</Text>
+                <Text style={styles.title} className='font-tajawalregular text-right mr-4' >رمز الطلب</Text>
               </View>
               
-              <Text style={styles.subTitle} className='font-tajawalregular'>
+              <Text style={styles.subTitle} className='font-tajawalregular text-sm'>
                 يرجى مسح رمز QR أو إدخال رمز التتبع لتتبع طلبك بسهولة!
               </Text>
               
@@ -81,12 +81,11 @@ const UniqueIdModal = ({ visible, onClose, uniqueId }:any) => {
                   value={uniqueId}
                   size={200}
                   logo={require('@/assets/images/MoroccoLogo.png')}
-                  logoSize={40}
+                  logoSize={50}
                   logoBackgroundColor="white"
                 />
               </View>
               
-              <View style={styles.divider} />
               <Text style={styles.manualEntryText} className='font-tajawalregular'>أو أدخل الرمز يدويًا</Text>
               
               <View style={styles.idContainer}>
@@ -96,7 +95,7 @@ const UniqueIdModal = ({ visible, onClose, uniqueId }:any) => {
                 </TouchableOpacity>
               </View>
 
-              <View className='flex justify-center items-center w-[100%] mt-4 '>
+              <View className='flex justify-center items-center w-[100%] mt-10 '>
                 <TouchableOpacity 
                  onPress={handlePressed}
                   className="bg-[#2e752f] rounded-full p-3 flex-row items-center justify-center"
@@ -129,9 +128,9 @@ const UniqueIdModal = ({ visible, onClose, uniqueId }:any) => {
 
 const styles = StyleSheet.create({
   modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    // flex: 1,
+    // justifyContent: 'center',
+    // alignItems: 'center',
     backgroundColor: '#F5F6F7',
   },
   modalContent: {
@@ -155,9 +154,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   qrContainer: {
-    padding: 15,
+    padding: 10,
     backgroundColor: 'white',
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: Colors.green,
     borderRadius: 10,
     marginBottom: 20,
@@ -178,7 +177,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent:'space-between',
     borderWidth: 1.5,
-    borderColor: Colors.green,
+    borderColor: Colors.red,
     borderRadius: 50,
     padding: 0,
     paddingRight: 0,
@@ -187,11 +186,12 @@ const styles = StyleSheet.create({
   idText: {
     flex: 1,
     fontSize: 18,
-    textAlign: 'center',
-    fontWeight:600
+    textAlign: 'left',
+    fontWeight:600,
+    paddingLeft:20
   },
   copyButton: {
-    backgroundColor: '#2e752f',
+    backgroundColor: Colors.red,
     width: 60,
     height: 60,
     borderRadius: 50,

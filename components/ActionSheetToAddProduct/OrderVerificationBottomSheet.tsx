@@ -100,7 +100,7 @@ const OrderVerificationModal = forwardRef(({
             backgroundColor: '#F5F6F7',
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
-            height: '58%',
+            height: '64%',
             padding: 16
           }}
           onPress={(e) => e.stopPropagation()}
@@ -119,8 +119,8 @@ const OrderVerificationModal = forwardRef(({
           </Text>
 
           <ScrollView className="flex-1  " showsVerticalScrollIndicator={false}>
-              <View className='bg-white flex justify-between items-center rounded-[20px] shadow-l p-8 mx-1 mt-4'>
-                <View className='flex-row-reverse gap-3 items-center'>
+              <View className='bg-[#FFFFFF] flex justify-between items-center rounded-[20px] shadow-l p-8 mx-1 mt-4'>
+                <View className='flex-row-reverse gap-3 items-center '>
                     <View className="flex-row items-center justify-end mb-4">
                         <Text className="text-[#000] text-[12px] font-tajawal mr-2">
                         المبلغ الإجمالي : 
@@ -144,13 +144,13 @@ const OrderVerificationModal = forwardRef(({
                     </Text>
                 </View>
 
-                <View className='flex-row-reverse gap-3 items-center'>
-                    <View className="flex-row items-center justify-end mb-4">
+                <View className='flex-row-reverse gap-3 items-center '>
+                    <View className="flex-row items-center mt">
                         <Text className="text-[#000] text-[12px] font-tajawal mr-2">
                           الحالة : 
                         </Text>
                         {statusOptions.map((option) => (
-                          <View key={option?.id}>
+                          <View key={option?.id} >
                               {option.label === formData.situation ?(
                                 <Image
                                   source={option.iconYellow}
@@ -164,19 +164,19 @@ const OrderVerificationModal = forwardRef(({
                           </View>
                         ))}
                     </View>
-                    <Text className="text-right text-[11px] font-bold mb-4 font-tajawal text-[#2F752F]">
+                    <Text className="text-right text-[11px] font-bold mt-4 font-tajawal text-[#2F752F]">
                         {formData.situation}
                     </Text>
                 </View>
 
                     {formData.advancedAmount ?
-                      <View className='flex-row-reverse gap-3 items-center'>
-                      <View className="flex-row items-center justify-end mb-4">
+                      <View className='flex-row-reverse gap-3 items-center mt-0'>
+                      <View className="flex-row items-center justify-end mb-0">
                           <Text className="text-[#000] text-[12px] font-tajawal mr-2">
                           مبلغ التسبيق :
                           </Text>
                       </View>
-                      <Text className="text-right text-[11px] font-bold mb-4 font-tajawal text-[#2F752F]">
+                      <Text className="text-right text-[11px] font-bold mt-4 font-tajawal text-[#2F752F]">
                           {formData.advancedAmount} درهم 
                       </Text>
                       </View>
@@ -223,6 +223,7 @@ const OrderVerificationModal = forwardRef(({
                   />
                 </View>
               ) : (
+                
                 <View className='w-full flex items-center mt-4'>
                   <Image 
                     source={Noimages}

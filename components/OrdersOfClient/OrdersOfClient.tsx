@@ -127,14 +127,6 @@ const OrdersOfClient = ({ SearchCode }) => {
     return (
       <SafeAreaView className="flex-1">
         <NoOrdersExists />
-        <View className="items-center mb-4 mt-4">
-          <TouchableOpacity 
-            className="bg-green-500 px-4 py-2 rounded" 
-            onPress={onRefresh}
-          >
-            <FontAwesome name="refresh" size={24} color="white" />
-          </TouchableOpacity>
-        </View>
       </SafeAreaView>
     );
   }

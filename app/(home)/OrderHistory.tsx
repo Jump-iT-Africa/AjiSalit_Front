@@ -21,8 +21,8 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Color from '@/constants/Colors';
 import Noimages from "@/assets/images/noImages.png";
-import NoOrdersExists from "@/components/NoOrderExists/NoOrdersExists";
-
+// import NoOrdersExists from "@/components/NoOrderExists/NoOrdersExists";
+import NoOrdersExistsHistory from "@/components/NoOrderExists/NoOrdersExistsHistory";
 
 const OrderDetailsModal = ({ isVisible, onClose, orderData }) => {
   
@@ -247,7 +247,7 @@ export default function OrderHistory() {
   return (
     <SafeAreaView className={`flex-1 bg-gray-100 p-9`}>
       <View className="px-4">
-        <View className="mb-10">
+        <View>
           <ProfileHeader />
         </View>
         {/* <View className="mt-2 mb-4">
@@ -262,9 +262,9 @@ export default function OrderHistory() {
         </View> */}
       </View>
     {filteredOrders.length === 0 ?
-      ( 
-        <View className={`flex-1 justify-center items-center`}>
-          <NoOrdersExists />
+      (
+        <View className={`flex-1  mt-[40%] items-center `}>
+          <NoOrdersExistsHistory />
         </View>
       ):(
             <FlashList

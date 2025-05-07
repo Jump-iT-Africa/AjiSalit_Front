@@ -19,30 +19,30 @@ const OrderCard = ({ item }) => {
   const icons = [
     {
       id: 0,
-      icons:<Entypo name="scissors" size={20} color="white" />,
+      icon: '🧵',
       name: "الخياطة"
     },
     {
       id: 1,
-      icons:<Ionicons name="car-sport-outline" size={24} color="white" />,
+      icon: '🚗',
       name: "غسيل السيارات"
     },
     {
       id: 2,
-      icons: <FontAwesome5 name="tshirt" size={20} color="#ffff"/>,
+      icon: '👕',
       name: "غسيل الملابس/التنظيف الجاف"
     },
     {
       id: 3,
-      icons: <MaterialCommunityIcons name="bread-slice-outline" size={24} color="white" />,
+      icon: '🍞',
       name: "مخبزة"
     },
     {
       id: 4,
-      icons: <MaterialIcons name="local-pharmacy" size={24} color="white" />,
+      icon: '💊',
       name: "صيدلية"
     },
-  ]
+  ];
 
 
 
@@ -84,17 +84,16 @@ const OrderCard = ({ item }) => {
         activeOpacity={0.7}
         onPress={()=>handleNavigateToDetails(item)}
         style={{ width: '100%' }}>
-        {/* Card content remains the same... */}
         <View className="flex-row items-end justify-end space-x-2 p-4 border-b border-gray-100">
           <View className='flex-row-reverse items-center justify-between w-full'>
             <View className='flex-row items-end justify-end space-x-2'>
               <View className="flex items-end">
                 <Text className={`text-lg font-bold text-[#000] font-tajawal`}>{item.customerField}</Text>
-                <Text className="text-black text-sm">#{item.orderCode}</Text>
+                <Text className="text-[#6f706f] text-sm">#{item.orderCode}</Text>
               </View>
               {icons.filter(icon => icon.name === item.customerField).map((icon) => (
-                  <View key={icon.id} className={`w-11 h-11 rounded items-center justify-center bg-[#F52525]`}>
-                    {icon.icons}
+                  <View key={icon.id} className={`w-11 h-11 rounded items-center justify-center `}>
+                    <Text className='text-3xl -mt-3 '>{icon.icon}</Text>
                   </View>
                 ))}
 
@@ -116,12 +115,11 @@ const OrderCard = ({ item }) => {
           </View>
         </View>
 
-        {/* Rest of the card content... */}
         <View className="flex-row justify-between p-2">
           <View className="flex-1">
             <View className="bg-gray-100 rounded-lg mx-1 p-2 items-center border border-gray-300 border-1">
               <Text className="text-gray-600 mb-1 font-tajawalregular ">الحالة</Text>
-              <Text className="text-base font-bold font-tajawal text-[12px] text-[#2e752f]">
+              <Text className={`text-base font-bold font-tajawal text-[12px] ${item.label ==='غير خالص'  ? "text-[#F52525]" : "text-[#2e752f]" } `}>
                 {item.label || "جاهزة للتسليم"}
               </Text>
             </View>
@@ -130,7 +128,7 @@ const OrderCard = ({ item }) => {
           <View className="flex-1">
             <View className="bg-gray-100 rounded-lg mx-1 p-2 items-center border border-gray-300 border-1">
               <Text className="text-[#000] mb-1 font-tajawalregular font-[13px] ">التسبيق</Text>
-              <Text className="text-base font-bold font-tajawal text-[12px] text-[#FAD513]">
+              <Text className="text-base font-bold font-tajawal text-[12px] text-[#FFA30E]">
                 {item.advancedAmount || ' 0'} درهم
               </Text>
             </View>

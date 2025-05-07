@@ -91,7 +91,6 @@ const ClientOrderCards = ({ item, orderId }) => {
 
   console.log('this item for client', item);
   
-  
   const orderCode = item?.qrCode || item?.orderCode || "HFH83923nsh";
   const orderType = item?.customerField || item?.companyField;
   const orderTypeColor = item?.orderTypeColor || "#d83ce9";
@@ -176,36 +175,34 @@ const ClientOrderCards = ({ item, orderId }) => {
   const icons = [
     {
       id: 0,
-      icon: <FontAwesome5 name="cut" size={27} color="white" />,
+      icon: '🧵',
       name: "الخياطة"
     },
     {
       id: 1,
-      icon: <Ionicons name="car-sport-outline" size={27} color="white" />,
+      icon: '🚗',
       name: "غسيل السيارات"
     },
     {
       id: 2,
-      icon: <FontAwesome5 name="tshirt" size={27} color="#ffff" />,
+      icon: '👕',
       name: "غسيل الملابس/التنظيف الجاف"
     },
     {
       id: 3,
-      icon: <MaterialCommunityIcons name="bread-slice-outline" size={27} color="white" />,
+      icon: '🍞',
       name: "مخبزة"
     },
     {
       id: 4,
-      icon: <MaterialIcons name="local-pharmacy" size={27} color="white" />,
+      icon: '💊',
       name: "صيدلية"
     },
   ];
 
-
-
-  
   return (
     <View className='bg-white mx-3 my-3 rounded-lg p-2' style={styles.CardContainer}>
+      
       <View className="flex-row items-end justify-end space-x-2 p-4 border-b border-gray-100">
         <View className='flex-row-reverse items-center justify-between w-full'>
           <View className='flex-row items-center justify-center space-x-2 '>
@@ -214,8 +211,8 @@ const ClientOrderCards = ({ item, orderId }) => {
               <Text className="text-black text-sm ">{orderCode}</Text>
             </View>
               {icons.filter(icon => icon.name === item.customerField).map((icon) => (
-                <View key={icon.id} className={`w-11 h-11 rounded items-center justify-center bg-[#F52525]`}>
-                  {icon.icon}
+                <View key={icon.id} className={`w-11 h-11 rounded items-center justify-center `}>
+                  <Text className='text-3xl -mt-3 '>{icon.icon}</Text>
                 </View>
               ))}
           </View>
@@ -224,9 +221,6 @@ const ClientOrderCards = ({ item, orderId }) => {
           </TouchableOpacity>
         </View>
       </View>
-
-      {/* Company information if available */}
-      
 
       <View className="flex-row justify-between p-2">
         <View className="flex-1">
@@ -266,23 +260,28 @@ const ClientOrderCards = ({ item, orderId }) => {
         </Pressable>
         
         <View className="flex-row items-center ">
-          {isDateChanged && (
+          {/* {isDateChanged && (
             <View className="flex-row items-center bg-amber-50 px-2 py-1 rounded-full mt-0 mr-1">
               <Text className="text-sm text-amber-500 mr-1 font-tajawalregular text-[6px] ">تم التعديل</Text>
               <MaterialIcons name="edit" size={8} color="#ffb300" />
             </View>
-          )}
-
+          )} */}
             <View className='flex items-end space-x-0'>
               {isDateChanged ? (
-                <Text className="text-sm text-black mr-2 font-tajawalregular">{formatDate(item.newDate)}</Text>
+                <View className="flex-1 mx-3 items-end justify-between">
+                  <Text className="text-gray-800 text-right font-tajawalregular text-xs pt-2">تاريخ التسليم:</Text>
+                  <View className='flex-row-reverse items-center gap-x-2'>
+                    <Text className="text-sm text-black mr-0 font-tajawalregular mt-1">{formatDate(item.newDate)}</Text>
+                    <Text className="text-[12px] text-slate-400 mr-0 font-tajawalregular line-through">{formatDate(item.deliveryDate)}</Text>
+                  </View>
+              </View>
               ):(
-              
-               <Text className="text-sm text-black mr-2 font-tajawalregular ">{formattedDeliveryDate}</Text>
+                <View className="flex-1 mx-3 items-end justify-between">
+                  <Text className="text-gray-800 text-right font-tajawalregular text-xs pt-2">تاريخ التسليم:</Text>
+                  <Text className="text-sm text-black mr-0 font-tajawalregular ">{formattedDeliveryDate}</Text>
+                </View>
               )}
-            </View>          
-            
-
+            </View>
           <View className="bg-green-100 p-3 rounded-lg">
             <Ionicons name="calendar-outline" size={24} color="#4A8646" />
           </View>
@@ -296,6 +295,7 @@ const ClientOrderCards = ({ item, orderId }) => {
         newDate={formatDate(item.newDate)} 
         reason={item.ChangeDateReason}        
       />
+
     </View>
   );
 };

@@ -72,16 +72,15 @@ const Home = () => {
                   </View>
                   <View className='mr-2'>
                       <View className='flex-row-reverse items-center gap-2'>
-                        <Text className='text-[24px] font-tajawal text-[#FAD513] '>25</Text>
+                        <Text className='text-[24px] font-tajawal text-[#FFA30E] '>25</Text>
                         <Text className='font-tajawal text-[16px]'>درهم</Text>
                       </View>
-                      <Text className='font-tajawalregular text-[12px] text-[#FAD513]'>رصيد ديالك قرب يسالي</Text>
+                      <Text className='font-tajawalregular text-[12px] text-[#FFA30E]'>رصيد ديالك قرب يسالي</Text>
                   </View>
                 </View>
-            <Text className='text-end text-xl font-tajawal'>الطلبات المتوفرة</Text>
-          </View>
+                <Text className='text-end text-xl font-tajawal'>الطلبات المتوفرة</Text>
+              </View>
           )
-
         }
          
         </View>

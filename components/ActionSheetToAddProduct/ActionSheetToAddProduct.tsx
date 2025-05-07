@@ -445,8 +445,7 @@ const processOrderSubmission = () => {
 
         <View>
           <View>
-
-          <View className="mb-4 mt-4">
+          <View className="mb-4 mt-6">
             <Text className="text-right text-gray-700 mb-2 font-tajawal text-[12px]" style={{ color: Color.green }}>
               المبلغ (بالدرهم): <Text className="text-red-500">*</Text>
             </Text>
@@ -461,7 +460,7 @@ const processOrderSubmission = () => {
             {errors.price ? <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[13px]">{errors.price}</Text> : null}
           </View> 
 
-          <View className="mb-0 mt-0">
+          <View className="mb-0 mt-2">
             <Text className="text-right text-gray-700 mb-2 font-tajawal text-[12px]" style={{ color: Color.green }}>
               الحالة: <Text className="text-red-500">*</Text>
             </Text>
@@ -485,7 +484,7 @@ const processOrderSubmission = () => {
             ) : null}
           </View>
 
-          <View className="mb-4 mt-4">
+          <View className="mb-0 mt-8">
             <TouchableOpacity 
               onPress={() => setIsDatePickerEnabled(!isDatePickerEnabled)}
               className="flex-row items-center justify-end space-x-2"
@@ -506,7 +505,7 @@ const processOrderSubmission = () => {
               disabled={!isDatePickerEnabled}
               className={`border ${errors.RecieveDate ? 'border-red-500' : 'border-[#2e752f]'} rounded-lg p-3 bg-white flex-row justify-between items-center ${!isDatePickerEnabled ? 'opacity-50' : 'opacity-100'}`}
             >
-              <AntDesign name="calendar" size={20} color={isDatePickerEnabled ? "gray" : "#ccc"} />
+              <AntDesign name="calendar" size={20} color={"white"} />
               <Text className={`${isDatePickerEnabled ? 'text-gray-500' : 'text-gray-400'} text-right font-tajawalregular`}>
                 {formData.RecieveDate instanceof Date 
                   ? formatDateForDisplay(formData.RecieveDate) 
@@ -564,7 +563,6 @@ const processOrderSubmission = () => {
             }
           </View>
           </View>
-          <Divider />
 
           <View className='mt-2'>
             <View className="mt-0 ">
@@ -662,11 +660,11 @@ const processOrderSubmission = () => {
               ))}
             </View>
           ) : (
-            <View className='w-full  flex items-center'>
+            <View className='w-full  flex-1 items-center mt-1'>
               <Image
                 source={Noimages}
                 resizeMode='contain'
-                className='flex w-50 h-45 '
+                className=' w-40 h-40 '
               />
               <Text className='font-tajawal text-[#2e752f] mt-2 text-xl'>
               لا يوجد صور 
@@ -678,9 +676,8 @@ const processOrderSubmission = () => {
           )}
         </View>
   
-        <Divider />
   
-        <View className="mt-6 flex-row justify-between ">
+        <View className="mt-12 flex-row justify-between ">
           <CustomButton
             title="رجوع"
             onPress={animateToPreviousStep}
