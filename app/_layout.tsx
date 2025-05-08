@@ -95,7 +95,7 @@ export default function RootLayout() {
         <AuthCheck />
         <HandleNotification />
         <NavigationHandler firstLaunch={isAppFirstLaunched} />
-        <OrderResetManager />
+        {/* <OrderResetManager /> */}
         <Stack>
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

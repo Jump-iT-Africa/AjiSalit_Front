@@ -37,6 +37,8 @@ export default function PickUpButton({orderData}) {
                 orderId: orderId,
                 dateData: { isPickUp: true }
             }));
+
+            
             
             dispatch(setCurrentOrder({
                 ...currentOrder,

@@ -7,17 +7,27 @@ import { router } from 'expo-router';
 import Colors from '@/constants/Colors';
 import { useDispatch, useSelector } from 'react-redux';
 import successLeon from '@/assets/images/successLeon.png'
+import { updateOrderDate } from '@/store/slices/OrdersManagment';
 
 
 
-const ClientPikUpButton = () => {
+const ClientPikUpButton = ({orderData}) => {
+    
     const dispatch = useDispatch();
-    const pickupButtonClicked = useSelector(state => state.buttons.pickupButtonClicked);
+    const pickupButtonClicked = orderData;
+    console.log('this is status of order', pickupButtonClicked);
+    
     const [isModalVisible, setIsModalVisible] = useState(false);
     
     const handleSubmit = () => {
-        if (!pickupButtonClicked) {
+        if (pickupButtonClicked) {
+            console.log('helo');
+            
             dispatch(pickupButtonPressed());
+            dispatch(updateOrderDate({
+                orderId: orderData.id,
+                dateData: { IsConfirmedByClient: true }
+            }));
             setIsModalVisible(true);
         }
     };
@@ -26,14 +36,13 @@ const ClientPikUpButton = () => {
         setIsModalVisible(false);
     };
     
-    const isEnabled = !pickupButtonClicked;
     
     return (
         <>
             <TouchableOpacity
-                className={`${isEnabled ? 'bg-green-700' : 'bg-gray-400'} w-[48%] h-14 rounded-full flex-row justify-center items-center`}
+                className={`${pickupButtonClicked.isFinished ? 'bg-green-700' : 'bg-gray-400'} w-[48%] h-14 rounded-full flex-row justify-center items-center`}
                 onPress={handleSubmit}
-                disabled={!isEnabled}
+                disabled={!pickupButtonClicked.isFinished}
             >
                 <Text className="text-white text-lg font-bold ml-2 font-tajawalregular pt-1 pr-2">تم الاستلام</Text>
                 <AntDesign name="checkcircle" size={24} color="white" />
@@ -60,7 +69,7 @@ const ClientPikUpButton = () => {
                             backgroundColor: 'white',
                             borderTopLeftRadius: 20,
                             borderTopRightRadius: 20,
-                            height: '55%',
+                            height: '60%',
                             padding: 16
                         }}
                     >

@@ -272,7 +272,6 @@ export default function DetailsPage() {
                 <Text className="text-white text-lg font-bold ml-2 font-tajawalregular pt-1 pr-2">مشاركة</Text>
                 <Feather name="share-2" size={24} color="white" />
               </TouchableOpacity>
-
               <ClientPikUpButton orderData={orderData} />
             </View>
           </View>

@@ -31,6 +31,9 @@ export const fetchOrders = createAsyncThunk(
         queryParam = `?companyId=${user.id}`;
       }
 
+
+
+      console.log(`${API_URL}/order${queryParam}`);
       const response = await axios.get(`${API_URL}/order${queryParam}`, {
         headers: {
           Authorization: `Bearer ${token}`
@@ -54,6 +57,7 @@ const transformOrderData = (apiOrders) => {
   if (!apiOrders || !Array.isArray(apiOrders) || apiOrders.length === 0) {
     return [];
   }
+  console.log('Order companyId:', apiOrders);
 
   console.log('after',formatDate("2025-04-24T00:00:00.000Z"));
 
@@ -77,10 +81,11 @@ const transformOrderData = (apiOrders) => {
     isToday: isToday(order.deliveryDate),
     newDate: formatDate(order.newDate),
     isDateChanged: order.isDateChanged,
+    IsConfirmedByClient: order.IsConfirmedByClient,
     ChangeDateReason: order.ChangeDateReason,
     rawDeliveryDate: order.deliveryDate,
     companyId:{
-      companyName: order.companyName
+      companyName: order.companyId.companyName
     }
 
   }));

@@ -17,7 +17,7 @@ export default function FinishedButton({orderData}) {
     const dispatch = useDispatch();
     const currentOrder = useSelector(state => state.orders.currentOrder || {});
     
-    // Get the button state for this specific order
+    // Get the button state for this specific order pz
     const orderId = currentOrder?.id || orderData?.id;
     const orderButtonState = useSelector(state => selectOrderButtonState(state, orderId));
     
@@ -31,7 +31,7 @@ export default function FinishedButton({orderData}) {
     
     const handleSubmit = () => {
         if (!isFinished) {
-            // Pass the orderId when dispatching the button action
+            
             dispatch(finishButtonPressed({ orderId }));
             
             dispatch(updateToDone({

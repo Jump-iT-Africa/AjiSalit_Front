@@ -128,9 +128,9 @@ const UniqueIdModal = ({ visible, onClose, uniqueId }:any) => {
 
 const styles = StyleSheet.create({
   modalContainer: {
-    // flex: 1,
+    flex: 1,
     // justifyContent: 'center',
-    // alignItems: 'center',
+    alignItems: 'center',
     backgroundColor: '#F5F6F7',
   },
   modalContent: {

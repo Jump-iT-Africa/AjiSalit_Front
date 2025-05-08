@@ -1,5 +1,5 @@
 import { View, Text, Image, TouchableOpacity } from 'react-native';
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import { Ionicons, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 // import AjiSalit from "@/assets/images/logo.png";
 import { useRouter } from 'expo-router';
@@ -13,6 +13,14 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
 
 const OrderCard = ({ item }) => {
+  
+  const [localFinished, setLocalFinished] = useState(item.isFinished);
+
+
+  useEffect(() => {
+    setLocalFinished(item.isFinished);
+  }, [item.isFinished]);
+
 
   console.log('item here', item);
   
@@ -46,7 +54,6 @@ const OrderCard = ({ item }) => {
 
 
 
- console.log('order ststua', item.isFinished);
  
   const dispatch = useDispatch();
   const router = useRouter();
@@ -104,8 +111,8 @@ const OrderCard = ({ item }) => {
                 style={{
                   width: 36,
                   height: 36,
-                  opacity: item.isFinished ? 1 : 1,
-                  tintColor: item.isFinished ? undefined : 'gray',
+                  opacity: 1,
+                  tintColor: localFinished ? "red" : 'gray',
                 }}
                 resizeMode='contain'
               />
@@ -155,7 +162,8 @@ const OrderCard = ({ item }) => {
           <View className="flex-row items-center">
             <View>
               <Text className="text-sm text-black mr-2 font-tajawalregular mt-2">
-                {item.deliveryDate ? `تسليم: ${item.date}` : item.date || 'N/A'}
+                {/* {item.deliveryDate ? `تسليم: ${item.date}` : item.date || 'N/A'} */}
+                تسليم: {item.newDate === "غير محدد" ?  item.date : item.newDate }
               </Text>
             </View>
             <View className={`bg-green-100 p-2 rounded-lg`}>
