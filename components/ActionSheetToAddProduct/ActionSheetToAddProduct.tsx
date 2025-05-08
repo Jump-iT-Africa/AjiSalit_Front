@@ -638,7 +638,7 @@ const processOrderSubmission = () => {
                     </View>
                   </TouchableOpacity>
                   <View className="flex-row items-center flex-1 justify-end">
-                    <Text className="text-gray-500 mr-2 font-tajawalregular">{image.size}</Text>
+                    {/* <Text className="text-gray-500 mr-2 font-tajawalregular">{image.size}</Text> */}
                     <Text className="text-black font-tajawalregular" numberOfLines={1} ellipsizeMode="middle" style={{ maxWidth: 180 }}>
                       {image.name}
                     </Text>

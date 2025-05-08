@@ -1,9 +1,9 @@
 import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit';
-import { saveUserToDB, loginUser, getAuthToken, getUserData, verifyNumber, updateUser } from '@/services/api';
+import { saveUserToDB, loginUser, getAuthToken, getUserData, verifyNumber, updateUser, updatePasswordService } from '@/services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {clearCurrentOrder} from "@/store/slices/OrdersManagment"
 
-// Async thunks remain unchanged
+
 export const registerUser = createAsyncThunk(
   'user/register',
   async (userData, { rejectWithValue }) => {
@@ -48,7 +48,7 @@ export const login = createAsyncThunk(
   }
 );
 
-// Other thunks remain unchanged
+
 export const restoreAuthState = createAsyncThunk(
   'user/restore',
   async (_, { rejectWithValue }) => {
@@ -156,11 +156,11 @@ export const UpdateUser = createAsyncThunk(
       const updatedUserData = await updateUser(userId, credentials);
       
       if (updatedUserData) {
-        // Make sure we preserve the ID in the updated user object
+        
         const updatedUser = { 
           ...userData, 
           ...updatedUserData,
-          id: userId  // Ensure ID is preserved
+          id: userId  
         };
         await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
       }
@@ -196,14 +196,74 @@ const initialState = {
   verificationLoading: false,
   verificationSuccess: false,
   verificationData: null,
-  error: null
+  error: null,
+
+
+  passwordUpdateLoading: false,
+  passwordUpdateSuccess: false,
+  passwordUpdateError: null
 };
+
+
+
+export const updatePassword = createAsyncThunk(
+  'user/updatePassword',
+  async (passwordData, { rejectWithValue }) => {
+    try {
+      if (passwordData.password.length < 6) {
+        return rejectWithValue({
+          message: 'يجب أن يتكون الكود الجديد من 6 أرقام على الأقل',
+          field: 'password'
+        });
+      }
+      
+      const response = await updatePasswordService({
+        oldPassword: passwordData.oldPassword,
+        password: passwordData.password
+      });
+      
+      return response;
+    } catch (error) {
+      console.log('Error in updatePassword thunk:', error);
+      
+      if (error.response?.status === 401 || (error.response?.data?.message && error.response.data.message.includes('incorrect'))) {
+        return rejectWithValue({
+          message: 'الكود الحالي غير صحيح. الرجاء التحقق وإعادة المحاولة.',
+          field: 'oldPassword',
+          statusCode: error.response?.status
+        });
+      }
+      
+      if (error.response?.status === 404) {
+        return rejectWithValue({
+          message: 'لم يتم العثور على المستخدم. الرجاء تسجيل الخروج وتسجيل الدخول مرة أخرى.',
+          field: 'general'
+        });
+      }
+      
+      if (error.response?.data?.message) {
+        return rejectWithValue({
+          message: error.response.data.message,
+          field: 'general',
+          statusCode: error.response?.status
+        });
+      }
+      
+      return rejectWithValue({
+        message: 'حدث خطأ أثناء تحديث الكود. الرجاء المحاولة مرة أخرى.',
+        field: 'general'
+      });
+    }
+  }
+);
+
+
 
 const userSlice = createSlice({
   name: 'user',
   initialState,
   reducers: {
-    // Reducers remain unchanged
+    
     setPhoneNumber: (state, action) => {
       state.phoneNumber = action.payload;
     },
@@ -258,9 +318,14 @@ const userSlice = createSlice({
       state.Fname = Fname || state.Fname;
       state.role = role || state.role;
     },
+    resetPasswordUpdateState: (state) => {
+      state.passwordUpdateLoading = false;
+      state.passwordUpdateSuccess = false;
+      state.passwordUpdateError = null;
+    },
   },
   extraReducers: (builder) => {
-    // ExtraReducers remain unchanged
+    
     builder.addCase(registerUser.pending, (state) => {
       state.loading = true;
       state.error = null;
@@ -291,7 +356,7 @@ const userSlice = createSlice({
       state.isAuthenticated = false;
     });
 
-    // Login
+    
     builder.addCase(login.pending, (state) => {
       state.loading = true;
       state.error = null;
@@ -350,7 +415,7 @@ const userSlice = createSlice({
       state.isAuthenticated = false;
     });
     
-    // Other cases
+    
     builder.addCase(verifyPhoneNumber.pending, (state) => {
       state.verificationLoading = true;
       state.verificationSuccess = false;
@@ -394,8 +459,40 @@ const userSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     });
+
+    builder.addCase(updatePassword.pending, (state) => {
+      state.passwordUpdateLoading = true;
+      state.passwordUpdateError = null;
+      state.passwordUpdateSuccess = false;
+    });
+    builder.addCase(updatePassword.fulfilled, (state, action) => {
+      state.passwordUpdateLoading = false;
+      state.passwordUpdateSuccess = true;
+      state.passwordUpdateError = null;
+      console.log("Password update successful!", action.payload);
+    });
+    builder.addCase(updatePassword.rejected, (state, action) => {
+      state.passwordUpdateLoading = false;
+      state.passwordUpdateSuccess = false;
+      state.passwordUpdateError = action.payload;
+      console.log("Password update rejected with payload:", action.payload);
+    });
   }
 });
+
+
+
+
+const passwordUpdateInitialState = {
+  passwordUpdateLoading: false,
+  passwordUpdateSuccess: false,
+  passwordUpdateError: null
+};
+
+
+
+
+
 
 export const { 
   setPhoneNumber, 
@@ -408,12 +505,15 @@ export const {
   resetOrdersState,
   resetUserState,
   resetVerificationState,
+  resetPasswordUpdateState,
   setUserInfo
 } = userSlice.actions;
 
+
+
 export default userSlice.reducer;
 
-// Basic selectors
+
 const selectUser = state => state.user;
 export const selectIsAuthenticated = state => state.user.isAuthenticated;
 export const selectToken = state => state.user.token;
@@ -423,8 +523,11 @@ export const selectError = state => state.user.error;
 export const selectVerificationLoading = state => state.user.verificationLoading;
 export const selectVerificationSuccess = state => state.user.verificationSuccess;
 export const selectVerificationData = state => state.user.verificationData;
+export const selectPasswordUpdateLoading = state => state.user.passwordUpdateLoading;
+export const selectPasswordUpdateSuccess = state => state.user.passwordUpdateSuccess;
+export const selectPasswordUpdateError = state => state.user.passwordUpdateError;
 
-// Memoized selector for userData
+
 export const selectUserData = createSelector(
   [selectUser],
   (user) => ({

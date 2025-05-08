@@ -311,7 +311,7 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
   if (Array.isArray(filteredOrders) && filteredOrders.length === 0) {
     console.log("No orders found, showing NoOrdersExists component");
     return (
-      <SafeAreaView className="flex-1 bg-gray-100">
+      <SafeAreaView className="flex-1 bg-gray-100 ">
         <NoOrdersExists />
       </SafeAreaView>
     );

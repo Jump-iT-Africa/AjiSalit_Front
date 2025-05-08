@@ -78,7 +78,11 @@ const transformOrderData = (apiOrders) => {
     newDate: formatDate(order.newDate),
     isDateChanged: order.isDateChanged,
     ChangeDateReason: order.ChangeDateReason,
-    rawDeliveryDate: order.deliveryDate
+    rawDeliveryDate: order.deliveryDate,
+    companyId:{
+      companyName: order.companyName
+    }
+
   }));
   
 };
@@ -256,73 +260,63 @@ export const selectFilteredOrders = createSelector(
   }
 );
 
-export const HistoryOrders = state => {
-  if (!state || !state.orders) {
-    return [];
-  }
-  
-  const { items, searchTerm, statusFilter, dateFilter } = state.orders;
-  
-  if (!items || !Array.isArray(items)) {
-    return [];
-  }
-  
 
-
-  // let result = items;
-  //here i return only order with is pickup and is finised are both true
-  let result = items.filter(order => (order.isFinished === true && order.isPickUp === true));
-  
-
-  if (searchTerm) {
-    result = result.filter(order => 
-      order.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      order.customerDisplayName.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }
-  
-  if (statusFilter) {
-    let typeToFilter;
-    
-    switch(statusFilter) {
-      case 'خالص':
-        typeToFilter = 'paid';
-        break;
-      case 'غير خالص':
-        typeToFilter = 'unpaid';
-        break;
-      case 'تسبيق':
-        typeToFilter = 'installment';
-        break;
-      default:
-        typeToFilter = null;
+export const HistoryOrders = createSelector(
+  [getOrderItems, getSearchTerm, getStatusFilter, getDateFilter],
+  (items, searchTerm, statusFilter, dateFilter) => {
+    if (!items || !Array.isArray(items)) {
+      return [];
     }
     
-    if (typeToFilter) {
-      result = result.filter(order => order.type === typeToFilter);
+    // hna knbayed li isfinished and is pick are both true
+    let result = items.filter(order => (order.isFinished === true && order.isPickUp === true));
+    console.log('this is filtered data', result);
+    if (searchTerm) {
+      result = result.filter(order => 
+        order.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.customerDisplayName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
-  }
-  
-  if (dateFilter) {
-    const filterDate = new Date(dateFilter);
     
-    result = result.filter(order => {
-      if (!order.date || order.date === "غير محدد") return false;
+    if (statusFilter) {
+      let typeToFilter;
       
-      const [day, month, year] = order.date.split('/').map(Number);
-      const orderDate = new Date(year, month - 1, day);
+      switch(statusFilter) {
+        case 'خالص':
+          typeToFilter = 'paid';
+          break;
+        case 'غير خالص':
+          typeToFilter = 'unpaid';
+          break;
+        case 'تسبيق':
+          typeToFilter = 'installment';
+          break;
+        default:
+          typeToFilter = null;
+      }
       
-      return orderDate.toDateString() === filterDate.toDateString();
-    });
+      if (typeToFilter) {
+        result = result.filter(order => order.type === typeToFilter);
+      }
+    }
+    
+    if (dateFilter) {
+      const filterDate = new Date(dateFilter);
+      
+      result = result.filter(order => {
+        if (!order.date || order.date === "غير محدد") return false;
+        
+        const [day, month, year] = order.date.split('/').map(Number);
+        const orderDate = new Date(year, month - 1, day);
+        
+        return orderDate.toDateString() === filterDate.toDateString();
+      });
+    }
+    
+    return result;
   }
+);
 
-
-  
-
-  // console.log('result here', result)
-  
-  return result;
-};
 
 
 export const selectHistoryOrders = createSelector(

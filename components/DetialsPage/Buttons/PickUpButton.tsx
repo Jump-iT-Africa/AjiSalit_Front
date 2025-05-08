@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, Modal,Image } from "react-native";
+import { View, Text, TouchableOpacity, Modal, Image } from "react-native";
 import BottomSheetComponent from "../../ui/BottomSheetComponent";
 import CustomButton from "../../ui/CustomButton";
 import Colors from "@/constants/Colors";
@@ -7,33 +7,31 @@ import { router } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useSelector, useDispatch } from 'react-redux';
-import { pickupButtonPressed } from '@/store/slices/OrderDetailsSlice';
-import { updateOrderDate, setCurrentOrder,updateToPickUp } from '@/store/slices/OrdersManagment';
+import { pickupButtonPressed, selectOrderButtonState } from '@/store/slices/OrderDetailsSlice';
+import { updateOrderDate, setCurrentOrder, updateToPickUp } from '@/store/slices/OrdersManagment';
 import successLeon from '@/assets/images/successLeon.png'
-
-
 
 export default function PickUpButton({orderData}) {
     const actionSheetRef = useRef(null);
     const dispatch = useDispatch();
     
     const currentOrder = useSelector(state => state.orders.currentOrder || {});
-    const finishButtonClicked = useSelector(state => state.buttons.finishButtonClicked);
-    const pickupButtonClicked = useSelector(state => state.buttons.pickupButtonClicked);
-    const [isModalVisible, setIsModalVisible] = useState(false);
-        
+    
     const orderId = currentOrder?.id || orderData?.id;
+    const orderButtonState = useSelector(state => selectOrderButtonState(state, orderId));
     
-    const orderIsFinished = currentOrder?.isFinished || finishButtonClicked || orderData?.isFinished;
-    const isPickedUp = currentOrder?.isPickUp || pickupButtonClicked || orderData?.isPickUp;
+    const [isModalVisible, setIsModalVisible] = useState(false);
     
+    const orderIsFinished = currentOrder?.isFinished || orderData?.isFinished || orderButtonState.finishButtonClicked;
+    const isPickedUp = currentOrder?.isPickUp || orderData?.isPickUp || orderButtonState.pickupButtonClicked;
+    
+    console.log('PickUpButton - Order ID:', orderId);
     console.log('PickUpButton - Order is finished:', orderIsFinished);
     console.log('PickUpButton - Order is picked up:', isPickedUp);
     
     const handleSubmit = () => {
         if (orderIsFinished && !isPickedUp) {
-            dispatch(pickupButtonPressed());
-            
+            dispatch(pickupButtonPressed({ orderId }));
 
             dispatch(updateOrderDate({
                 orderId: orderId,
@@ -51,7 +49,7 @@ export default function PickUpButton({orderData}) {
 
     const closeBottomSheet = () => {
         setIsModalVisible(false);
-      };
+    };
     
     const isEnabled = orderIsFinished && !isPickedUp;
     const buttonColor = isEnabled ? 'bg-green-700' : 'bg-gray-400';

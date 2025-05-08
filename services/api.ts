@@ -122,9 +122,6 @@ export const updateUser = async (UserId, credentials) => {
   }
 };
 
-
-
-
 export const GetUserCommands = async () => {
   try{
     const response = await axios.get(`${API_BASE_URL}/order`);
@@ -139,3 +136,33 @@ export const GetUserCommands = async () => {
   }
 }
 
+
+export const updatePasswordService = async (passwordData) => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const cleanToken = token.startsWith('Bearer ') ? token.substring(7) : token;
+    
+    console.log('here is data to update', passwordData);
+    
+    if (!token) {
+      throw new Error('Authentication token not found');
+    }
+    
+    const response = await axios.patch(
+      `${API_BASE_URL}/user/password`, 
+      passwordData,
+      {
+        headers: {
+          Authorization: `Bearer ${cleanToken}`,
+          'Content-Type': 'application/json',
+        }
+      }
+    );
+    
+    console.log('Password update success:', response.data);
+    return response.data;
+  } catch (error) {
+    console.log('Password update service error:', error.response?.data);
+    throw error;
+  }
+};

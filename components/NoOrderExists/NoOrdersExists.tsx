@@ -11,7 +11,7 @@ export default function NoOrdersExists()
                 <Image 
                     source={NoOrders}
                     resizeMode="contain"
-                    className="w-80 "
+                    className="w-80 h-80"
                 />
             </View>
             <View>

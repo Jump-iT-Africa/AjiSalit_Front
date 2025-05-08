@@ -54,10 +54,10 @@ const Profile = () => {
     const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
     const [isChanged, setIsChanged] = useState(false);
         
-    // Save initial values when component loads
+    
     useEffect(() => {
       if (user) {
-        // Set current values
+        
         setFname(user.Fname || '');
         setLname(user.Lname || '');
         setCompanyName(user.companyName || '');
@@ -69,7 +69,7 @@ const Profile = () => {
           setProfileImage(user.profileImage);
         }
         
-        // Save initial values to compare against
+        
         setInitialFname(user.Fname || '');
         setInitialLname(user.Lname || '');
         setInitialCompanyName(user.companyName || '');
@@ -79,7 +79,7 @@ const Profile = () => {
       }
     }, [user]);
 
-    // Check if any field has changed from initial value
+    
     useEffect(() => {
       const hasChanges = 
         Fname !== initialFname ||
@@ -227,10 +227,10 @@ const Profile = () => {
         const resultAction = await dispatch(UpdateUser(updateData));
         
         if (UpdateUser.fulfilled.match(resultAction)) {
-          // Show success modal when update is successful
+          
           setIsSuccessModalVisible(true);
           
-          // Update initial values to reflect new state after successful update
+          
           setInitialFname(Fname);
           setInitialLname(Lname);
           setInitialCompanyName(companyName);

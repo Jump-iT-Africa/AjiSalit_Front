@@ -25,12 +25,10 @@ import Noimages from "@/assets/images/noImages.png";
 import NoOrdersExistsHistory from "@/components/NoOrderExists/NoOrdersExistsHistory";
 
 const OrderDetailsModal = ({ isVisible, onClose, orderData }) => {
-  
 
   console.log('This is Order Data ', orderData);
-  
 
-const formatDate = (dateValue) => {
+  const formatDate = (dateValue) => {
     console.log('date to be formatted', dateValue);
     
     if (typeof dateValue === 'string' && /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dateValue)) {
@@ -205,7 +203,7 @@ export default function OrderHistory() {
 
   const renderOrderItem = ({ item }) => {
     return (
-      <View className={`mb-3 px-3`}>
+      <View className={`mb-3 px-3 `}>
         <TouchableOpacity
           className={`bg-white rounded-2xl p-4 flex-row-reverse justify-between items-center shadow`}
           activeOpacity={0.7}
@@ -245,8 +243,8 @@ export default function OrderHistory() {
 
 
   return (
-    <SafeAreaView className={`flex-1 bg-gray-100 p-9`}>
-      <View className="px-4">
+    <SafeAreaView className={`flex-1 bg-gray-100 p-9 `}>
+      <View className={`px-4 ${filteredOrders.length === 0 ?  "mt-0": "mb-12"} `} >
         <View>
           <ProfileHeader />
         </View>

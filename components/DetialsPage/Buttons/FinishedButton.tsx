@@ -1,5 +1,3 @@
-
-
 import React, { useEffect, useRef, useState } from "react";
 import { View, Text, Image, TouchableOpacity, Modal } from "react-native";
 import Logowhite from "@/assets/images/whiteLogo.png";
@@ -9,7 +7,7 @@ import Colors from "@/constants/Colors";
 import { router } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSelector, useDispatch } from 'react-redux';
-import { finishButtonPressed } from '@/store/slices/OrderDetailsSlice';
+import { finishButtonPressed, selectOrderButtonState } from '@/store/slices/OrderDetailsSlice';
 import { updateOrderDate, setCurrentOrder, updateToDone } from '@/store/slices/OrdersManagment';
 import successLeon from '@/assets/images/successLeon.png'
 
@@ -18,36 +16,39 @@ export default function FinishedButton({orderData}) {
     const actionSheetRef = useRef(null);
     const dispatch = useDispatch();
     const currentOrder = useSelector(state => state.orders.currentOrder || {});
-    const finishBtnClicked = useSelector(state => state.buttons.finishButtonClicked);
+    
+    // Get the button state for this specific order
+    const orderId = currentOrder?.id || orderData?.id;
+    const orderButtonState = useSelector(state => selectOrderButtonState(state, orderId));
+    
     const [isModalVisible, setIsModalVisible] = useState(false);
     
-    const orderId = currentOrder?.id || orderData?.id;
-    const isFinished = currentOrder?.isFinished || finishBtnClicked || orderData?.isFinished;
-    console.log('FinishedButton - isFinished combined status:', isFinished);
+    // Check if finished based on order data or button state for this specific order
+    const isFinished = currentOrder?.isFinished || orderData?.isFinished || orderButtonState.finishButtonClicked;
+    
+    console.log('FinishedButton - Order ID:', orderId);
+    console.log('FinishedButton - isFinished status:', isFinished);
     
     const handleSubmit = () => {
         if (!isFinished) {
-            
-            dispatch(finishButtonPressed());
+            // Pass the orderId when dispatching the button action
+            dispatch(finishButtonPressed({ orderId }));
             
             dispatch(updateToDone({
                 orderId: orderId,
                 dateData: {"status": "جاهزة للتسليم" }
             }));
 
-
             dispatch(updateOrderDate({
                 orderId: orderId,
                 dateData: { isFinished: true }
             }));
-
             
             dispatch(setCurrentOrder({
                 ...currentOrder,
                 isFinished: true
             }));
             
-
             setIsModalVisible(true)
         }
     };
@@ -55,8 +56,6 @@ export default function FinishedButton({orderData}) {
     const closeBottomSheet = () => {
         setIsModalVisible(false);
     };
-
-   
 
     const buttonColor = isFinished ? 'bg-gray-400' : 'bg-[#F52525]';
 
@@ -76,7 +75,6 @@ export default function FinishedButton({orderData}) {
                 transparent={true}
                 animationType="slide"
                 onRequestClose={closeBottomSheet}
-                
                 >
                 
                 <TouchableOpacity 

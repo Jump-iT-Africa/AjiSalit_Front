@@ -12,7 +12,7 @@ import { NotificationProvider } from '../context/NotificationContext'
 import HandleNotification from "./(home)/HandleNotification";
 import NavigationHandler from "@/services/NavigationHandler";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-
+import OrderResetManager from "./OrderResetManager.js"
 
 SplashScreen.preventAutoHideAsync()
   .catch(console.warn);
@@ -95,6 +95,7 @@ export default function RootLayout() {
         <AuthCheck />
         <HandleNotification />
         <NavigationHandler firstLaunch={isAppFirstLaunched} />
+        <OrderResetManager />
         <Stack>
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
