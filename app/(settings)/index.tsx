@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, SafeAreaView, TouchableOpacity, Alert, Modal, TouchableWithoutFeedback } from 'react-native';
+import { View, Text, SafeAreaView, TouchableOpacity, Alert, Modal, TouchableWithoutFeedback, Linking } from 'react-native';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -10,6 +10,8 @@ import HeaderWithBack from '@/components/ui/HeaderWithToolTipAndback';
 import { router, useNavigation } from 'expo-router';
 import { logoutUser } from '@/store/slices/userSlice';
 import { useDispatch } from 'react-redux';
+import Color from "@/constants/Colors.js"
+
 
 const Settings = () => {
   const navigation = useNavigation();
@@ -51,7 +53,7 @@ const Settings = () => {
       id: 6,
       name: "بخصوصنا",
       icon: <AntDesign name="exclamationcircle" size={18} color="#2e752f" />,
-      redirection: "/adasd"
+      redirection: "/About"
     },
   ];
 
@@ -105,7 +107,7 @@ const Settings = () => {
       </TouchableOpacity>
 
       {/* Support Modal */}
-      <Modal
+      {/* <Modal
         animationType="fade"
         transparent={true}
         visible={modalVisible}
@@ -115,19 +117,23 @@ const Settings = () => {
           <View className="flex-1 justify-center items-center" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
             <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
               <View className="bg-white rounded-lg p-6 w-[85%] items-center">
-                <Text className="text-red-500 text-2xl font-bold text-center mb-6 font-tajawal">رقم الإستفسار</Text>
+                <Text className="text-red-500 text-2xl font-bold text-center mb-6 font-tajawal pt-2">رقم الإستفسار</Text>
                 <View className="flex-row items-center juste mb-4">
                   <View className=" rounded-full p-2">
                     <Ionicons name="logo-whatsapp" size={24} color="#2e752f" />
                   </View>
                   <Text className="text-xl font-tajawalregular ml-2 mt-2">+212 652 235 487</Text>
                 </View>
-                <View className="flex-row items-center mb-6">
+                <TouchableOpacity className="flex-row items-center mb-6"  onPress={() =>
+                    Linking.openURL(
+                      "https://wa.me/212622236154?text=" + encodeURIComponent("Hi, how are you?")
+                    )
+                  }>
                   <View className="rounded-full p-2">
                     <Ionicons name="logo-whatsapp" size={24} color="#2e752f" />
                   </View>
                   <Text className="text-xl font-tajawalregular ml-2 mt-2">+212 622 236 154</Text>
-                </View>
+                </TouchableOpacity>
                 <TouchableOpacity 
                   className="bg-gray-200 py-2 px-6 rounded-full"
                   onPress={() => setModalVisible(false)}
@@ -138,7 +144,49 @@ const Settings = () => {
             </TouchableWithoutFeedback>
           </View>
         </TouchableWithoutFeedback>
-      </Modal>
+      </Modal> */}
+
+    <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+      <TouchableOpacity 
+        style={{ flex: 1, backgroundColor: 'rgba(47, 117, 47, 0.48)' }}
+        activeOpacity={1}
+        onPress={() => setModalVisible(false)}
+      >
+        <TouchableOpacity 
+          activeOpacity={1}
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: '#F5F6F7',
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            height: '30%',
+            padding: 16
+          }}
+          onPress={(e) => e.stopPropagation()}
+        >
+          <View style={{ 
+            width: 60, 
+            height: 5, 
+            backgroundColor: Color.red, 
+            borderRadius: 5, 
+            alignSelf: 'center',
+            marginBottom: 10
+          }} />
+
+          <Text className="text-center text-[#F52525] text-[20px] font-bold mb-4 font-tajawal">
+            كولشي هو هذاك ؟
+          </Text>
+        </TouchableOpacity>
+      </TouchableOpacity>
+    </Modal>
     </SafeAreaView>
   );
 };

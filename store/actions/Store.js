@@ -5,7 +5,7 @@ import userSlice from '../slices/userSlice.js';
 import ordersReducer from '../slices/OrdersSlice.js'
 import CreateOrderReducer from '../slices/CreateOrder.js'
 import OrdersManagment from '../slices/OrdersManagment.js';
-
+import siteInfoReducer from '../slices/siteInfoReducer.js'; 
 const store = configureStore({
   reducer: {
     buttons: OrderDetailsSlice,
@@ -13,7 +13,9 @@ const store = configureStore({
     user:userSlice,
     orders: ordersReducer,
     order:CreateOrderReducer,
-    orderDetails: OrdersManagment
+    orderDetails: OrdersManagment,
+    siteInfo: siteInfoReducer,
+
   }
 });
 

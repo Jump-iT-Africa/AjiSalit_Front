@@ -49,7 +49,7 @@ export const loginUser = async (credentials) => {
   
     
     if (response.data) {
-      await AsyncStorage.setItem("user", response.data.user);
+      await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
       console.log('Setting auth state after login');
       await AsyncStorage.setItem("isAuthenticated", "true");
       console.log('Auth state set');
