@@ -4,7 +4,7 @@ import React from 'react'
 const Security = () => {
   return (
     <View className='flex-1  items-center mt-20'>
-      <Text>الأمان</Text>
+      <Text >الأمان</Text>
     </View>
   )
 }
