@@ -107,7 +107,7 @@ const Settings = () => {
       </TouchableOpacity>
 
       {/* Support Modal */}
-      {/* <Modal
+      <Modal
         animationType="fade"
         transparent={true}
         visible={modalVisible}
@@ -118,15 +118,19 @@ const Settings = () => {
             <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
               <View className="bg-white rounded-lg p-6 w-[85%] items-center">
                 <Text className="text-red-500 text-2xl font-bold text-center mb-6 font-tajawal pt-2">رقم الإستفسار</Text>
-                <View className="flex-row items-center juste mb-4">
+                <TouchableOpacity className="flex-row items-center mb-6"  onPress={() =>
+                    Linking.openURL(
+                      "https://wa.me/212652235487?text=" + encodeURIComponent("allooo?")
+                    )
+                  }>
                   <View className=" rounded-full p-2">
                     <Ionicons name="logo-whatsapp" size={24} color="#2e752f" />
                   </View>
                   <Text className="text-xl font-tajawalregular ml-2 mt-2">+212 652 235 487</Text>
-                </View>
+                </TouchableOpacity>
                 <TouchableOpacity className="flex-row items-center mb-6"  onPress={() =>
                     Linking.openURL(
-                      "https://wa.me/212622236154?text=" + encodeURIComponent("Hi, how are you?")
+                      "https://wa.me/212622236154?text=" + encodeURIComponent("allooo?")
                     )
                   }>
                   <View className="rounded-full p-2">
@@ -144,9 +148,9 @@ const Settings = () => {
             </TouchableWithoutFeedback>
           </View>
         </TouchableWithoutFeedback>
-      </Modal> */}
+      </Modal>
 
-    <Modal
+    {/* <Modal
         animationType="slide"
         transparent={true}
         visible={modalVisible}
@@ -186,7 +190,7 @@ const Settings = () => {
           </Text>
         </TouchableOpacity>
       </TouchableOpacity>
-    </Modal>
+    </Modal> */}
     </SafeAreaView>
   );
 };
