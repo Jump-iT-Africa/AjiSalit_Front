@@ -103,7 +103,6 @@ const OrderCard = ({ item }) => {
                     <Text className='text-3xl -mt-3 '>{icon.icon}</Text>
                   </View>
                 ))}
-
             </View>
             <View>
               <Image 
@@ -117,8 +116,6 @@ const OrderCard = ({ item }) => {
                 resizeMode='contain'
               />
             </View>
-            
-             
           </View>
         </View>
 
