@@ -91,14 +91,13 @@ const ClientOrderCards = ({ item, orderId }) => {
   console.log('this item for client', item);
   
   const orderCode = item?.qrCode || item?.orderCode || "HFH83923nsh";
-  const orderType = item?.customerField || item?.companyField;
+  const orderType = item.companyField || item?.companyId?.field  ;
   const orderTypeColor = item?.orderTypeColor || "#d83ce9";
   const orderTypeBgColor = item?.orderTypeBgColor || "#f290fd";
   const totalAmount = item?.price || 150;
   const paidAmount = item?.advancedAmount || 0;
   const remainingAmount = remaining;
   
-  const customerField = item.customerField
 
   let orderStatus = item?.label || item?.situation;
 
@@ -118,14 +117,13 @@ const ClientOrderCards = ({ item, orderId }) => {
     },[])
   
   
-  
   let formattedPickupDate = "08/03/2025";
   if (item?.pickupDate) {
     const date = new Date(item.pickupDate);
     formattedPickupDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
   }
   
-
+  
   function cleanDate(input) {
     if (!input) return null;
   
@@ -136,7 +134,6 @@ const ClientOrderCards = ({ item, orderId }) => {
   
     return input; 
   }
-
 
   function formatDate(input) {
     if (!input) return null;
@@ -207,7 +204,7 @@ const ClientOrderCards = ({ item, orderId }) => {
           <View className='flex-row items-center justify-center space-x-2 '>
             <View className="flex items-end ">
               <Text className={`text-lg font-bold text-[${orderTypeColor}] font-tajawal text-[#2e752f]`}>{orderType}</Text>
-              <Text className="text-black text-sm ">{orderCode}</Text>
+              <Text className="text-black text-sm ">#{orderCode}</Text>
             </View>
               {icons.filter(icon => icon.name === item.customerField).map((icon) => (
                 <View key={icon.id} className={`w-11 h-11 rounded items-center justify-center `}>

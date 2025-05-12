@@ -8,35 +8,34 @@ const API_BASE_URL = 'https://www.ajisalit.com';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const saveUserToDB = async (userData) => {
-    try {
-      console.log('Attempting to connect to:', `${API_BASE_URL}/user/register`);
-      console.log('With payload:', JSON.stringify(userData));
-      const response = await axios.post(`${API_BASE_URL}/user/register`, userData);
-      
-
-
-      console.log('this is the response from the register user', response.data.user);
-      
-      if (response.data && response.data.token) {
-      console.log('shshs2');
-        await AsyncStorage.setItem("token", response.data.token);
-      }
-      
-      if (response.data) {
-        await AsyncStorage.setItem("user", JSON.stringify(response.data));
-        // Add to loginUser function
-        console.log('Setting auth state after login');
-        await AsyncStorage.setItem("isAuthenticated", "true");
-        console.log('Auth state set');
-      }
-      console.log('bigresponse', response.data);
-      
-      return response.data;
-    } catch (error) {
-      console.log('Error in saveUserToDB:', error.response?.data || error.message);
-      throw error;
+  try {
+    console.log('Attempting to connect to:', `${API_BASE_URL}/user/register`);
+    console.log('With payload:', JSON.stringify(userData));
+    
+    const response = await axios.post(`${API_BASE_URL}/user/register`, userData);
+    
+    console.log('API Response:', JSON.stringify(response.data));
+    
+    const userToStore = response.data.user;
+    
+    if (response.data && response.data.token) {
+      await AsyncStorage.setItem("token", response.data.token);
     }
-  };
+    
+    if (userToStore) {
+      await AsyncStorage.setItem("user", JSON.stringify(userToStore));
+      console.log('this is id of the user ', JSON.stringify(userToStore.id));
+      await AsyncStorage.setItem('userId',JSON.stringify(userToStore.id))
+      await AsyncStorage.setItem("isAuthenticated", "true");
+    }
+    
+    return response.data;
+  } catch (error) {
+    console.log('Error in saveUserToDB:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
 
 
 export const loginUser = async (credentials) => {
@@ -46,10 +45,11 @@ export const loginUser = async (credentials) => {
         
     const response = await axios.post(`${API_BASE_URL}/user/login`, credentials);
     
-  
-    
     if (response.data) {
       await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
+      console.log('this is id of user', JSON.stringify(response.data.user.id));
+      
+      await AsyncStorage.setItem("userId", JSON.stringify(response.data.user.id));
       console.log('Setting auth state after login');
       await AsyncStorage.setItem("isAuthenticated", "true");
       console.log('Auth state set');

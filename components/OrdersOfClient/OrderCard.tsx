@@ -95,10 +95,10 @@ const OrderCard = ({ item }) => {
           <View className='flex-row-reverse items-center justify-between w-full'>
             <View className='flex-row items-end justify-end space-x-2'>
               <View className="flex items-end">
-                <Text className={`text-lg font-bold text-[#000] font-tajawal`}>{item.customerField}</Text>
+                <Text className={`text-lg font-bold text-[#000] font-tajawal`}>{item.companyId.field}</Text>
                 <Text className="text-[#6f706f] text-sm">#{item.orderCode}</Text>
               </View>
-              {icons.filter(icon => icon.name === item.customerField).map((icon) => (
+              {icons.filter(icon => icon.name === item.companyId.field).map((icon) => (
                   <View key={icon.id} className={`w-11 h-11 rounded items-center justify-center `}>
                     <Text className='text-3xl -mt-3 '>{icon.icon}</Text>
                   </View>

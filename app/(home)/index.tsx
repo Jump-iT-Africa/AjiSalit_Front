@@ -41,6 +41,7 @@ const Home = () => {
 
 
   const role = useSelector(selectUserRole);
+  console.log('here is the role', role);
   
   const dispatch = useDispatch();
 

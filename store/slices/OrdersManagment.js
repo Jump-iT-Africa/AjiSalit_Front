@@ -6,32 +6,7 @@ import { act } from 'react';
 const API_BASE_URL = 'https://www.ajisalit.com';
 // const API_BASE_URL = 'http://192.168.100.170:3000';
 
-export const fetchUserOrders = createAsyncThunk(
-  'orders/fetchUserOrders',
-  async (_, { rejectWithValue }) => {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      console.log("Using token for orders fetch:", token);
 
-      if (!token) {
-        return rejectWithValue('No authentication token available');
-      }
-      
-      const response = await axios.get(`${API_BASE_URL}/order`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      // console.log('these are the command of this user ', response);
-      
-      return response.data;
-    } catch (error) {
-      console.log('Fetch orders error:', error.message);
-      return rejectWithValue(error.response?.data || 'Failed to fetch user orders');
-    }
-  }
-);
 
 export const fetchOrderByQrCodeOrId = createAsyncThunk(
   'orders/fetchOrderByQrCodeOrId',
@@ -329,20 +304,6 @@ const ordersSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-
-      .addCase(fetchUserOrders.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchUserOrders.fulfilled, (state, action) => {
-        state.userOrders = action.payload;
-        state.loading = false;
-      })
-      .addCase(fetchUserOrders.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-      
       .addCase(fetchOrderByQrCodeOrId.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -353,7 +314,6 @@ const ordersSlice = createSlice({
         state.loading = false;
         state.success = true;
         
-        // Make sure to update the allOrders array properly
         const existingOrderIndex = state.allOrders.findIndex(
           order => (order._id === action.payload._id) || 
                    (order.id === action.payload.id)

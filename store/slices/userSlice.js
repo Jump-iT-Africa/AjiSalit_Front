@@ -8,16 +8,14 @@ export const registerUser = createAsyncThunk(
   'user/register',
   async (userData, { rejectWithValue }) => {
     try {
+      console.log('data to save', userData);
       const response = await saveUserToDB(userData);
-      
-      await AsyncStorage.setItem('token', response.token);
-      await AsyncStorage.setItem('user', JSON.stringify(response.user || response));
-      
+  
       console.log('this is response from register', response);
       
       return {
         token: response.token,
-        user: response.user || response
+        user: response.user
       };
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -33,10 +31,7 @@ export const login = createAsyncThunk(
       const response = await loginUser(credentials);
       
       console.log('Login response form login method:', response);
-      
-      await AsyncStorage.setItem('token', response.token);
-      await AsyncStorage.setItem('user', JSON.stringify(response.user || response));
-      
+
       return {
         token: response.token,
         user: response.user || response.data || response.data.user
@@ -59,8 +54,10 @@ export const restoreAuthState = createAsyncThunk(
       if (!token || !userDataStr) {
         return rejectWithValue('No stored auth data');
       }
-      
+
       const userData = JSON.parse(userDataStr);
+      console.log('this is user from ache if userisauth', userData);
+
       return {
         token,
         user: userData
@@ -121,50 +118,25 @@ export const logoutUser = createAsyncThunk(
 export const UpdateUser = createAsyncThunk(
   'user/UpdateUser',
   async (credentials, { rejectWithValue, getState }) => {
+
     try {
-      console.log('info to update', credentials);
-      const user = await AsyncStorage.getItem('user');
-      const userData = JSON.parse(user);
-      console.log('this is the saved user ', userData);
-      console.log('this is the content of UserData id', user);
+        console.log('info to update', credentials);
       
-      const userId = userData.id || userData._id;
-      
-      if (!userId) {
-        console.log('No user ID found in stored user data:', userData);
-        
-        const state = getState();
-        const stateUserId = state.user.id;
-        
-        if (!stateUserId) {
+        const UserId = (await AsyncStorage.getItem('userId'))?.replace(/^"|"$/g, '');
+        console.log('User ID (cleaned):', UserId);
+
+
+        if (!UserId) {
           return rejectWithValue('User ID not found');
         }
         
-        console.log('Using ID from Redux state instead:', stateUserId);
-        const updatedUserData = await updateUser(stateUserId, credentials);
+        const updatedUserData = await updateUser(UserId, credentials);
         
         if (updatedUserData) {
-          const updatedUser = { ...userData, ...updatedUserData, id: stateUserId };
+          const updatedUser = { ...updatedUserData, id: UserId };
           await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
         }
-        
-        console.log('response of updated user:', updatedUserData);
-        return updatedUserData;
-      }
-      
-      console.log('Updating user with ID:', userId);
-      const updatedUserData = await updateUser(userId, credentials);
-      
-      if (updatedUserData) {
-        
-        const updatedUser = { 
-          ...userData, 
-          ...updatedUserData,
-          id: userId  
-        };
-        await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
-      }
-      
+
       console.log('response of updated user:', updatedUserData);
       return updatedUserData;
     } catch (error) {
@@ -337,7 +309,7 @@ const userSlice = createSlice({
       state.isAuthenticated = true;
       state.loading = false;
 
-      state.id = user.id;
+      state.id = user.id ||user._id;
       state.Fname = user.Fname;
       state.Lname = user.Lname;
       state.companyName = user.companyName;
@@ -397,7 +369,7 @@ const userSlice = createSlice({
       state.isAuthenticated = true;
       state.loading = false;
       
-      state.id = user.id;
+      state.id = user.id||user._id;
       state.Fname = user.Fname;
       state.phoneNumber = user.phoneNumber;
       state.Lname = user.Lname;
@@ -527,7 +499,7 @@ export const selectPasswordUpdateLoading = state => state.user.passwordUpdateLoa
 export const selectPasswordUpdateSuccess = state => state.user.passwordUpdateSuccess;
 export const selectPasswordUpdateError = state => state.user.passwordUpdateError;
 
-
+ 
 export const selectUserData = createSelector(
   [selectUser],
   (user) => ({

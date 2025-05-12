@@ -196,7 +196,7 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
                 <View className="flex flex-col items-end">
                   <View className='flex-row-reverse mb-1 gap-1'>
                     <Text className="text-black mr-2 font-tajawalregular text-[14px]">صاحب(ة) الطلب:</Text>
-                    <Text className="text-gray-900 font-tajawalregular text-[#295f2b]">{item.customerDisplayName}</Text>
+                    <Text className="text-gray-900 font-tajawalregular text-[#295f2b]">{item.clientId.Fname}</Text>
                   </View>
                   <View className='flex flex-row gap-1 mr-2'>
                     <Text className="text-black">{item.newDate === 'غير محدد' ? item.date : item.newDate}</Text>
@@ -268,48 +268,14 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
   }
 
   if (error && !refreshing) {
-    const errorMessage = typeof error === 'object' 
-      ? error.message || JSON.stringify(error) 
-      : String(error);
-      
     return (
-      <View className="flex-1 justify-center items-center">
-        <Text className="text-red-500 mb-4">{errorMessage}</Text>
-        <TouchableOpacity 
-          className="bg-green-500 px-4 py-2 rounded" 
-          onPress={() => dispatch(fetchOrders())}
-        >
-          <Text className="text-white font-medium">إعادة المحاولة</Text>
-        </TouchableOpacity>
-      </View>
+      <SafeAreaView className="flex-1 bg-gray-100 ">
+        <NoOrdersExists />
+      </SafeAreaView>
     );
   }
-
-  const hasOrders = Array.isArray(allOrders) && allOrders.length > 0;
-  const hasFilteredResults = Array.isArray(filteredOrders) && filteredOrders.length > 0;
-  const isSearchActive = searchTerm && searchTerm.trim() !== '';
-
-  if (ordersLoaded && hasOrders && !hasFilteredResults && isSearchActive) {
-    return (
-      <View className="flex-1 items-center justify-center">
-        <View className="w-80 h-80">
-          <Image 
-            source={NoSearchResult}
-            resizeMode="contain"
-            className="w-full h-full"
-          />
-        </View>
-        <View>
-          <Text className="font-tajawal text-xl mt-8 text-center">
-            لا توجد أي نتائج!
-          </Text>
-        </View>
-      </View>
-    );
-  }
-
+  
   if (Array.isArray(filteredOrders) && filteredOrders.length === 0) {
-    console.log("No orders found, showing NoOrdersExists component");
     return (
       <SafeAreaView className="flex-1 bg-gray-100 ">
         <NoOrdersExists />

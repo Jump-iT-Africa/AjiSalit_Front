@@ -22,12 +22,11 @@ const OrdersOfClient = ({ SearchCode }) => {
   const [searchTerm, setSearchTerm] = useState(SearchCode);
   const [lastRefreshTime, setLastRefreshTime] = useState(Date.now());
 
-  // Debug logging
-  // console.log('Orders length:', orders?.length);
-  // console.log('Search term:', searchTerm);
-  // console.log('Loading state:', loading);
-  // console.log('Orders loaded:', ordersLoaded);
-  // console.log('Last refresh time:', new Date(lastRefreshTime).toLocaleTimeString());
+  console.log('Orders length:', orders?.length);
+  console.log('Search term:', searchTerm);
+  console.log('Loading state:', loading);
+  console.log('Orders loaded:', ordersLoaded);
+  console.log('Last refresh time:', new Date(lastRefreshTime).toLocaleTimeString());
 
   console.log('all orders if cluent', orders);
   
@@ -69,12 +68,11 @@ const OrdersOfClient = ({ SearchCode }) => {
     }
   }, [dispatch, isAuthenticated, token, ordersLoaded]);
 
-  // Initial data fetch
+
   useEffect(() => {
     fetchOrdersData();
   }, [fetchOrdersData]);
 
-  // Handle refresh when pull-to-refresh is triggered
   const onRefresh = useCallback(() => {
     console.log("Manual refresh triggered");
     fetchOrdersData();
@@ -105,20 +103,11 @@ const OrdersOfClient = ({ SearchCode }) => {
   }
 
   if (error && !refreshing) {
-    const errorMessage = typeof error === 'object' 
-      ? error.message || JSON.stringify(error) 
-      : String(error);
-      
+ 
     return (
-      <View className="flex-1 justify-center items-center">
-        <Text className="text-red-500 mb-4">{errorMessage}</Text>
-        <TouchableOpacity 
-          className="bg-green-500 px-4 py-2 rounded" 
-          onPress={onRefresh}
-        >
-          <Text className="text-white font-medium">إعادة المحاولة</Text>
-        </TouchableOpacity>
-      </View>
+      <SafeAreaView className="flex-1 bg-gray-100 ">
+        <NoOrdersExists />
+      </SafeAreaView>
     );
   }
 

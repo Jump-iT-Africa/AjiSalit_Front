@@ -15,26 +15,21 @@ export const fetchOrders = createAsyncThunk(
         return rejectWithValue('No authentication token available');
       }
       
-      const userData = await AsyncStorage.getItem('user');
-      const user = userData ? JSON.parse(userData) : null;
-      
-      if (!user) {
+      const UserId = await AsyncStorage.getItem('userId');
+
+      console.log('these are user info', UserId);
+      if (!UserId) {
         return rejectWithValue('User data not available');
       }
       
-      const role = getState().role.role;
-    
-      let queryParam = '';
-      if (role === 'client') {
-        queryParam = `?clientId=${user.id}`;
-      } else if (role === 'company') {
-        queryParam = `?companyId=${user.id}`;
-      }
+      const userRole = await AsyncStorage.getItem('user');
+      const role =  JSON.parse(userRole);
+
+      console.log('role is', role.role);
 
 
 
-      console.log(`${API_URL}/order${queryParam}`);
-      const response = await axios.get(`${API_URL}/order${queryParam}`, {
+      const response = await axios.get(`${API_URL}/order`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -64,6 +59,9 @@ const transformOrderData = (apiOrders) => {
   return apiOrders.map(order => ({
     orderCode: order.qrCode,
     status: order.status,
+    clientId:{
+      Fname: order?.clientId?.Fname || 'عميل غير معروف',
+    },
     type: getAmountType(order.situation),
     advancedAmount: order.advancedAmount,
     label: order.situation,
@@ -85,7 +83,8 @@ const transformOrderData = (apiOrders) => {
     ChangeDateReason: order.ChangeDateReason,
     rawDeliveryDate: order.deliveryDate,
     companyId:{
-      companyName: order.companyId.companyName
+      companyName: order.companyId.companyName,
+      field: order.companyId.field
     }
 
   }));
@@ -178,22 +177,18 @@ const ordersSlice = createSlice({
 
 export const { setSearchTerm, setStatusFilter, setDateFilter, markOrderFinished, resetOrdersState } = ordersSlice.actions;
 
-// Basic selectors
+
 export const selectAllOrders = state => state?.orders?.items || [];
 export const selectOrdersLoading = state => state?.orders?.loading || false;
 export const selectOrdersError = state => state?.orders?.error || null;
 export const selectSearchTerm = state => state?.orders?.searchTerm || '';
 export const selectStatusFilter = state => state?.orders?.statusFilter || null;
 export const selectDateFilter = state => state?.orders?.dateFilter || null;
-
-// Memoized selectors for derived data
-// First, create simple input selectors
 const getOrderItems = state => state?.orders?.items || [];
 const getSearchTerm = state => state?.orders?.searchTerm || '';
 const getStatusFilter = state => state?.orders?.statusFilter || null;
 const getDateFilter = state => state?.orders?.dateFilter || null;
 
-// Now create memoized complex selectors
 export const selectFilteredOrders = createSelector(
   [getOrderItems, getSearchTerm, getStatusFilter, getDateFilter],
   (items, searchTerm, statusFilter, dateFilter) => {
