@@ -21,7 +21,7 @@ import HeaderWithBack from '@/components/ui/HeaderWithToolTipAndback';
 import Feather from '@expo/vector-icons/Feather';
 import { useDispatch, useSelector } from 'react-redux';
 import WhiteLogo from '@/assets/images/ajisalit_white.png';
-import { UpdateUser, selectUserData } from '@/store/slices/userSlice'; 
+import { UpdateUser, selectUserData, setPhoneNumber } from '@/store/slices/userSlice'; 
 import { selectUserRole } from "@/store/slices/userSlice";
 import CitySelector from '@/components/CompanyRegister/CitySelector';
 import regionsAndCitiesData from "@/constants/Cities/Cities.json";
@@ -39,9 +39,11 @@ const Profile = () => {
     const [Fname, setFname] = useState('');
     const [initialFname, setInitialFname] = useState('');
     const [Lname, setLname] = useState('');
+    const [phoneNumber, setPhoneNumber] = useState('');
     const [initialLname, setInitialLname] = useState('');
     const [companyName, setCompanyName] = useState('');
     const [initialCompanyName, setInitialCompanyName] = useState('');
+    const [initialphoneNumber, setInitialPhoneNumber] = useState('');
     const [field, setfield] = useState(''); 
     const [initialField, setInitialField] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
@@ -60,6 +62,7 @@ const Profile = () => {
         
         setFname(user.Fname || '');
         setLname(user.Lname || '');
+        setPhoneNumber(user.phoneNumber || '');
         setCompanyName(user.companyName || '');
         setfield(user.field || ''); 
         if (user.city) {
@@ -73,6 +76,7 @@ const Profile = () => {
         setInitialFname(user.Fname || '');
         setInitialLname(user.Lname || '');
         setInitialCompanyName(user.companyName || '');
+        setInitialPhoneNumber(user.phoneNumber || '');
         setInitialField(user.field || '');
         setInitialSelectedCity(user.city || '');
         setInitialProfileImage(user.profileImage || null);
@@ -85,14 +89,15 @@ const Profile = () => {
         Fname !== initialFname ||
         Lname !== initialLname || 
         companyName !== initialCompanyName ||
+        phoneNumber !== initialphoneNumber ||
         field !== initialField ||
         selectedCity !== initialSelectedCity ||
         profileImage !== initialProfileImage;
       
       setIsChanged(hasChanges);
     }, [
-      Fname, Lname, companyName, field, selectedCity, profileImage,
-      initialFname, initialLname, initialCompanyName, initialField, initialSelectedCity, initialProfileImage
+      Fname, Lname, companyName, field, selectedCity, profileImage,phoneNumber,
+      initialFname, initialLname, initialCompanyName, initialField, initialSelectedCity, initialProfileImage,initialphoneNumber
     ]);
 
     const handleCitySelect = (city) => {
@@ -212,6 +217,7 @@ const Profile = () => {
           Fname,
           Lname,
           companyName,
+          phoneNumber,
           field,
           city: selectedCity,
         };
@@ -234,6 +240,7 @@ const Profile = () => {
           setInitialFname(Fname);
           setInitialLname(Lname);
           setInitialCompanyName(companyName);
+          setInitialPhoneNumber(phoneNumber)
           setInitialField(field);
           setInitialSelectedCity(selectedCity);
           setInitialProfileImage(profileImage);
@@ -295,48 +302,60 @@ const Profile = () => {
                     <View className='flex items-end justify-end mb-4'>
                       <Text className='font-bold text-l text-[#F52525] text-end font-tajawal'>المعلومات الشخصية</Text>
                     </View>
-                    <View className='flex-row-reverse justify-between w-full'>
-                      <View className='w-[47%]'>
-                        <View className='flex justify-center items-end'>
-                          <Text className='text-start font-tajawalregular mb-2 text-[#2e752f]'>إسم</Text>
-                        </View>
-                        <TextInput
-                          placeholder="الإسم"
-                          value={Fname}
-                          onChangeText={(text) => {
-                            setFname(text);
-                            setErrors((prev) => ({ ...prev, fname: "" }));
-                          }}
-                          placeholderTextColor="#888"
-                          className={`border ${errors.fname && isSubmitted ? 'border-[#F52525]' : 'border-[#9ca3af]'} rounded-lg p-3 text-black text-right bg-white font-tajawalregular `}
-                        />
-                        {errors.fname && isSubmitted && (
-                          <Text className="text-[#F52525] text-right text-xs mt-1 font-tajawalregular">
-                            {errors.fname}
-                          </Text>
-                        )}
+                    
+                      <View>
+
+                        {/* hsddd */}
+                          <View className='flex-row-reverse justify-between w-full'>
+                            <View className='w-[47%]'>
+                              <View className='flex justify-center items-end'>
+                                <Text className='text-start font-tajawalregular mb-2 text-[#2e752f]'>إسم</Text>
+                              </View>
+                              <TextInput
+                                placeholder="الإسم"
+                                value={Fname}
+                                onChangeText={(text) => {
+                                  setFname(text);
+                                  setErrors((prev) => ({ ...prev, fname: "" }));
+                                }}
+                                placeholderTextColor="#888"
+                                className={`border ${errors.fname && isSubmitted ? 'border-[#F52525]' : 'border-[#9ca3af]'} rounded-lg p-3 text-black text-right bg-white font-tajawalregular `}
+                              />
+                              {errors.fname && isSubmitted && (
+                                <Text className="text-[#F52525] text-right text-xs mt-1 font-tajawalregular">
+                                  {errors.fname}
+                                </Text>
+                              )}
+                            </View>
+                            <View className='w-[47%]'>
+                              <View className='flex justify-center items-end'>
+                                <Text className='text-start font-tajawalregular mb-2 text-[#2e752f]'>اللقب</Text>
+                              </View>
+                              <TextInput
+                                placeholder="اللقب"
+                                value={Lname}
+                                onChangeText={(text) => {
+                                  setLname(text);
+                                  setErrors((prev) => ({ ...prev, lname: "" }));
+                                }}
+                                placeholderTextColor="#888"
+                                className={`border ${errors.lname && isSubmitted ? 'border-[#F52525]' : 'border-[#9ca3af]'} rounded-lg p-3 text-black text-right bg-white font-tajawalregular `}
+                              />
+                              {errors.lname && isSubmitted && (
+                                <Text className="text-[#F52525] text-right text-xs mt-1 font-tajawalregular">
+                                  {errors.lname}
+                                </Text>
+                              )}
+                            </View>
+
+                          
+
+                          </View>
+                            
+                        {/* hsddas */}
+
                       </View>
-                      <View className='w-[47%]'>
-                        <View className='flex justify-center items-end'>
-                          <Text className='text-start font-tajawalregular mb-2 text-[#2e752f]'>اللقب</Text>
-                        </View>
-                        <TextInput
-                          placeholder="اللقب"
-                          value={Lname}
-                          onChangeText={(text) => {
-                            setLname(text);
-                            setErrors((prev) => ({ ...prev, lname: "" }));
-                          }}
-                          placeholderTextColor="#888"
-                          className={`border ${errors.lname && isSubmitted ? 'border-[#F52525]' : 'border-[#9ca3af]'} rounded-lg p-3 text-black text-right bg-white font-tajawalregular `}
-                        />
-                        {errors.lname && isSubmitted && (
-                          <Text className="text-[#F52525] text-right text-xs mt-1 font-tajawalregular">
-                            {errors.lname}
-                          </Text>
-                        )}
-                      </View>
-                    </View>
+
                     <View className='flex-row-reverse justify-between w-full'>
                       {role === 'company' ? 
                       <View className='w-[47%] mt-3'>
@@ -353,9 +372,7 @@ const Profile = () => {
                     </View>
 
                     :null
-                    
                     }
-                      
                       <View className={`${role === 'company' ? 'w-[47%]' :  'w-[100%]'} mt-4`}>
                         <View className='flex justify-center items-end'>
                         </View>
@@ -371,24 +388,43 @@ const Profile = () => {
                         />
                       </View>
                     </View>
+                    
+
+
                     {role === 'company' ?
-                    <View className='mt-0' >
-                      <View className='flex justify-center items-end'>
-                        <Text className='text-start font-tajawalregular mb-2 text-[#2e752f]'>مجال الشركة</Text>
+                      <View className='mt-0' >
+                        <View className='flex justify-center items-end'>
+                          <Text className='text-start font-tajawalregular mb-0 text-[#2e752f]'>مجال الشركة</Text>
+                        </View>
+                        <CompanyFieldDropDown
+                          errors={errors}
+                          isSubmitted={isSubmitted}
+                          initialValue={field}
+                          selectedField={field}
+                          onFieldSelect={handleFieldSelect}
+                          isRequired={false}
+                          borderColor='#9ca3af'
+                        />
                       </View>
-                      <CompanyFieldDropDown
-                        errors={errors}
-                        isSubmitted={isSubmitted}
-                        initialValue={field}
-                        selectedField={field}
-                        onFieldSelect={handleFieldSelect}
-                        isRequired={false}
-                        borderColor='#9ca3af'
-                      />
-                    </View>
                     :
                       null
                     }
+                    <View className='flex-row-reverse justify-between w-full'>
+                      <View className='w-[100%] mt-0'>
+                        <View className='flex justify-center items-end'>
+                          <Text className='text-start font-tajawalregular mb-2 text-[#2e752f]'> رقم الهاتف</Text>
+                        </View>
+                        <TextInput
+                          placeholder=" رقم الهاتف"
+                          value={phoneNumber}
+                          onChangeText={setPhoneNumber}
+                          editable={false}
+                          placeholderTextColor="#888"
+                          className={`border border-[#9ca3af] rounded-lg p-3 text-gray-400 text-right bg-white font-tajawalregular `}
+                        />
+                      </View>
+                    </View>
+
                     <View className='w-full flex items-center pt-4 mb-10'>
                       <TouchableOpacity 
                         onPress={handleUpdateUser}
