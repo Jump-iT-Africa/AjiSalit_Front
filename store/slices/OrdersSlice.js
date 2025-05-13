@@ -38,6 +38,9 @@ export const fetchOrders = createAsyncThunk(
       if (response.data === "ماكين حتا طلب" || !Array.isArray(response.data)) {
         return []; 
       }
+
+      let items = response.data;
+      let result = items.filter(items => !(items.isFinished === true && items.isPickUp === true));
       // console.log("reponse of the client or  company", response.data);
       return response.data;
       
@@ -196,7 +199,6 @@ export const selectFilteredOrders = createSelector(
       return [];
     }
     
-    // Filter for orders that aren't both finished and picked up
     let result = items.filter(order => !(order.isFinished === true && order.isPickUp === true));
     
     if (searchTerm) {
@@ -319,60 +321,6 @@ export const HistoryOrders = createSelector(
 
 
 
-export const selectHistoryOrders = createSelector(
-  [getOrderItems, getSearchTerm, getStatusFilter, getDateFilter],
-  (items, searchTerm, statusFilter, dateFilter) => {
-    if (!items || !Array.isArray(items)) {
-      return [];
-    }
-    
-    // Filter for orders that are both finished and picked up
-    let result = items.filter(order => (order.isFinished === true && order.isPickUp === true));
-    
-    if (searchTerm) {
-      result = result.filter(order => 
-        order.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.customerDisplayName.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    
-    if (statusFilter) {
-      let typeToFilter;
-      
-      switch(statusFilter) {
-        case 'خالص':
-          typeToFilter = 'paid';
-          break;
-        case 'غير خالص':
-          typeToFilter = 'unpaid';
-          break;
-        case 'تسبيق':
-          typeToFilter = 'installment';
-          break;
-        default:
-          typeToFilter = null;
-      }
-      
-      if (typeToFilter) {
-        result = result.filter(order => order.type === typeToFilter);
-      }
-    }
-    
-    if (dateFilter) {
-      const filterDate = new Date(dateFilter);
-      
-      result = result.filter(order => {
-        if (!order.date || order.date === "غير محدد") return false;
-        
-        const [day, month, year] = order.date.split('/').map(Number);
-        const orderDate = new Date(year, month - 1, day);
-        
-        return orderDate.toDateString() === filterDate.toDateString();
-      });
-    }
-    
-    return result;
-  }
-);
+
 
 export default ordersSlice.reducer;

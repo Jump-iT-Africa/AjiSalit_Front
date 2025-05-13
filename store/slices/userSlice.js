@@ -1,7 +1,34 @@
 import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit';
-import { saveUserToDB, loginUser, getAuthToken, getUserData, verifyNumber, updateUser, updatePasswordService } from '@/services/api';
+import { saveUserToDB, loginUser, getAuthToken, getUserData, verifyNumber, updateUser, updatePasswordService,fetchUserData } from '@/services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {clearCurrentOrder} from "@/store/slices/OrdersManagment"
+
+
+export const fetchCurrentUserData = createAsyncThunk(
+  'user/fetchCurrentUserData',
+  async (_, { rejectWithValue }) => {
+    try {
+      
+      const UserId = (await AsyncStorage.getItem('userId'))?.replace(/^"|"$/g, '');
+     
+      const response = await fetchUserData();
+
+      console.log('here is the response of get users', response);
+      
+      if (response) {
+        // await AsyncStorage.setItem('user', JSON.stringify(response));
+        console.log('responsessssss',response);
+        return response;
+
+      }
+      
+      return rejectWithValue('Failed to fetch user data');
+    } catch (error) {
+      console.error('Error fetching current user data:', error);
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
 
 
 export const registerUser = createAsyncThunk(
@@ -163,7 +190,7 @@ const initialState = {
   token: null,
   isAuthenticated: false,  
   password: '',
-  pocket:null,
+  pocket:0,
   loading: false,
   verificationLoading: false,
   verificationSuccess: false,
@@ -321,6 +348,8 @@ const userSlice = createSlice({
       state.ownRef = user.ownRef || '';
       state.listRefs = user.listRefs || [];
       state.profileImage = user.profileImage || null;
+      state.pocket = user?.pocket || null;
+
     });
     builder.addCase(registerUser.rejected, (state, action) => {
       state.loading = false;
@@ -352,6 +381,8 @@ const userSlice = createSlice({
       state.ownRef = user?.ownRef || '';
       state.listRefs = user?.listRefs || [];
       state.profileImage = user.profileImage || null;
+      state.pocket = user?.pocket || null;
+
     });
     builder.addCase(login.rejected, (state, action) => {
       state.loading = false;
@@ -381,6 +412,7 @@ const userSlice = createSlice({
       state.ownRef = user.ownRef || '';
       state.listRefs = user.listRefs || [];
       state.profileImage = user.profileImage || null;
+      state.pocket = user.pocket || null;
     });
     builder.addCase(restoreAuthState.rejected, (state) => {
       state.loading = false;
@@ -449,6 +481,33 @@ const userSlice = createSlice({
       state.passwordUpdateError = action.payload;
       console.log("Password update rejected with payload:", action.payload);
     });
+
+    builder.addCase(fetchCurrentUserData.pending, (state) => {
+    });
+    builder.addCase(fetchCurrentUserData.fulfilled, (state, action) => {
+      const userData = action.payload;
+      
+      if (userData) {
+        // Update all relevant user fields
+        if (userData.id || userData._id) state.id = userData.id || userData._id;
+        if (userData.Fname) state.Fname = userData.Fname;
+        if (userData.Lname) state.Lname = userData.Lname;
+        if (userData.companyName) state.companyName = userData.companyName;
+        if (userData.phoneNumber) state.phoneNumber = userData.phoneNumber;
+        if (userData.role) state.role = userData.role;
+        if (userData.city) state.city = userData.city;
+        if (userData.field) state.field = userData.field;
+        if (userData.ice) state.ice = userData.ice;
+        if (userData.ownRef) state.ownRef = userData.ownRef;
+        if (userData.listRefs) state.listRefs = userData.listRefs;
+        if (userData.profileImage) state.profileImage = userData.profileImage;
+        
+        state.pocket = userData.pocket !== undefined ? userData.pocket : null;
+      }
+    });
+    builder.addCase(fetchCurrentUserData.rejected, (state, action) => {
+      console.log("Failed to fetch current user data:", action.payload);
+    });
   }
 });
 
@@ -514,6 +573,7 @@ export const selectUserData = createSelector(
     ice: user.ice,
     ownRef: user.ownRef,
     listRefs: user.listRefs,
-    profileImage: user.profileImage
+    profileImage: user.profileImage,
+    pocket: user.pocket
   })
 );

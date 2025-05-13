@@ -26,7 +26,7 @@ const ClientPikUpButton = ({orderData}) => {
             dispatch(pickupButtonPressed());
             dispatch(updateOrderDate({
                 orderId: orderData.id,
-                dateData: { IsConfirmedByClient: true }
+                dateData: { IsConfirmedByClient: true,isPickUp: true }
             }));
             setIsModalVisible(true);
         }

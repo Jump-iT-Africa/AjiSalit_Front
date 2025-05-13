@@ -7,6 +7,40 @@ const API_BASE_URL = 'https://www.ajisalit.com';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+
+
+
+export const fetchUserData = async () => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    const config = {
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : '',
+        'Content-Type': 'application/json'
+      }
+    };
+        
+    const response = await axios.get(`${API_BASE_URL}/user/`, config);
+      console.log('this is updated info of user',  response.data);
+      
+    if (response.data.isExist === false && response.data.statusCode === 409) {
+      throw {
+        response: {
+          data: response.data
+        }
+      };
+    }
+    
+    return response.data;
+  } catch(error) {
+    console.log('Error in Verifying', error.response?.data || error.message);
+    throw error;
+  }
+}
+
+
+
+
 export const saveUserToDB = async (userData) => {
   try {
     console.log('Attempting to connect to:', `${API_BASE_URL}/user/register`);
