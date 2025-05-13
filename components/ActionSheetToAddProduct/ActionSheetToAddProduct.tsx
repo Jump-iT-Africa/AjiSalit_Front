@@ -702,7 +702,6 @@ const processOrderSubmission = () => {
         </>
       )}
 
-        
         {error ?  
         
           null

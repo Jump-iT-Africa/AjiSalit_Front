@@ -163,7 +163,7 @@ const initialState = {
   token: null,
   isAuthenticated: false,  
   password: '',
-  
+  pocket:null,
   loading: false,
   verificationLoading: false,
   verificationSuccess: false,
