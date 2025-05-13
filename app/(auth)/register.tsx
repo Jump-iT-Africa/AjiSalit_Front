@@ -251,7 +251,6 @@ const Register: React.FC = () => {
             }}
           />
         </Animated.View>
-          
           <View className="flex-1">
             <AppGradient colors={["rgba(0,0,0,0.4)", "rgba(0,0,0,0.0)"]}>
               <SafeAreaView className="flex-1">

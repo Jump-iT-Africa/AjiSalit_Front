@@ -535,7 +535,6 @@ const processOrderSubmission = () => {
                       minimumDate={new Date()}
                       style={{ height: 300, width: '100%' }}
                     />
-
                     <TouchableOpacity
                       onPress={() => handleDateSelect(selectedDate)}
                       className="mt-4 p-3 bg-[#F52525] rounded-full"
@@ -707,12 +706,15 @@ const processOrderSubmission = () => {
           null
         
         :
+          <View>
 
-        <UniqueIdModal
-        visible={showIdModal} 
-        onClose={handleModalClose} 
-        uniqueId={uniqueId} 
-        />
+              <UniqueIdModal
+              visible={showIdModal} 
+              onClose={handleModalClose} 
+              uniqueId={uniqueId} 
+              />
+          </View>
+        
         }
         
       </Animated.View>

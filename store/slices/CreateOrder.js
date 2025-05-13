@@ -15,7 +15,7 @@ export const createOrder = createAsyncThunk(
         return rejectWithValue('No authentication token available');
       }
       
-      const response = await axios.post('https://www.ajisalit.com/order', orderData, {
+      const response = await axios.post('https://api.ajisalit.com/order', orderData, {
         headers: {
           Authorization: `Bearer ${token}`
         }

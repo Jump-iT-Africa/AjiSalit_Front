@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit'
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'https://www.ajisalit.com';
+const API_URL = 'https://api.ajisalit.com';
 // const API_URL = 'http://192.168.1.66:3000';
 
 export const fetchOrders = createAsyncThunk(

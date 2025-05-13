@@ -31,26 +31,26 @@ const Settings = () => {
       icon: <Ionicons name="key-sharp" size={20} color="#2e752f" />,
       redirection: "/UpdatePassword"
     },
+    // {
+    //   id: 3,
+    //   name: "إحالة",
+    //   icon: <Ionicons name="gift" size={20} color="#2e752f" />,
+    //   redirection: "/adasd"
+    // },
     {
       id: 3,
-      name: "إحالة",
-      icon: <Ionicons name="gift" size={20} color="#2e752f" />,
-      redirection: "/adasd"
-    },
-    {
-      id: 4,
       name: "الدعم",
       icon: <AntDesign name="customerservice" size={20} color="#2e752f" />,
       action: () => setModalVisible(true)
     },
     {
-      id: 5,
+      id: 4,
       name: "الأمان",
       icon: <FontAwesome5 name="lock" size={18} color="#2e752f" />,
       redirection: "/Security"
     },
     {
-      id: 6,
+      id: 5,
       name: "بخصوصنا",
       icon: <AntDesign name="exclamationcircle" size={18} color="#2e752f" />,
       redirection: "/About"

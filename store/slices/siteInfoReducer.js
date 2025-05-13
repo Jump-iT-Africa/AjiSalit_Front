@@ -4,7 +4,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 
-const BASE_URL = 'https://www.ajisalit.com';
+const BASE_URL = 'https://api.ajisalit.com';
 
 export const fetchSiteInfo = createAsyncThunk(
   'siteInfo/fetchSiteInfo',

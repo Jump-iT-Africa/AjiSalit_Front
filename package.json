@@ -62,6 +62,7 @@
     "react-native-view-shot": "^4.0.3",
     "react-native-walkthrough-tooltip": "^1.6.0",
     "react-native-web": "^0.20.0",
+    "react-native-webview": "^13.13.5",
     "react-redux": "^9.2.0",
     "redux": "^5.0.1",
     "typescript": "^5.3.0"

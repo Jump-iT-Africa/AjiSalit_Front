@@ -95,7 +95,9 @@ const UniqueIdModal = ({ visible, onClose, uniqueId }:any) => {
                 </TouchableOpacity>
               </View>
 
-              <View className='flex justify-center items-center w-[100%] mt-10 '>
+              <View className='flex justify-center items-center w-[100%] my-5 '>
+              <Text className='text-[#F52525] font-tajawalregular mb-5'>تنويه:مع كل طلب سيتم خصم 1dh من رصيدك</Text>
+
                 <TouchableOpacity 
                  onPress={handlePressed}
                   className="bg-[#2e752f] rounded-full p-3 flex-row items-center justify-center"
@@ -177,7 +179,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent:'space-between',
     borderWidth: 1.5,
-    borderColor: Colors.red,
+    borderColor: Colors.green,
     borderRadius: 50,
     padding: 0,
     paddingRight: 0,
@@ -191,7 +193,7 @@ const styles = StyleSheet.create({
     paddingLeft:20
   },
   copyButton: {
-    backgroundColor: Colors.red,
+    backgroundColor: Colors.green,
     width: 60,
     height: 60,
     borderRadius: 50,
