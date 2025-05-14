@@ -1,6 +1,7 @@
 import AppGradient from "@/components/ui/AppGradient";
 import { View, Text, TouchableOpacity, Image, KeyboardAvoidingView, Platform } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import Color from "@/constants/Colors";
 import HeaderWithBack from "@/components/ui/HeaderWithToolTipAndback";
 import Whitelogo from "@/assets/images/whiteLogo.png";
@@ -68,11 +69,20 @@ export default function AccountnType() {
                     />
                 </TouchableOpacity>
                 
-                <View className="flex-1 justify-start items-center mt-[30%]">
+                <View style={{
+                    flex: 1,
+                    justifyContent: 'flex-start',
+                    alignItems: 'center',
+                    marginTop: hp('30%')
+                }}>
                     <Image
                         source={Whitelogo}
                         resizeMode="contain"
-                        className="w-40 h-40 mb-12"
+                        style={{
+                            width: wp('40%'),
+                            height: hp('20%'),
+                            marginBottom: hp('6%')
+                        }}
                     />
                     <Text className="text-white font-tajawal text-center mb-2 text-xl px-10">
                         واش نتا شركة ولا شخص عادي؟
@@ -82,7 +92,7 @@ export default function AccountnType() {
                     </Text>
                 </View>
                 
-                <View className="px-10">
+                <View style={{ paddingHorizontal: wp('10%') }}>
                     <CustomButton
                         onPress={() => handleAccountTypeSelect('شركة')}
                         title={"شركة"}
@@ -119,6 +129,5 @@ export default function AccountnType() {
             </AppGradient>
         </KeyboardAvoidingView>
     </GestureHandlerRootView>
-
     );
 }

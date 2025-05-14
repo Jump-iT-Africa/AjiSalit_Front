@@ -94,7 +94,8 @@ export default function RootLayout() {
       <Provider store={store}>
         <AuthCheck />
         <HandleNotification />
-        <NavigationHandler firstLaunch={isAppFirstLaunched} />
+        {/* <NavigationHandler firstLaunch={isAppFirstLaunched} /> */}
+        <NavigationHandler firstLaunch={false} />
         {/* <OrderResetManager /> */}
         <Stack>
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
