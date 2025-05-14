@@ -1,21 +1,44 @@
-import { View, Image, Text } from "react-native";
+import { View, Image, Text,Dimensions } from "react-native";
 import NoOrders from '@/assets/images/NoORders.png'
 import Colors from "@/constants/Colors";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 
 export default function NoOrdersExists()
 {
+    const { width, height } = Dimensions.get('window');
+    const isSmallScreen = height < 700;
     return(
-        <View className="flex items-center justify-center mt-10">
-            <View className="w-80 h-80">
+        <View style={{ 
+            display:'flex',
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            marginTop: isSmallScreen ? hp('-2%') : hp('5%')
+        }}>
+            <View style={{ 
+                width: wp('100%'), 
+                height: hp('35%'),
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}>
                 <Image 
                     source={NoOrders}
                     resizeMode="contain"
-                    className="w-80 h-80"
+                    style={{
+                        width: isSmallScreen ? wp('70%') : wp('80%'),
+                        height: isSmallScreen ? hp('30%') : hp('35%')
+                    }}
                 />
             </View>
-            <View>
-                <Text className="font-tajawal text-xl mt-8" style={{color:Colors.green}}>
+            <View style={{ 
+                marginTop: isSmallScreen ? hp('0%') : hp('2%')
+            }}>
+            <Text style={{
+                    fontFamily: 'Tajawal',
+                    fontSize: wp('5%'),
+                    color: Colors.green,
+                    textAlign: 'center'
+                }}>
                     لا توجد أي نتائج!
                 </Text>
             </View>

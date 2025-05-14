@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect,useMemo } from "react";
 import {
   View,
   TextInput,
@@ -12,6 +12,7 @@ import {
   Modal,
   Image,
   StyleSheet,
+  Dimensions
 } from "react-native";
 import CustomButton from "../ui/CustomButton";
 import Divider from "../ui/Devider";
@@ -24,8 +25,14 @@ import { setPersonalInfo, registerUser, selectLoading, selectError } from '@/sto
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CitySelector from "../CompanyRegister/CitySelector";
 import regionsAndCitiesData from "@/constants/Cities/Cities.json";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 export default function UserFormActionSheet() {
+  const { width, height } = Dimensions.get('window');
+  const isSmallScreen = height < 700; 
+  const bottomSheetHeight = useMemo(() => {
+    return isSmallScreen ? hp('70%') : hp('53%');
+}, [isSmallScreen]);
   const dispatch = useDispatch();
   const userData = useSelector(state => state.user);
   const isLoading = useSelector(selectLoading);
@@ -170,7 +177,7 @@ export default function UserFormActionSheet() {
             backgroundColor: 'white',
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
-            height: '50%',
+            height: bottomSheetHeight,
             padding: 16
           }}
         >
@@ -225,7 +232,7 @@ export default function UserFormActionSheet() {
             backgroundColor: 'white',
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
-            height: '50%',
+            height: bottomSheetHeight,
             padding: 16
           }}
         >

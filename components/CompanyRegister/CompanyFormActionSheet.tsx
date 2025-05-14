@@ -1,5 +1,4 @@
-// @ts-nocheck
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect,useMemo } from "react";
 import {
   View,
   TextInput,
@@ -14,7 +13,8 @@ import {
   StyleSheet,
   Modal,
   ScrollView,
-  Image
+  Image,
+  Dimensions
 } from "react-native";
 import CustomButton from "../ui/CustomButton";
 import Divider from "../ui/Devider";
@@ -28,8 +28,19 @@ import { setCompanyInfo, registerUser, selectLoading, selectError } from '@/stor
 import AsyncStorage from '@react-native-async-storage/async-storage'; 
 import CitySelector from "./CitySelector";
 import regionsAndCitiesData from "@/constants/Cities/Cities.json";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 export default function CombinedCompanyForm({ onInputFocus, onLoadingModalChange }) {
+
+
+  const { width, height } = Dimensions.get('window');
+  const isSmallScreen = height < 700; 
+  
+  const bottomSheetHeight = useMemo(() => {
+      return isSmallScreen ? hp('70%') : hp('53%');
+  }, [isSmallScreen]);
+
+
   const dispatch = useDispatch();
   const userData = useSelector(state => state.user);
   const isLoading = useSelector(selectLoading);
@@ -321,7 +332,7 @@ export default function CombinedCompanyForm({ onInputFocus, onLoadingModalChange
             }
           }}
           containerStyles="p-3 bg-[#2e752f] rounded-full"
-          textStyles="text-white text-center font-tajawal text-[15px]"
+          textStyles="text-white text-center font-tajawal text-[15px] pt-1"
         />
       </View>
     </Animated.View>
@@ -391,7 +402,7 @@ export default function CombinedCompanyForm({ onInputFocus, onLoadingModalChange
           title="إنشاء حساب"
           onPress={handleSubmit}
           containerStyles="p-3 bg-[#2e752f] rounded-full w-2/4"
-          textStyles="text-white text-center font-tajawal text-[15px]"
+          textStyles="text-white text-center font-tajawal text-[15px] "
         />
       </View>
     
@@ -428,7 +439,7 @@ export default function CombinedCompanyForm({ onInputFocus, onLoadingModalChange
             backgroundColor: 'white',
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
-            height: '60%',
+            height: bottomSheetHeight,
             padding: 16
           }}
         >
@@ -484,7 +495,7 @@ export default function CombinedCompanyForm({ onInputFocus, onLoadingModalChange
             backgroundColor: 'white',
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
-            height: '60%',
+            height: bottomSheetHeight,
             padding: 16
           }}
         >
@@ -516,7 +527,7 @@ export default function CombinedCompanyForm({ onInputFocus, onLoadingModalChange
                 }}
                 title="انتقل للصفحة الرئيسية"
                 textStyles="text-sm font-tajawal px-2 py-0 text-white"
-                containerStyles="w-[90%] m-auto bg-[#F52525] rounded-full p-3"
+                containerStyles="w-[90%] m-auto bg-[#F52525] rounded-full  pt-1"
                 disabled={false}
               />
             </View>
