@@ -116,7 +116,7 @@ const OrderDetailsModal = ({ isVisible, onClose, orderData }) => {
                   <AntDesign name="user" size={20} color="#F5B225" />
                 </View>
                 <Text className="text-right text-[11px] font-bold mb-4 font-tajawal text-[#2F752F]">
-                  {orderData?.customerDisplayName || ''}
+                  {orderData?.clientId.Fname || ''}
                 </Text>
               </View>
 
@@ -202,6 +202,8 @@ export default function OrderHistory() {
   };
 
   const renderOrderItem = ({ item }) => {
+    console.log('wohoooo item', item);
+    
     return (
       <View className={`mb-3 px-3 `}>
         <TouchableOpacity
@@ -215,7 +217,7 @@ export default function OrderHistory() {
               <Text className={`text-base font-bold text-[#E23744] mb-2`}>{item.orderCode}</Text>
               <View className={`flex-1 items-end px-0 flex-row-reverse text-sm`}>
                 <Text className='text-sm text-[#000] font-tajawalregular pt-2'>صاحب(ة) الطلب: </Text>
-                <Text className={`text-base text-[#295f2b] font-semibold pb-[0.7]`}> {item.customerDisplayName} </Text>
+                <Text className={`text-base text-[#295f2b] font-semibold pb-[0.7]`}> {item?.clientId.Fname} </Text>
               </View>
             </View>
           </View>

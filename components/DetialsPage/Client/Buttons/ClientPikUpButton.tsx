@@ -7,7 +7,7 @@ import { router } from 'expo-router';
 import Colors from '@/constants/Colors';
 import { useDispatch, useSelector } from 'react-redux';
 import successLeon from '@/assets/images/successLeon.png'
-import { updateOrderDate } from '@/store/slices/OrdersManagment';
+import { updateClientPickUp } from '@/store/slices/OrdersManagment';
 
 
 
@@ -24,9 +24,9 @@ const ClientPikUpButton = ({orderData}) => {
             console.log('helo');
             
             dispatch(pickupButtonPressed());
-            dispatch(updateOrderDate({
+            dispatch(updateClientPickUp({
                 orderId: orderData.id,
-                dateData: { IsConfirmedByClient: true,isPickUp: true }
+                dateData: { IsConfirmedByClient: true }
             }));
             setIsModalVisible(true);
         }
@@ -35,14 +35,16 @@ const ClientPikUpButton = ({orderData}) => {
     const closeModal = () => {
         setIsModalVisible(false);
     };
+
+    const isDone = (pickupButtonClicked.isFinished === true && pickupButtonClicked.isPickUp === true);
     
     
     return (
         <>
             <TouchableOpacity
-                className={`${pickupButtonClicked.isFinished ? 'bg-green-700' : 'bg-gray-400'} w-[48%] h-14 rounded-full flex-row justify-center items-center`}
+                className={`${isDone ? 'bg-green-700' : 'bg-gray-400'} w-[48%] h-14 rounded-full flex-row justify-center items-center`}
                 onPress={handleSubmit}
-                disabled={!pickupButtonClicked.isFinished}
+                disabled={!isDone}
             >
                 <Text className="text-white text-lg font-bold ml-2 font-tajawalregular pt-1 pr-2">تم الاستلام</Text>
                 <AntDesign name="checkcircle" size={24} color="white" />

@@ -11,6 +11,8 @@ import OrdersManagment from "@/components/OrdersOfClient/OrdersOfClient"
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { selectUserRole, selectUserData, restoreAuthState } from "@/store/slices/userSlice";
 import Wallet from "@/assets/images/wallet.png"
+import WalletPoor from "@/assets/images/walletPoor.png"
+import WalletRich from "@/assets/images/walletRich.png"
 import { useFocusEffect } from '@react-navigation/native';
 
 const Home = () => {
@@ -23,7 +25,6 @@ const Home = () => {
   const [statusFilter, setStatusFilter] = useState(null);
   const [dateFilter, setDateFilter] = useState(null);
   
-  // Function to refresh user data from AsyncStorage
   const refreshPocketValue = async () => {
     try {
       const userDataStr = await AsyncStorage.getItem('user');
@@ -39,12 +40,10 @@ const Home = () => {
     }
   };
   
-  // Initial load of pocket value
   useEffect(() => {
     refreshPocketValue();
   }, []);
   
-  // Refresh when userData changes in Redux
   useEffect(() => {
     if (userData && userData.pocket !== undefined && userData.pocket !== null) {
       setUserPocket(userData.pocket);
@@ -52,16 +51,12 @@ const Home = () => {
     }
   }, [userData]);
   
-  // Refresh on screen focus
   useFocusEffect(
     React.useCallback(() => {
-      // This runs when the screen comes into focus
       refreshPocketValue();
-      // Also refresh Redux state to ensure it's in sync
       dispatch(restoreAuthState());
       
       return () => {
-        // Optional cleanup if needed
       };
     }, [dispatch])
   );
@@ -81,30 +76,34 @@ const Home = () => {
       return {
         amountColor: '#295f2b', 
         messageColor: '#295f2b',
-        message: 'رصيد ديالك كافي للطلبات الجديدة'
+        message: 'رصيد ديالك كافي للطلبات الجديدة',
+        walletImage: WalletRich
       };
     } else if (userPocket >= 50 && userPocket < 250) {
       return {
         amountColor: '#FFA30E', 
         messageColor: '#FFA30E',
-        message: 'رصيد ديالك قرب يسالي'
+        message: 'رصيد ديالك قرب يسالي',
+        walletImage: Wallet
       };
     } else if (userPocket > 0 && userPocket < 50) {
       return {
         amountColor: '#F52525', 
         messageColor: '#F52525',
-        message: ' لن تتمكن من إنشاء طلبات جديدة عندما يصل الرصيد إلى 0'
+        message: ' لن تتمكن من إنشاء طلبات جديدة عندما يصل الرصيد إلى 0',
+        walletImage: WalletPoor
       };
     } else {
       return {
         amountColor: '#F52525', 
         messageColor: '#F52525',
-        message: 'رصيدك 0! لا يمكنك إنشاء طلبات جديدة. يرجى الشحن.'
+        message: 'رصيدك 0! لا يمكنك إنشاء طلبات جديدة. يرجى الشحن.',
+        walletImage: WalletPoor
       };
     }
   };
 
-  const { amountColor, messageColor, message } = getWalletColorAndMessage();
+  const { amountColor, messageColor, message, walletImage } = getWalletColorAndMessage();
 
   console.log('User role:', role);
   console.log('User pocket displayed in Home:', userPocket);
@@ -127,7 +126,7 @@ const Home = () => {
               <View className='bg-white w-[100%] p-2 rounded-xl mx-auto mb-4 flex-row justify-between items-center'>
                 <View>
                   <Image
-                    source={Wallet}
+                    source={walletImage}
                     resizeMode="contain"
                     className='w-14 h-14'
                   />

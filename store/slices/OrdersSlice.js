@@ -199,7 +199,7 @@ export const selectFilteredOrders = createSelector(
       return [];
     }
     
-    let result = items.filter(order => !(order.isFinished === true && order.isPickUp === true));
+    let result = items.filter(order => !(order.isFinished === true && (order.IsConfirmedByClient === true )) );
     
     if (searchTerm) {
       result = result.filter(order => 
@@ -271,7 +271,7 @@ export const HistoryOrders = createSelector(
     }
     
     // hna knbayed li isfinished and is pick are both true
-    let result = items.filter(order => (order.isFinished === true && order.isPickUp === true));
+    let result = items.filter(order => (order.isFinished === true && order.IsConfirmedByClient === true));
     console.log('this is filtered data', result);
     if (searchTerm) {
       result = result.filter(order => 

@@ -188,10 +188,48 @@ export const updateOrderDate = createAsyncThunk(
   }
 );
 
+export const updateClientPickUp = createAsyncThunk(
+  'orders/updateClientPickUp',
+  async ({ orderId, dateData }, { rejectWithValue, dispatch }) => {
+    try {
+      // console.log('hello', dateData);
+      if (!orderId) {
+        return rejectWithValue('Order ID is required');
+      }
+
+      const token = await AsyncStorage.getItem('token');
+      
+      if (!token) {
+        return rejectWithValue('No authentication token available');
+      }
+      
+      const response = await axios.patch(
+        `${API_BASE_URL}/order/confirmdelivery/${orderId}`,
+        dateData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+      
+      console.log('Order date update response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.log('Order date update error:', error.message);
+      if (error.response) {
+        console.log('Error response data:', error.response.data);
+        console.log('Error response status:', error.response.status);
+      }
+      return rejectWithValue(error.response?.data || 'Failed to update order date');
+    }
+  }
+);
+
 
 
 export const updateToDone = createAsyncThunk(
-  'orders/updateOrderDate',
+  'orders/updateToDone',
   async ({ orderId, dateData }, { rejectWithValue, dispatch }) => {
     try {
       if (!orderId) {
