@@ -45,13 +45,13 @@ export default function CombinedCompanyForm({ onInputFocus, onLoadingModalChange
     city: "",
     cityObject: null,
     companyName: "",
-    field: "", 
+    field: "",
   });
 
   const [errors, setErrors] = useState({
     Fname: "",
     Lname: "",
-    city: "", 
+    city: "",
     companyName: "",
     field: "",
   });
@@ -65,7 +65,7 @@ export default function CombinedCompanyForm({ onInputFocus, onLoadingModalChange
   const handleInputFocus = () => {
     if (onInputFocus) onInputFocus(true);
   };
-  
+
   const handleInputBlur = () => {
     if (onInputFocus) onInputFocus(false);
   };
@@ -156,7 +156,7 @@ export default function CombinedCompanyForm({ onInputFocus, onLoadingModalChange
       setIsLoadingModalVisible(true);
     } else if (isLoadingModalVisible && userData.registered) {
       const minLoadingTime = 2000;
-      
+
       setTimeout(() => {
         setIsLoadingModalVisible(false);
         
@@ -263,9 +263,8 @@ export default function CombinedCompanyForm({ onInputFocus, onLoadingModalChange
           placeholderTextColor="#888"
           value={formData.Fname}
           onChangeText={(text) => setFormData({ ...formData, Fname: text })}
-          className={`border ${
-            errors.Fname ? "border-red-500" : "border-[#2e752f]"
-          } rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}
+          className={`border ${errors.Fname ? "border-red-500" : "border-[#2e752f]"
+            } rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}
         />
         {errors.Fname ? (
           <Text className="text-red-500 text-right mt-0 -mb-1 font-tajawalregular text-[10px]">
@@ -287,9 +286,8 @@ export default function CombinedCompanyForm({ onInputFocus, onLoadingModalChange
           placeholderTextColor="#888"
           value={formData.Lname}
           onChangeText={(text) => setFormData({ ...formData, Lname: text })}
-          className={`border ${
-            errors.Lname ? "border-red-500" : "border-[#2e752f]"
-          } rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}
+          className={`border ${errors.Lname ? "border-red-500" : "border-[#2e752f]"
+            } rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}
         />
         {errors.Lname ? (
           <Text className="text-red-500 text-right mt-0 -mb-1 font-tajawalregular text-[10px]">
@@ -374,7 +372,6 @@ export default function CombinedCompanyForm({ onInputFocus, onLoadingModalChange
           placeholderTextColor="#888"
           value={formData.companyName}
           onChangeText={(text) => setFormData({ ...formData, companyName: text })}
-          maxLength={14}
           onFocus={handleInputFocus}
           onBlur={handleInputBlur}
           className={`border border-[#2e752f] rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}
@@ -405,6 +402,9 @@ export default function CombinedCompanyForm({ onInputFocus, onLoadingModalChange
       )}
     </Animated.View>
   );
+
+
+
 
   // Loading Modal
   const LoadingModal = (

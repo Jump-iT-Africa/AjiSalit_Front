@@ -1,20 +1,37 @@
 
 
 import React, { useState } from 'react';
-import { View, Text, Modal, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import Colors from '@/constants/Colors';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import Divider from '../ui/Devider';
+// import Divider from '../ui/Devider';
 import * as Clipboard from 'expo-clipboard';
+import CustomButton from '../ui/CustomButton';
+import { router } from 'expo-router';
+import WhiteImage from "@/assets/images/ajisalit_white.png";
+
+
 
 const UniqueIdModal = ({ visible, onClose, uniqueId }:any) => {
 
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const copyToClipboard = async (uniqueId:string) => {
     await Clipboard.setStringAsync(uniqueId);
   };
+
+  const closeModal = () => {
+    setIsModalVisible(false);
+  };
+
+
+  const handlePressed = () =>
+  {
+    router.replace('(home)')
+  }
+
 
   return (
     <Modal
@@ -23,41 +40,90 @@ const UniqueIdModal = ({ visible, onClose, uniqueId }:any) => {
       animationType="slide"
       onRequestClose={onClose}
     >
-      <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
-          <View className='flex-row items-center justify-between w-full'>
-            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-            <FontAwesome5 name="times-circle" size={24} color="black" />
-            </TouchableOpacity>
+
+      <TouchableOpacity 
+          style={{ flex: 1,  backgroundColor: 'rgba(47, 117, 47, 0.80)' }}
+          onPress={closeModal}
+        >
+        <TouchableOpacity 
+          activeOpacity={1}
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: '#F5F6F7',
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            height: '80%',
+            padding: 16,
             
-            <Text style={styles.title} className='font-tajawalregular' >رمز الطلب</Text>
+          }}
+          onPress={(e) => e.stopPropagation()}
+        >
+
+
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <View className='flex-row items-center justify-end w-full'>
+                <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                </TouchableOpacity>
+                
+                <Text style={styles.title} className='font-tajawalregular text-right mr-4' >رمز الطلب</Text>
+              </View>
+              
+              <Text style={styles.subTitle} className='font-tajawalregular text-sm'>
+                يرجى مسح رمز QR أو إدخال رمز التتبع لتتبع طلبك بسهولة!
+              </Text>
+              
+              <View style={styles.qrContainer}>
+                <QRCode 
+                  value={uniqueId}
+                  size={200}
+                  logo={require('@/assets/images/MoroccoLogo.png')}
+                  logoSize={50}
+                  logoBackgroundColor="white"
+                />
+              </View>
+              
+              <Text style={styles.manualEntryText} className='font-tajawalregular'>أو أدخل الرمز يدويًا</Text>
+              
+              <View style={styles.idContainer}>
+                <Text style={styles.idText}>{uniqueId}</Text>
+                <TouchableOpacity style={styles.copyButton} onPress={()=>copyToClipboard(uniqueId)}>
+                  <Ionicons name="copy-outline" size={24} color="white" />
+                </TouchableOpacity>
+              </View>
+
+              <View className='flex justify-center items-center w-[100%] my-5 '>
+              <Text className='text-[#F52525] font-tajawalregular mb-5'>تنويه:مع كل طلب سيتم خصم 1dh من رصيدك</Text>
+
+                <TouchableOpacity 
+                 onPress={handlePressed}
+                  className="bg-[#2e752f] rounded-full p-3 flex-row items-center justify-center"
+                  style={{ width: '48%' }}>
+                    <>
+                      <Text className="text-white text-center font-tajawal text-[17.99px] mr-2">تأكيد</Text>
+                      
+                      <Image 
+                        source={WhiteImage}
+                        className='w-8 h-8'
+                        resizeMode='contain'
+                      />
+                    </>
+                </TouchableOpacity>
+
+
+                {/* <Image 
+                  source={WhiteImage}
+                  resizeMode='contain'
+                  className='w-2 h-2'
+                /> */}
+              </View>
+            </View>
           </View>
-          
-          <Text style={styles.subTitle} className='font-tajawalregular'>
-            يرجى مسح رمز QR أو إدخال رمز التتبع لتتبع طلبك بسهولة!
-          </Text>
-          
-          <View style={styles.qrContainer}>
-            <QRCode 
-              value={uniqueId}
-              size={200}
-              logo={require('@/assets/images/logo.png')}
-              logoSize={50}
-              logoBackgroundColor="white"
-            />
-          </View>
-          
-          <View style={styles.divider} />
-          <Text style={styles.manualEntryText} className='font-tajawalregular'>أو أدخل الرمز يدويًا</Text>
-          
-          <View style={styles.idContainer}>
-            <Text style={styles.idText}>{uniqueId}</Text>
-            <TouchableOpacity style={styles.copyButton} onPress={()=>copyToClipboard(uniqueId)}>
-              <Ionicons name="copy-outline" size={24} color="white" />
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
+      </TouchableOpacity>
+      </TouchableOpacity>
     </Modal>
   );
 };
@@ -65,15 +131,14 @@ const UniqueIdModal = ({ visible, onClose, uniqueId }:any) => {
 const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
-    justifyContent: 'center',
+    // justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    backgroundColor: '#F5F6F7',
   },
   modalContent: {
     width: '95%',
-    backgroundColor: 'white',
     borderRadius: 15,
-    padding: 20,
+    padding: 0,
     alignItems: 'center',
   },
  
@@ -91,9 +156,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   qrContainer: {
-    padding: 15,
+    padding: 10,
     backgroundColor: 'white',
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: Colors.green,
     borderRadius: 10,
     marginBottom: 20,
@@ -123,11 +188,12 @@ const styles = StyleSheet.create({
   idText: {
     flex: 1,
     fontSize: 18,
-    textAlign: 'center',
-    fontWeight:600
+    textAlign: 'left',
+    fontWeight:600,
+    paddingLeft:20
   },
   copyButton: {
-    backgroundColor: '#2e752f',
+    backgroundColor: Colors.green,
     width: 60,
     height: 60,
     borderRadius: 50,

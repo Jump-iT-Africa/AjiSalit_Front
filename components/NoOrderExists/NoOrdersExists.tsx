@@ -6,12 +6,12 @@ import Colors from "@/constants/Colors";
 export default function NoOrdersExists()
 {
     return(
-        <View className="flex items-center justify-center ">
+        <View className="flex items-center justify-center mt-10">
             <View className="w-80 h-80">
                 <Image 
                     source={NoOrders}
                     resizeMode="contain"
-                    className="w-80 "
+                    className="w-80 h-80"
                 />
             </View>
             <View>

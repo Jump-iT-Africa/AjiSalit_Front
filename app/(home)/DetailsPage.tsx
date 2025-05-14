@@ -15,16 +15,22 @@ import ClientPikUpButton from '@/components/DetialsPage/Client/Buttons/ClientPik
 import Viewshot from "react-native-view-shot";
 import { shareAsync } from "expo-sharing";
 import { Image } from "react-native";
-import DetailsOrdersNoImages from "@/assets/images/DetailsOrdersNoImages.png";
+import DetailsOrdersNoImages from "@/assets/images/noImages.png";
 import { selectCurrentOrder, selectUserOrders, setCurrentOrder, fetchORderById } from "@/store/slices/OrdersManagment";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSearchParams } from "expo-router/build/hooks";
+
+
 
 export default function DetailsPage() {
 
   const [remaining, setRemaining] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [orderData, setOrderData] = useState(null);
+  const router = useRouter();
+  
+  const currentOrder = useSelector(selectCurrentOrder);
+  const userOrders = useSelector(selectUserOrders);
 
   console.log('order to be fetched', orderData);
   
@@ -32,34 +38,32 @@ export default function DetailsPage() {
   const dispatch = useDispatch();
   const [role, setRole] = useState(null);
 
-useEffect(() => {
-  const loadRole = async () => {
-    try {
-      const storedRole = await AsyncStorage.getItem('user');
-      if (storedRole) {
-        const role =  JSON.parse(storedRole);
-        setRole(role.role);
+
+  useEffect(() => {
+    const loadRole = async () => {
+      try {
+        const storedRole = await AsyncStorage.getItem('user');
+        if (storedRole) {
+          const role =  JSON.parse(storedRole);
+          setRole(role.role);
+        }
+      } catch (error) {
+        console.log("Error loading role from AsyncStorage:", error);
       }
-    } catch (error) {
-      console.log("Error loading role from AsyncStorage:", error);
-    }
-  };
-  
-  loadRole();
-}, []);
-
-
+    };
+    loadRole();
+  }, []);
   
   console.log('role from details is', role);
   
   const {ItemID} = useLocalSearchParams();
   console.log('this is the id of the command from details', ItemID);
   
-  const router = useRouter();
-  
-  
-  const currentOrder = useSelector(selectCurrentOrder);
-  const userOrders = useSelector(selectUserOrders);
+
+  const params = useLocalSearchParams();
+  console.log('All params:', params);
+
+
 
   useEffect(() => {
     console.log('Current order updated:', currentOrder);
@@ -77,7 +81,10 @@ useEffect(() => {
           return;
         }
         
-        if (ItemID) {
+
+
+        // this block of code is not working you should fine a solution to the item id its null
+          if (ItemID) {
           console.log("Looking for order with ID:", ItemID);
           
           const foundOrder = userOrders.find(order => 
@@ -110,9 +117,10 @@ useEffect(() => {
         
         try {
           const storedOrder = await AsyncStorage.getItem('lastScannedOrder');
+          
           if (storedOrder) {
             const parsedOrder = JSON.parse(storedOrder);
-            // console.log("Using order from AsyncStorage:", parsedOrder);
+            console.log("Using order from AsyncStorage:", parsedOrder);
             dispatch(setCurrentOrder(parsedOrder));
             setOrderData(parsedOrder);
           } else {
@@ -135,7 +143,7 @@ useEffect(() => {
   useEffect(() => {
     if (!orderData) return;
     
-    if (orderData.situation === 'خالص') {
+    if (orderData.situation === 'خالص' || orderData.label === 'خالص') {
       setRemaining(0);
     } else {
       setRemaining((orderData.price || 0) - (orderData.advancedAmount || 0));
@@ -168,6 +176,9 @@ useEffect(() => {
       console.log("There was an error sharing:", error);
     }
   };
+
+
+ 
 
   const [tooltipVisible, setTooltipVisible] = useState(false);
   
@@ -207,25 +218,16 @@ useEffect(() => {
     );
   }
 
-
-  
-
   return (
     <>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View className={containerClassName}>
           <TouchableOpacity onPress={() => router.replace('(home)')}>
-            <View className="bg-[#461e04b3] rounded-full w-8 h-8 flex justify-center items-center">
+            <View className="bg-[#959393b3] rounded-full w-8 h-8 flex justify-center items-center">
               <Feather name="chevron-left" size={22} color="white" />
             </View>
           </TouchableOpacity>
-          <TooltipComponent
-            isVisible={tooltipVisible}
-            onClose={() => setTooltipVisible(false)}
-            onOpen={() => setTooltipVisible(true)}
-            content={'test test test'}
-            placement="bottom"
-          />
+         
         </View>
 
         {!orderData.images || orderData.images.length === 0 ? (
@@ -248,9 +250,10 @@ useEffect(() => {
               totalAmount={orderData?.price || 0}
               paidAmount={orderData?.advancedAmount || 0}
               remainingAmount={remaining}
-              deliveryDate={orderData?.deliveryDate}
+              deliveryDate={orderData?.deliveryDate || orderData?.newDate} 
+              newDate={orderData?.newDate}
               currency="درهم"
-              situation={orderData?.label}
+              situation={orderData?.label || orderData?.situation}
               images={orderData?.images || []}
               onDateChange={handleDateChange}
               orderId={orderData?.id}
@@ -269,7 +272,6 @@ useEffect(() => {
                 <Text className="text-white text-lg font-bold ml-2 font-tajawalregular pt-1 pr-2">مشاركة</Text>
                 <Feather name="share-2" size={24} color="white" />
               </TouchableOpacity>
-
               <ClientPikUpButton orderData={orderData} />
             </View>
           </View>

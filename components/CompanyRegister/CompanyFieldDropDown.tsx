@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,43 +9,27 @@ import {
 } from 'react-native';
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Color from '@/constants/Colors';
-
-const COMPANY_FIELDS = [
-  {
-    id: '1',
-    name: 'الخياطة',
-    icon: '🧵',
-  },
-  {
-    id: '2',
-    name: 'غسيل السيارات',
-    icon: '🚗',
-  },
-  {
-    id: '3',
-    name: 'غسيل الملابس/التنظيف الجاف',
-    icon: '👕',
-  },
-  {
-    id: '4',
-    name: 'مخبزة',
-    icon: '🍞',
-  },
-  {
-    id: '5',
-    name: 'صيدلية',
-    icon: '💊',
-  },
-];
+import { COMPANY_FIELDS } from './companyFieldsData';
 
 const CompanyFieldDropDown = ({
   onFieldSelect,
   initialValue,
+  selectedField = "",
   errors,
   isSubmitted,
+  isRequired = true,
+  borderColor = "#2e752f"
 }) => {
-  const [selectedField, setSelectedField] = useState(initialValue || '');
+  const [localSelectedField, setLocalSelectedField] = useState(initialValue || selectedField);
   const [isModalVisible, setIsModalVisible] = useState(false);
+
+  useEffect(() => {
+    if (selectedField) {
+      setLocalSelectedField(selectedField);
+    } else if (initialValue) {
+      setLocalSelectedField(initialValue);
+    }
+  }, [selectedField, initialValue]);
 
   const openModal = () => {
     setIsModalVisible(true);
@@ -56,38 +40,30 @@ const CompanyFieldDropDown = ({
   };
 
   const handleFieldSelection = (field) => {
-    setSelectedField(field.name);
+    setLocalSelectedField(field.name);
     onFieldSelect(field.name);
     Keyboard.dismiss();
     closeModal();
   };
-
   return (
     <View className="mb-3">
-      <Text
-        className="text-right text-gray-700 mb-2 font-tajawal text-[12px]"
-        style={{ color: Color.green }}
-      >
-        أدخل تفاصيل الشركة <Text className="text-red-500">*</Text>
-      </Text>
-
       <TouchableOpacity
         onPress={openModal}
         className={`border ${
-          isSubmitted && !selectedField ? 'border-red-500' : 'border-[#2e752f]'
+          isSubmitted && isRequired && !localSelectedField ? 'border-red-500' : `border-[${borderColor}]`
         } rounded-lg p-3 bg-white flex-row justify-between items-center`}
       >
         <AntDesign name="down" size={16} color="#888" />
         <Text
-          className={`text-right flex-1 font-tajawal ${
-            selectedField ? "text-black" : "text-gray-400"
+          className={`text-right flex-1 font-tajawalregular ${
+            localSelectedField ? "text-black" : "text-gray-400"
           }`}
         >
-          {selectedField || 'اختر مجال الشركة'}
+          {localSelectedField || 'اختر مجال الشركة'}
         </Text>
       </TouchableOpacity>
 
-      {isSubmitted && !selectedField ? (
+      {isSubmitted && isRequired && !localSelectedField ? (
         <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[10px]">
           مجال الشركة مطلوب
         </Text>
@@ -117,6 +93,7 @@ const CompanyFieldDropDown = ({
               height: '60%',
               padding: 16
             }}
+            onPress={(e) => e.stopPropagation()}
           >
             <View style={{ 
               width: 60, 

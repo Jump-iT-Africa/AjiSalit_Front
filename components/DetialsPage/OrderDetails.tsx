@@ -1,7 +1,7 @@
 // @ts-nocheck
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform, Modal, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Platform, Modal, TextInput,TouchableWithoutFeedback } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Feather from '@expo/vector-icons/Feather';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -14,15 +14,47 @@ const OrderDetailsCard = ({
   paidAmount = 50, 
   remainingAmount = 100, 
   deliveryDate,
+  newDate,
   currency = "درهم",
   situation,
   orderId, 
   onDateChange = (newDate, reason) => {}
 }) => {
 
-  console.log(orderId);
+  console.log("this is the new date",newDate);
+
+  const formatDate = (dateValue) => {
+    console.log('date to be formatted', dateValue);
+    
+    if (typeof dateValue === 'string' && /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dateValue)) {
+      return dateValue;
+    }
+    
+    if (dateValue instanceof Date) {
+      return `${dateValue.getDate()}/${dateValue.getMonth() + 1}/${dateValue.getFullYear()}`;
+    }
+    
+    if (typeof dateValue === 'string' && dateValue) {
+      try {
+        const dateObj = new Date(dateValue);
+        if (!isNaN(dateObj.getTime())) { // Check if valid date
+          return `${dateObj.getDate()}/${dateObj.getMonth() + 1}/${dateObj.getFullYear()}`;
+        }
+      } catch (error) {
+        console.log('Error parsing date:', error);
+      }
+    }
+    
+    return ''; 
+  };
   
-  console.log('delivey date', deliveryDate);
+  console.log('formatted delivery date', formatDate(deliveryDate));
+  
+  console.log('formatted delivery date', formatDate(deliveryDate));
+
+
+
+  
   useEffect(() => {
     console.log('Delivery date prop updated:', deliveryDate);
     setSelectedDate(deliveryDate);
@@ -56,48 +88,93 @@ const OrderDetailsCard = ({
     setSelectedDate(formattedDate);
   };
   
-const saveChanges = async () => {
-  const dateParts = selectedDate.split('/');
-  const formattedForAPI = dateParts.length === 3 
-    ? `${dateParts[2]}-${dateParts[1]}-${dateParts[0]}` 
-    : selectedDate;
-  
-  try {
-    const result = await dispatch(updateOrderDate({
-      orderId: orderId,
-      dateData: {
-        deliveryDate: formattedForAPI,
-        reason: reason 
+  const saveChanges = async () => {
+    // Get formatted date - use current date if no date is selected
+    let formattedForAPI;
+    
+    if (!selectedDate) {
+      // No date selected, use current date
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      formattedForAPI = `${year}-${month}-${day}`;
+    } else {
+      // Format the selected date to ensure YYYY-MM-DD format
+      const dateParts = selectedDate.split('/');
+      if (dateParts.length === 3) {
+        // Convert from DD/MM/YYYY to YYYY-MM-DD
+        const day = dateParts[0].padStart(2, '0');
+        const month = dateParts[1].padStart(2, '0');
+        const year = dateParts[2];
+        formattedForAPI = `${year}-${month}-${day}`;
+      } else {
+        // If the date is already in another format, try to parse it correctly
+        try {
+          const dateObj = new Date(selectedDate);
+          if (!isNaN(dateObj.getTime())) {
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            formattedForAPI = `${year}-${month}-${day}`;
+          } else {
+            throw new Error("Invalid date format");
+          }
+        } catch (error) {
+          console.log("Date parsing error:", error);
+          // Fallback to current date if parsing fails
+          const today = new Date();
+          const year = today.getFullYear();
+          const month = String(today.getMonth() + 1).padStart(2, '0');
+          const day = String(today.getDate()).padStart(2, '0');
+          formattedForAPI = `${year}-${month}-${day}`;
+        }
       }
-    })).unwrap();
-
-    useEffect(async() =>
-    {
-        const localStoragValuue=  await AsyncStorage.getItem('lastScannedOrder');
-        const parsedOrder = JSON.parse(localStoragValuue);
-        console.log("last scanned order from order details", parsedOrder);
-    },[])
+    }
     
-    console.log('Date updated successfully:', result);
-    setUpdateStatus('تم تحديث التاريخ بنجاح');
-    
-    // Call the parent function to notify about the change
-    onDateChange(selectedDate, reason);
-    
-    setTimeout(() => {
-      setUpdateStatus('');
-      setModalVisible(false);
-      setReason('');
-    }, 1500);
-  } catch (error) {
-    console.log('Failed to update date:', error);
-    setUpdateStatus(`فشل في تحديث التاريخ ${error}` );
-    
-    setTimeout(() => {
-      setUpdateStatus('');
-    }, 3000);
-  }
-};
+    try {
+      const result = await dispatch(updateOrderDate({
+        orderId: orderId,
+        dateData: {
+          isDateChanged: true,
+          newDate: formattedForAPI,
+          ChangeDateReason: reason 
+        }
+      })).unwrap();
+      
+      const localStoragValuue = await AsyncStorage.getItem('lastScannedOrder');
+      const parsedOrder = JSON.parse(localStoragValuue);
+      console.log("last scanned order from order details", parsedOrder);
+      
+      console.log('Date updated successfully:', result);
+      setUpdateStatus('تم تحديث التاريخ بنجاح');
+      console.log('Date sent to API:', formattedForAPI); // Debug log to verify format
+      
+      // Use the correct date format for the callback
+      const displayDate = selectedDate || formatDateForDisplay(new Date());
+      onDateChange(displayDate, reason);
+      
+      setTimeout(() => {
+        setUpdateStatus('');
+        setModalVisible(false);
+        setReason('');
+      }, 1500);
+    } catch (error) {
+      console.log('Failed to update date:', error);
+      setUpdateStatus(`فشل في تحديث التاريخ ${error}`);
+      
+      setTimeout(() => {
+        setUpdateStatus('');
+      }, 3000);
+    }
+  };
+  
+  const formatDateForDisplay = (date) => {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
 
   
 
@@ -114,42 +191,42 @@ const saveChanges = async () => {
   }, [situation]);
 
   return (
-    <View className="border-4 border-[#2e752f] border-l-0 border-r-0 border-b-0 rounded-lg p-4 bg-white my-3 w-[95%] mx-auto" style={styles.detailscontainer}>
+    <View className=" border-l-0 border-r-0 border-b-0 rounded-lg p-4 bg-white my-3 w-[95%] mx-auto" style={styles.detailscontainer}>
       <View className="flex-row-reverse justify-between items-center border-b border-gray-200 pb-2 mb-4">
-        <Text className="font-bold text-green-700 text-right font-tajawalregular text-smt">تفاصيل الطلب:</Text>
+        <Text className="font-bold text-[#F52525] text-right font-tajawalregular text-smt">تفاصيل الطلب:</Text>
         <TouchableOpacity style={{ backgroundColor: currentColor, paddingHorizontal: 20, paddingVertical: 8, borderRadius: 50 }}>
-          <Text className=" font-bold text-center font-tajawalregular text-xs text-white">{situation}</Text>
+          <Text className=" font-bold text-center font-tajawalregular text-xs text-white pt-1">{situation}</Text>
         </TouchableOpacity>
       </View>
-
-      <View className="flex-row-reverse justify-between border border-gray-200 rounded-lg mb-4 overflow-hidden">
-        <View className="flex-1 p-3 items-center bg-gray-100">
-          <Text className="mb-1.5 text-center font-bold font-tajawalregular text-xs">المبلغ الإجمالي</Text>
+      <View className="flex-row-reverse justify-between  mb-4 overflow-hidden gap-2">
+        <View className="flex-1 p-3 items-center bg-gray-100 border border-gray-200 rounded-lg">
+          <Text className="mb-1.5 text-center font-bold font-tajawalregular text-[10px]">المبلغ الإجمالي</Text>
           <Text className="font-bold text-center text-green-700 font-tajawalregular text-xs">
             {totalAmount} {currency}
           </Text>
         </View>
-        <View className="flex-1 p-3 items-center bg-green-700">
-          <Text className="mb-1.5 text-center font-bold text-white font-tajawalregular text-xs">التسبيق</Text>
+        <View className="flex-1 p-3 items-center bg-green-700 border border-green-700 rounded-lg">
+          <Text className="mb-1.5 text-center font-bold text-white font-tajawalregular text-[10px]">التسبيق</Text>
           <Text className="font-bold text-center text-yellow-400 font-tajawalregular text-xs">
             {paidAmount} {currency}
           </Text>
         </View>
-        <View className="flex-1 p-3 items-center bg-gray-100">
-          <Text className="mb-1.5 text-center font-bold font-tajawalregular text-xs">الباقي</Text>
+        <View className="flex-1 p-3 items-center bg-gray-100 border border-gray-200 rounded-lg">
+          <Text className="mb-1.5 text-center font-bold font-tajawalregular text-[10px]">الباقي</Text>
           <Text className="font-bold text-center text-green-700 font-tajawalregular text-xs">
             {remainingAmount} {currency}
           </Text>
         </View>
       </View>
-      
       <View className="flex-row-reverse items-center border border-gray-200 rounded-lg p-2.5">
         <View className="bg-green-100 p-3 rounded-lg">
           <Ionicons name="calendar-outline" size={24} color="#4A8646" />
         </View>
         <View className="flex-1 mx-3 items-end justify-between">
           <Text className="text-gray-800 text-right font-tajawalregular text-xs">تاريخ التسليم:</Text>
-          <Text className="font-bold text-green-700 text-right font-tajawalregular text-xs">{deliveryDate} </Text>
+          <Text className="font-bold text-green-700 text-right font-tajawalregular text-xs">
+            {formatDate(newDate) || formatDate(deliveryDate)}
+          </Text>
         </View>
         <TouchableOpacity className="ml-2" onPress={() => setModalVisible(true)}>
           <Feather name="edit" size={21} color="#2e752f"/>

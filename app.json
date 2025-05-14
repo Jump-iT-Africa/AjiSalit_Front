@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Aji Salit",
-    "slug": "aji-salit",
+    "slug": "ajisalit",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -14,9 +14,10 @@
     "splash": {
       "image": "./assets/images/splashs.png",
       "resizeMode": "cover",
-      "backgroundColor": "#fff"
+      "backgroundColor": "#ffffff"
     },
     "ios": {
+      "googleServicesFile": "./GoogleService-Info.plist",
       "supportsTablet": false,
       "bundleIdentifier": "app.ajisalit.com",
       "infoPlist": {
@@ -25,6 +26,7 @@
       }
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/splashs.png",
         "backgroundColor": "#ffffff",
@@ -46,6 +48,15 @@
           "recordAudioAndroid": true
         }
       ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/logooo.png",
+          "color": "#FFFFFF",
+          "androidMode": "default",
+          "androidCollapsedTitle": "Aji Salit"
+        }
+      ],
       "expo-font"
     ],
     "newArchEnabled": true,
@@ -54,9 +65,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "8b052de7-9062-4642-945e-feb3ad08c341"
+        "projectId": "58578925-3025-4070-823b-d44a161b2c53"
       }
     },
-    "owner": "oussamabenm"
+    "owner": "expobiling"
   }
 }

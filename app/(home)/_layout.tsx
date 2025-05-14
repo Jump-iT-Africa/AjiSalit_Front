@@ -1,6 +1,5 @@
 // @ts-nocheck
-
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   Alert,
   Animated,
@@ -11,7 +10,6 @@ import {
   Dimensions,
 } from 'react-native';
 import { CurvedBottomBarExpo } from 'react-native-curved-bottom-bar';
-import { NavigationContainer } from '@react-navigation/native';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
 import HomePage from "./index"; 
@@ -21,24 +19,81 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { router } from 'expo-router';
 import ActionSheetToAddProduct from '@/components/ActionSheetToAddProduct/ActionSheetToAddProduct';
 import DetailsPage from './DetailsPage';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import {selectUserRole} from "@/store/slices/userSlice";
-// import OrderDetailsScreen from './OrderDetailsScreen'
+import { selectUserRole, selectUserData, fetchCurrentUserData } from "@/store/slices/userSlice";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
+
 import { Stack } from "expo-router";
 import { createStackNavigator } from '@react-navigation/stack';
 const AppStack = createStackNavigator();
 
-
 function MainTabs() {
+  const dispatch = useDispatch();
   const role = useSelector(selectUserRole);
-  
-
-
-
+  const userData = useSelector(selectUserData);
   
   const actionSheetRef = useRef(null);
   const [isSheetVisible, setIsSheetVisible] = useState(false);
+  const [pocketValue, setPocketValue] = useState(0);
+  
+  // Function to get the latest pocket value directly from AsyncStorage
+  const getLatestPocketValue = async () => {
+    try {
+      const userDataStr = await AsyncStorage.getItem('user');
+      if (userDataStr) {
+        const parsedData = JSON.parse(userDataStr);
+        if (parsedData && parsedData.pocket !== undefined) {
+          console.log("Fresh pocket value from AsyncStorage:", parsedData.pocket);
+          setPocketValue(parsedData.pocket);
+          return parsedData.pocket;
+        }
+      }
+      
+      // If no value found in AsyncStorage, use value from Redux
+      if (userData && userData.pocket !== undefined) {
+        console.log("Using pocket value from Redux:", userData.pocket);
+        setPocketValue(userData.pocket);
+        return userData.pocket;
+      }
+      
+      return 0;
+    } catch (error) {
+      console.error("Error getting pocket value:", error);
+      return 0;
+    }
+  };
+  
+  useEffect(() => {
+    const init = async () => {
+      await getLatestPocketValue();
+      
+      dispatch(fetchCurrentUserData());
+    };
+    
+    init();
+  }, [dispatch]);
+  
+  useEffect(() => {
+    if (userData && userData.pocket !== undefined) {
+      console.log("Updating pocket value from Redux:", userData.pocket);
+      setPocketValue(userData.pocket);
+    }
+  }, [userData]);
+  
+  useFocusEffect(
+    React.useCallback(() => {
+      // Get fresh data on focus
+      const refreshData = async () => {
+        await getLatestPocketValue();
+        dispatch(fetchCurrentUserData());
+      };
+      
+      refreshData();
+      return () => {};
+    }, [dispatch])
+  );
 
   const _renderIcon = (routeName, selectedTab) => {
     if (routeName === 'الرئيسية') {
@@ -87,9 +142,19 @@ function MainTabs() {
     );
   };
 
-  const handleCloseActionSheet = () => {
+  const handleCloseActionSheet = async () => {
     setIsSheetVisible(false);
+    
+    // Refresh user data and pocket value after closing the sheet
+    await getLatestPocketValue();
+    dispatch(fetchCurrentUserData());
   };
+
+  // Log the current pocket value for debugging
+  console.log("Current pocket value in MainTabs:", pocketValue);
+  
+  // Check if button should be disabled
+  const isButtonDisabled = role === 'company' && pocketValue <= 0;
 
   return (
     <>
@@ -98,7 +163,6 @@ function MainTabs() {
         style={styles.bottomBar}
         shadowStyle={styles.shadow}
         height={80}
-        circleWidth={30}
         bgColor="white"
         initialRouteName="الرئيسية"
         borderTopLeftRight
@@ -106,13 +170,28 @@ function MainTabs() {
           headerShown: false
         }}
         renderCircle={({ selectedTab, navigate }) => (
-          <Animated.View style={styles.btnCircleUp}>
+          <Animated.View style={[
+            styles.btnCircleUp,
+            isButtonDisabled ? styles.disabledButton : {}
+          ]}>
             <TouchableOpacity
               style={styles.button}
-              onPress={() => {
+              onPress={async () => {
                 if (role === 'company') {
-                  setIsSheetVisible(true);
-                  actionSheetRef.current?.show();
+                  // Get the latest pocket value before checking
+                  const currentPocket = await getLatestPocketValue();
+                  
+                  // Check pocket value before showing action sheet
+                  if (currentPocket <= 0) {
+                    Alert.alert(
+                      "رصيد غير كافي",
+                      "رصيدك 0 درهم، لن تتمكن من إنشاء طلبات جديدة. يرجى شحن الرصيد.",
+                      [{ text: "حسنا", style: "cancel" }]
+                    );
+                  } else {
+                    setIsSheetVisible(true);
+                    actionSheetRef.current?.show();
+                  }
                 } else {
                   navigate('Scanner');
                 }
@@ -128,7 +207,7 @@ function MainTabs() {
         )}
         tabBar={renderTabBar}
         width={Dimensions.get('window').width}
-        borderColor="green"
+        borderColor="transparent"
         borderWidth={1}
         id="main-navigator"
       >
@@ -160,10 +239,7 @@ function IndexWithBottomNav({ navigation, route }) {
 
 export default function HomeLayouts() {
   return (
-    <AppStack.Navigator screenOptions={{ headerShown: false,
-      animation: 'fade'
-
-     }}>
+    <AppStack.Navigator screenOptions={{ headerShown: false, animation: 'fade' }}>
       <AppStack.Screen name="MainTabs" component={MainTabs} />
       <AppStack.Screen name="Scanner" component={ScannerPage} />
       <AppStack.Screen name="DetailsPage" component={DetailsPage} />
@@ -175,7 +251,7 @@ export default function HomeLayouts() {
 const styles = StyleSheet.create({
   shadow: {
     shadowColor: '#DDDDDD',
-    shadowOffset: {
+    shadowOffset:{
       width: 0,
       height: 0,
     },
@@ -193,7 +269,8 @@ const styles = StyleSheet.create({
     paddingTop: 5,
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
-    overflow: 'hidden'
+    overflow: 'hidden',
+    borderRadius: 0
   },
   btnCircleUp: {
     width: 65,
@@ -214,6 +291,10 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 4,
   },
+  disabledButton: {
+    backgroundColor: '#999999',  // Gray color to indicate disabled state
+    opacity: 0.7,
+  },
   tabbarItem: {
     flex: 1,
     alignItems: 'center',
@@ -227,6 +308,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
     fontWeight: '500',
-    textAlign: 'center'
+    textAlign: 'center',
   }
 });

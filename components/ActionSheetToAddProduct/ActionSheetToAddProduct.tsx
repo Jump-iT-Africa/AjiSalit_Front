@@ -13,7 +13,7 @@ import {
   Image,
   ActivityIndicator
 } from 'react-native';
-import ActionSheet from "react-native-actions-sheet";
+
 import { router } from 'expo-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { createOrder, resetOrderState } from '@/store/slices/CreateOrder';
@@ -28,6 +28,7 @@ import Noimages from "@/assets/images/noImages.png"
 import UniqueIdModal from '../QrCodeGeneration/GenerateQrCode';
 import PaymentStatus from './PaymenStatus';
 import OrderVerificationBottomSheet from './OrderVerificationBottomSheet';
+
 
 const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) => {
   const actionSheetRef = useRef(null);
@@ -54,7 +55,10 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
     fieldOfCompany: '',
     advancedAmount: '', 
   });
-
+  
+  
+  const [isDatePickerEnabled, setIsDatePickerEnabled] = useState(false);
+  
   const [step, setStep] = useState(1);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -64,6 +68,9 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [uniqueId, setUniqueId] = useState('');
   const [showIdModal, setShowIdModal] = useState(false);
+  const [photoCounter, setPhotoCounter] = useState(1);
+
+
 
   useImperativeHandle(ref, () => ({
     show: () => {
@@ -77,7 +84,7 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
 
   const [uploadedImages, setUploadedImages] = useState([]);
 
-  // Reset redux state when component unmounts
+  
   useEffect(() => {
     return () => {
       dispatch(resetOrderState());
@@ -85,32 +92,35 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
   }, [dispatch]);
 
   const takePhoto = async () => {
-    try {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      if (status !== 'granted') {
-        alert(' يرجى تمكينها في إعدادات جهازك لاستخدام الكاميرا!');
-        return;
-      }
-      
-      const result = await ImagePicker.launchCameraAsync({
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      });
-
-      if (!result.canceled) {
-        const newImage = {
-          id: Date.now(),
-          uri: result.assets[0].uri,
-          name: `photo_${Date.now()}.jpg`,
-          size: `${Math.round(result.assets[0].fileSize / 1024)}kb`,
-        };
-        setUploadedImages([...uploadedImages, newImage]);
-      }
-    } catch (error) {
-      console.log('Error taking photo:', error);
+  try {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      alert(' يرجى تمكينها في إعدادات جهازك لاستخدام الكاميرا!');
+      return;
     }
-  };
+    
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const newImage = {
+        id: Date.now(), 
+        uri: result.assets[0].uri,
+        name: `photo_${photoCounter}.jpg`,
+        size: `${Math.round(result.assets[0].fileSize / 1024)}kb`,
+      };
+      
+      setUploadedImages([...uploadedImages, newImage]);
+      
+      setPhotoCounter(prevCounter => prevCounter + 1);
+    }
+  } catch (error) {
+    console.log('Error taking photo:', error);
+  }
+};
 
   const removeImage = (id) => {
     const newImages = uploadedImages.filter(img => img.id !== id);
@@ -140,6 +150,8 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
       });
       step1Animation.setValue(1);
       step2Animation.setValue(0);
+      
+      setIsDatePickerEnabled(false);
     }, 300);
     if (onClose) onClose();
   };
@@ -189,6 +201,9 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
       newErrors.price = '';
     }
 
+    
+    newErrors.RecieveDate = '';
+
     setErrors(newErrors);
     return valid;
   };
@@ -197,10 +212,8 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
     let valid = true;
     let newErrors = { ...errors };
 
-    if (!formData.RecieveDate) {
-      newErrors.RecieveDate = 'تاريخ التسليم مطلوب';
-      valid = false;
-    }
+    
+    newErrors.RecieveDate = '';
 
     setErrors(newErrors);
     return valid;
@@ -217,72 +230,130 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
 
   const handleSubmit = () => {
     if (!validateStep2()) return;
-    
-
     verificationSheetRef.current?.show();
-
-    // const newUniqueId = generateUniqueId(12);
-    // setUniqueId(newUniqueId);
-    
-    // const formatDateToIso = (date) => {
-    //   if (!(date instanceof Date)) return '';
-    //   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-    // };
-    
-    // const deliveryDate = formData.RecieveDate;
-    // const pickupDate = new Date(deliveryDate);
-    // pickupDate.setDate(pickupDate.getDate() + 2);
-    
-    // // Prepare orderdata
-
-  
-    // const orderData = {
-    //   price: parseFloat(formData.price),
-    //   situation: formData.situation || "خالص",
-    //   status: "في طور الانجاز",
-    //   advancedAmount: formData.situation === 'تسبيق' ? formData.advancedAmount : null,
-    //   deliveryDate: formatDateToIso(deliveryDate),
-    //   pickupDate: formatDateToIso(pickupDate),
-    //   qrCode: newUniqueId,
-    //   isFinished: false,
-    //   isPickUp: false
-    // };
-
-    // console.log("Component - Order data before dispatch:", JSON.stringify(orderData));
-    //   dispatch(createOrder(orderData));
-    //   setShowIdModal(true);
   };
 
-  const processOrderSubmission = () => {
-    const newUniqueId = generateUniqueId(12);
-    setUniqueId(newUniqueId);
-    
-    const formatDateToIso = (date) => {
-      if (!(date instanceof Date)) return '';
-      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-    };
-    
-    const deliveryDate = formData.RecieveDate;
-    const pickupDate = new Date(deliveryDate);
-    pickupDate.setDate(pickupDate.getDate() + 2);
-    
-    const orderData = {
-      price: parseFloat(formData.price),
-      situation: formData.situation || "خالص",
-      status: "في طور الانجاز",
-      advancedAmount: formData.situation === 'تسبيق' ? formData.advancedAmount : null,
-      deliveryDate: formatDateToIso(deliveryDate),
-      pickupDate: formatDateToIso(pickupDate),
-      qrCode: newUniqueId,
-      isFinished: false,
-      isPickUp: false
-    };
   
-    console.log("Component - Order data before dispatch:", JSON.stringify(orderData));
-    dispatch(createOrder(orderData));
-    setShowIdModal(true);
+  const formatDateForBackend = (date) => {
+    if (!(date instanceof Date)) return '';
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  };
+
+  
+
+const validateAndFormatDate = (date) => {
+  
+  if (!date) return '';
+  
+  try {
+    
+    if (date instanceof Date) {
+      
+      if (isNaN(date.getTime())) {
+        console.error('Invalid date object');
+        return '';
+      }
+      
+      
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+    
+    
+    const isoFormatRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (typeof date === 'string' && isoFormatRegex.test(date)) {
+      return date;
+    }
+    
+    
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) {
+      console.error('Could not parse date string:', date);
+      return '';
+    }
+    
+    const year = parsedDate.getFullYear();
+    const month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+    const day = String(parsedDate.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return '';
+  }
+};
+
+
+const formatDateToYYYYMMDD = (date) => {
+  if (!date) return '';
+  
+  let dateObject;
+  
+  
+  if (typeof date === 'string') {
+    dateObject = new Date(date);
+  } else if (date instanceof Date) {
+    dateObject = date;
+  } else {
+    console.error('Invalid date format:', date);
+    return '';
+  }
+  
+  
+  if (isNaN(dateObject.getTime())) {
+    console.error('Invalid date:', date);
+    return '';
+  }
+  
+  
+  const year = dateObject.getFullYear();
+  const month = String(dateObject.getMonth() + 1).padStart(2, '0');
+  const day = String(dateObject.getDate()).padStart(2, '0');
+  
+  return `${year}-${month}-${day}`;
+};
+
+
+const processOrderSubmission = () => {
+  const newUniqueId = generateUniqueId(12);
+  setUniqueId(newUniqueId);
+  
+  const today = new Date();
+  
+  
+  const deliveryDate = isDatePickerEnabled ? (formData.RecieveDate || selectedDate) : today;
+  const formattedDeliveryDate = formatDateToYYYYMMDD(deliveryDate);
+  
+  
+  const pickupDateObj = new Date(deliveryDate);
+  pickupDateObj.setDate(pickupDateObj.getDate() + 2);
+  const formattedPickupDate = formatDateToYYYYMMDD(pickupDateObj);
+  
+  
+  const orderData = {
+    price: parseFloat(formData.price),
+    situation: formData.situation || "خالص",
+    status: "في طور الانجاز",
+    advancedAmount: parseFloat(formData.advancedAmount) || null,
+    deliveryDate: formattedDeliveryDate, 
+    pickupDate: formattedPickupDate,     
+    qrCode: newUniqueId,
+    isFinished: false,
+    isPickUp: false
   };
   
+  console.log("Component - Order data before dispatch:", JSON.stringify(orderData));
+  
+  
+  if (!formattedDeliveryDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    alert('خطأ في تنسيق التاريخ. يرجى التأكد من أن التاريخ بتنسيق YYYY-MM-DD');
+    return;
+  }
+  
+  dispatch(createOrder(orderData));
+  setShowIdModal(true);
+};
 
   const handleModalClose = () => {
     setShowIdModal(false);
@@ -300,17 +371,38 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showCalendar, setShowCalendar] = useState(false);
 
+  console.log('this is the selected date', selectedDate);
+  
+  
   const handleDateSelect = (date) => {
     setSelectedDate(date);
     setFormData({ ...formData, RecieveDate: date });
     setShowCalendar(false);
   };
 
-  const formatDate = (date) => {
-    if (!(date instanceof Date)) return '';
-    return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+  
+  const formatDateForDisplay = (date) => {
+    if (!date) return "";
+    
+    let dateObject;
+    
+    
+    if (typeof date === 'string') {
+      dateObject = new Date(date);
+    } else if (date instanceof Date) {
+      dateObject = date;
+    } else {
+      return "";
+    }
+    
+    
+    if (isNaN(dateObject.getTime())) {
+      return "";
+    }
+    
+    
+    return `${dateObject.getDate()}/${dateObject.getMonth() + 1}/${dateObject.getFullYear()}`;
   };
-
 
   const handleStatusChange = (status, advancedAmount) => {
     console.log("handleStatusChange received:", status, advancedAmount);
@@ -344,72 +436,80 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
           }],
           position: 'absolute',
           width: '100%',
-          zIndex:9,
+          zIndex: 9,
         }}
       >
         <Text className="text-center text-[#F52525] text-xl font-bold mb-6 font-tajawal">
           معلومات الطلب
         </Text>
 
-
-
-        <View >
+        <View>
           <View>
-
-          <View className="mb-4 mt-4">
-          <Text className="text-right text-gray-700 mb-2 font-tajawal text-[12px]" style={{ color: Color.green }}>
-            المبلغ (بالدرهم): <Text className="text-red-500">*</Text>
-          </Text>
-          <TextInput
-            placeholder="يرجى إدخال المبلغ"
-            placeholderTextColor="#888"
-            value={formData.price}
-            keyboardType='number-pad'
-            onChangeText={(text) => setFormData({ ...formData, price: text })}
-            className={`border ${errors.price ? 'border-red-500' : 'border-[#2e752f]'} rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}
-          />
-          {errors.price ? <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[13px]">{errors.price}</Text> : null}
-        </View> 
-
-        <View className="mb-0 mt-0">
-          <Text className="text-right text-gray-700 mb-2 font-tajawal text-[12px]" style={{ color: Color.green }}>
-            الحالة: <Text className="text-red-500">*</Text>
-          </Text>
-
-
-          <PaymentStatus 
-            onStatusChange={(status, advancedAmount) => {
-              console.log("PaymentStatus callback with:", status, advancedAmount);
-              setFormData({
-                ...formData,
-                situation: status,
-                advancedAmount: advancedAmount
-              });
-            }} 
-            currentPrice={formData.price}
-          />
-
-          {errors.status ? (
-            <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[13px]">
-              {errors.status}
-            </Text>
-          ) : null}
-        </View>
-
-
-
-          <View className="mt-4 mb-6">
+          <View className="mb-4 mt-6">
             <Text className="text-right text-gray-700 mb-2 font-tajawal text-[12px]" style={{ color: Color.green }}>
-              تاريخ التسليم:<Text className="text-red-500">*</Text>
+              المبلغ (بالدرهم): <Text className="text-red-500">*</Text>
+            </Text>
+            <TextInput
+              placeholder="يرجى إدخال المبلغ"
+              placeholderTextColor="#888"
+              value={formData.price}
+              keyboardType='number-pad'
+              onChangeText={(text) => setFormData({ ...formData, price: text })}
+              className={`border ${errors.price ? 'border-red-500' : 'border-[#2e752f]'} rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}
+            />
+            {errors.price ? <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[13px]">{errors.price}</Text> : null}
+          </View> 
+
+          <View className="mb-0 mt-2">
+            <Text className="text-right text-gray-700 mb-2 font-tajawal text-[12px]" style={{ color: Color.green }}>
+              الحالة: <Text className="text-red-500">*</Text>
             </Text>
 
-            <TouchableOpacity
-              onPress={() => setShowCalendar(true)}
-              className={`border ${errors.RecieveDate ? 'border-red-500' : 'border-[#2e752f]'} rounded-lg p-3 bg-white flex-row justify-between items-center`}
+            <PaymentStatus 
+              onStatusChange={(status, advancedAmount) => {
+                console.log("PaymentStatus callback with:", status, advancedAmount);
+                setFormData({
+                  ...formData,
+                  situation: status,
+                  advancedAmount: advancedAmount
+                });
+              }} 
+              currentPrice={formData.price}
+            />
+
+            {errors.status ? (
+              <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[13px]">
+                {errors.status}
+              </Text>
+            ) : null}
+          </View>
+
+          <View className="mb-0 mt-8">
+            <TouchableOpacity 
+              onPress={() => setIsDatePickerEnabled(!isDatePickerEnabled)}
+              className="flex-row items-center justify-end space-x-2"
             >
-              <AntDesign name="calendar" size={20} color="gray" />
-              <Text className="text-gray-500 text-right font-tajawalregular">
-                {formData.RecieveDate instanceof Date ? formatDate(formData.RecieveDate) : 'يرجى إدخال تاريخ التسليم'}
+               <View className={`w-5 h-5 border rounded ${isDatePickerEnabled ? 'bg-[#2e752f] border-[#2e752f]' : 'bg-white border-[#2e752f]'} justify-center items-center ml-2`}>
+                {isDatePickerEnabled && <AntDesign name="check" size={14} color="white" />}
+              </View>
+
+              <Text className="text-right text-gray-700 mr-2 font-tajawal text-[14px]" style={{ color: Color.green }}>
+                تاريخ التسليم
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <View className="mt-2 mb-6">
+            <TouchableOpacity
+              onPress={() => isDatePickerEnabled && setShowCalendar(true)}
+              disabled={!isDatePickerEnabled}
+              className={`border ${errors.RecieveDate ? 'border-red-500' : 'border-[#2e752f]'} rounded-lg p-3 bg-white flex-row justify-between items-center ${!isDatePickerEnabled ? 'opacity-50' : 'opacity-100'}`}
+            >
+              <AntDesign name="calendar" size={20} color={"white"} />
+              <Text className={`${isDatePickerEnabled ? 'text-gray-500' : 'text-gray-400'} text-right font-tajawalregular`}>
+                {formData.RecieveDate instanceof Date 
+                  ? formatDateForDisplay(formData.RecieveDate) 
+                  : (isDatePickerEnabled ? formatDateForDisplay(selectedDate) : 'يرجى إدخال تاريخ التسليم')}
               </Text>
             </TouchableOpacity>
 
@@ -427,7 +527,6 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
                         <AntDesign name="calendar" size={24} color="black" />
                       </TouchableOpacity>
                     </View>
-                  {/* !!! change the color from blue to green */}
                     <DateTimePicker
                       value={selectedDate}
                       mode="date"
@@ -436,7 +535,6 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
                       minimumDate={new Date()}
                       style={{ height: 300, width: '100%' }}
                     />
-
                     <TouchableOpacity
                       onPress={() => handleDateSelect(selectedDate)}
                       className="mt-4 p-3 bg-[#F52525] rounded-full"
@@ -464,7 +562,6 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
             }
           </View>
           </View>
-            <Divider />
 
           <View className='mt-2'>
             <View className="mt-0 ">
@@ -540,7 +637,7 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
                     </View>
                   </TouchableOpacity>
                   <View className="flex-row items-center flex-1 justify-end">
-                    <Text className="text-gray-500 mr-2 font-tajawalregular">{image.size}</Text>
+                    {/* <Text className="text-gray-500 mr-2 font-tajawalregular">{image.size}</Text> */}
                     <Text className="text-black font-tajawalregular" numberOfLines={1} ellipsizeMode="middle" style={{ maxWidth: 180 }}>
                       {image.name}
                     </Text>
@@ -562,11 +659,11 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
               ))}
             </View>
           ) : (
-            <View className='w-full  flex items-center'>
+            <View className='w-full  flex-1 items-center mt-1'>
               <Image
                 source={Noimages}
                 resizeMode='contain'
-                className='flex w-50 h-45 '
+                className=' w-40 h-40 '
               />
               <Text className='font-tajawal text-[#2e752f] mt-2 text-xl'>
               لا يوجد صور 
@@ -578,9 +675,8 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
           )}
         </View>
   
-        <Divider />
   
-        <View className="mt-6 flex-row justify-between ">
+        <View className="mt-12 flex-row justify-between ">
           <CustomButton
             title="رجوع"
             onPress={animateToPreviousStep}
@@ -597,22 +693,28 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
         </View>
 
         {error && (
+        <>
+          {console.log("the Error is lharbaa:", error)}
           <Text className="text-red-500 text-center mt-2 font-tajawalregular">
             {typeof error === 'string' ? error : 'حدث خطأ أثناء إنشاء الطلب'}
           </Text>
-        )}
-        
+        </>
+      )}
+
         {error ?  
         
           null
         
         :
+          <View>
 
-        <UniqueIdModal
-        visible={showIdModal} 
-        onClose={handleModalClose} 
-        uniqueId={uniqueId} 
-        />
+              <UniqueIdModal
+              visible={showIdModal} 
+              onClose={handleModalClose} 
+              uniqueId={uniqueId} 
+              />
+          </View>
+        
         }
         
       </Animated.View>

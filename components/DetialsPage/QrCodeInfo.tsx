@@ -3,7 +3,7 @@ import Divider from "../ui/Devider";
 import QRCode from "react-native-qrcode-svg";
 import Colors from "@/constants/Colors";
 import Ionicons from '@expo/vector-icons/Ionicons';
-
+import * as Clipboard from 'expo-clipboard';
 
 
 
@@ -14,7 +14,7 @@ export default function QrCodeInfo({uniqueId})
 
     console.log(uniqueId);
 
-    const copyToClipboard = async () => {
+    const copyToClipboard = async (uniqueId) => {
         await Clipboard.setStringAsync(uniqueId);
     }
 
@@ -25,12 +25,11 @@ export default function QrCodeInfo({uniqueId})
                 <QRCode 
                     value={uniqueId}
                     size={180}
-                    logo={require('@/assets/images/logo.png')}
+                    logo={require('@/assets/images/MoroccoLogo.png')}
                     logoSize={40}
                     logoBackgroundColor="white"
                     />
                 </View>
-                
             </View>
             <View className=" w-[90%] mx-auto">
                 <View style={styles.divider} />
@@ -91,7 +90,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent:'space-between',
         borderWidth: 1.5,
-        borderColor: Colors.green,
+        borderColor: Colors.gray,
         borderRadius: 50,
         padding: 0,
         paddingRight: 0,
@@ -106,7 +105,7 @@ const styles = StyleSheet.create({
         paddingLeft:20        
     },
     copyButton: {
-        backgroundColor: '#2e752f',
+        backgroundColor: Colors.green,
         width: 60,
         height: 60,
         borderRadius: 50,

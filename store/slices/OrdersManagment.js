@@ -3,36 +3,10 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { act } from 'react';
 
+const API_BASE_URL = 'https://api.ajisalit.com';
 // const API_BASE_URL = 'http://192.168.100.170:3000';
-const API_BASE_URL = 'https://www.ajisalit.com';
-// const API_BASE_URL = 'http://192.168.100.170:3000';
 
-export const fetchUserOrders = createAsyncThunk(
-  'orders/fetchUserOrders',
-  async (_, { rejectWithValue }) => {
-    try {
-      const token = await AsyncStorage.getItem('token');
-      console.log("Using token for orders fetch:", token);
 
-      if (!token) {
-        return rejectWithValue('No authentication token available');
-      }
-      
-      const response = await axios.get(`${API_BASE_URL}/order`, {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-
-      console.log('these are the command of this user ', response);
-      
-      return response.data;
-    } catch (error) {
-      console.log('Fetch orders error:', error.message);
-      return rejectWithValue(error.response?.data || 'Failed to fetch user orders');
-    }
-  }
-);
 
 export const fetchOrderByQrCodeOrId = createAsyncThunk(
   'orders/fetchOrderByQrCodeOrId',
@@ -153,7 +127,6 @@ export const fetchORderById = createAsyncThunk(
             }
         });
         
-
         console.log('order id response:', response.data);
 
         // //nstori l order f local storage bach ila dkhel fl offline ibarno lih fine
@@ -181,6 +154,7 @@ export const updateOrderDate = createAsyncThunk(
   'orders/updateOrderDate',
   async ({ orderId, dateData }, { rejectWithValue, dispatch }) => {
     try {
+      // console.log('hello', dateData);
       if (!orderId) {
         return rejectWithValue('Order ID is required');
       }
@@ -214,6 +188,82 @@ export const updateOrderDate = createAsyncThunk(
   }
 );
 
+export const updateClientPickUp = createAsyncThunk(
+  'orders/updateClientPickUp',
+  async ({ orderId, dateData }, { rejectWithValue, dispatch }) => {
+    try {
+      // console.log('hello', dateData);
+      if (!orderId) {
+        return rejectWithValue('Order ID is required');
+      }
+
+      const token = await AsyncStorage.getItem('token');
+      
+      if (!token) {
+        return rejectWithValue('No authentication token available');
+      }
+      
+      const response = await axios.patch(
+        `${API_BASE_URL}/order/confirmdelivery/${orderId}`,
+        dateData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+      
+      console.log('Order date update response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.log('Order date update error:', error.message);
+      if (error.response) {
+        console.log('Error response data:', error.response.data);
+        console.log('Error response status:', error.response.status);
+      }
+      return rejectWithValue(error.response?.data || 'Failed to update order date');
+    }
+  }
+);
+
+
+
+export const updateToDone = createAsyncThunk(
+  'orders/updateToDone',
+  async ({ orderId, dateData }, { rejectWithValue, dispatch }) => {
+    try {
+      if (!orderId) {
+        return rejectWithValue('Order ID is required');
+      }
+
+      const token = await AsyncStorage.getItem('token');
+      
+      if (!token) {
+        return rejectWithValue('No authentication token available');
+      }
+      
+      const response = await axios.patch(
+        `${API_BASE_URL}/order/status/${orderId}`,
+        dateData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+      
+      console.log('this is response from update to done', response.data);
+      return response.data;
+    } catch (error) {
+      console.log('Order date update error:', error.message);
+      if (error.response) {
+        console.log('Error response data:', error.response.data);
+        console.log('Error response status:', error.response.status);
+      }
+      return rejectWithValue(error.response?.data || 'Failed to update order date');
+    }
+  }
+);
 
 
 const ordersSlice = createSlice({
@@ -292,20 +342,6 @@ const ordersSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-
-      .addCase(fetchUserOrders.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(fetchUserOrders.fulfilled, (state, action) => {
-        state.userOrders = action.payload;
-        state.loading = false;
-      })
-      .addCase(fetchUserOrders.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload;
-      })
-      
       .addCase(fetchOrderByQrCodeOrId.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -316,7 +352,6 @@ const ordersSlice = createSlice({
         state.loading = false;
         state.success = true;
         
-        // Make sure to update the allOrders array properly
         const existingOrderIndex = state.allOrders.findIndex(
           order => (order._id === action.payload._id) || 
                    (order.id === action.payload.id)
@@ -405,6 +440,6 @@ export const selectCurrentOrder = (state) => state.orders.currentOrder;
 export const selectOrderLoading = (state) => state.orders.loading;
 export const selectOrderError = (state) => state.orders.error;
 export const selectOrderSuccess = (state) => state.orders.success;
-export const selectQrCodeSearchTerm = (fstate) => state.orders.qrCodeSearchTerm;
+export const selectQrCodeSearchTerm = (state) => state.orders.qrCodeSearchTerm;
 
 export default ordersSlice.reducer;

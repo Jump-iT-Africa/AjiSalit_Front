@@ -1,4 +1,4 @@
-// @ts-nocheck
+
 
 import React, { useState, useRef, useEffect } from "react";
 import {
@@ -19,7 +19,7 @@ import {
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { Feather } from "@expo/vector-icons";
-import RegisterBackImage from "@/assets/images/register2.jpeg";
+import RegisterBackImage from "@/assets/images/register2.jpg";
 import RegisterFocusBackImage from "@/assets/images/register3.jpeg";
 import AppGradient from "../../components/ui/AppGradient";
 import HeaderWithBack from "@/components/ui/HeaderWithToolTipAndback";
@@ -57,50 +57,84 @@ const Register: React.FC = () => {
   
   const formatPhoneNumber = (text: string) => {
     let cleaned = text.replace(/[^\d+]/g, '');
-
+  
     if (!cleaned) {
       return "+212 ";
     }
-
+  
     if (!cleaned.startsWith('+')) {
       cleaned = '+' + cleaned;
     }
     if (!cleaned.startsWith('+212')) {
       cleaned = '+212' + cleaned.slice(1);
     }
-
+  
+    
+    let remainder = '';
     if (cleaned.length > 4) {
-      let remainder = cleaned.slice(4);
-      cleaned = cleaned.slice(0, 4) + ' ' + remainder;
-      cleaned = cleaned.slice(0, 15);
+      remainder = cleaned.slice(4);
+      
+      
+      let maxLength = 4; 
+      if (remainder[0] === '0') {
+        
+        maxLength += 10;
+      } else if (['6', '7', '5'].includes(remainder[0])) {
+        
+        maxLength += 9;
+      }
+      
+      
+      cleaned = cleaned.slice(0, maxLength);
     }
-
+  
+    
+    if (cleaned.length > 4) {
+      remainder = cleaned.slice(4);
+      cleaned = cleaned.slice(0, 4) + ' ' + remainder;
+    }
+  
     return cleaned;
   };
   
-  // Removed the cleanPhoneForAPI function since we don't want to clean the phone number
-
+  
   const isValidMoroccanNumber = (number: string) => {
-    // We'll still need to test against a clean number for validation
+    
     const testNumber = number.replace(/\s/g, '');
     
-    if (!/^\+212\d{9,10}$/.test(testNumber)) {
-      return { isValid: false, message: "رقم الهاتف خاصو يبدا ب +212 و يكون فيه 9 أرقام أو 10" };
+    
+    if (!testNumber.startsWith('+212')) {
+      return { isValid: false, message: "رقم الهاتف خاصو يبدا ب +212" };
     }
-  
+    
     const remainingDigits = testNumber.slice(4); 
     const firstDigit = remainingDigits[0];
-    const firstTwoDigits = remainingDigits.slice(0, 2);
     
-    const validPrefixes = ['06', '07', '05'];
-    const validSingleDigits = ['6', '7', '5'];
     
-    if (!validPrefixes.includes(firstTwoDigits) && !validSingleDigits.includes(firstDigit)) {
-      return { isValid: false, message: "رقم الهاتف خاصو يبدا ب 06 ولا 07 ولا 05 ولا 6 ولا 7 ولا 5" };
+    if (['6', '7', '5'].includes(firstDigit)) {
+      
+      if (remainingDigits.length !== 9) {
+        return { isValid: false, message: "رقم الهاتف خاصو يكون فيه 9 أرقام بعد +212" };
+      }
+    }
+    
+    else if (['0'].includes(firstDigit)) {
+      const secondDigit = remainingDigits[1];
+      if (!['6', '7', '5'].includes(secondDigit)) {
+        return { isValid: false, message: "رقم الهاتف خاصو يبدا ب 06 ولا 07 ولا 05 بعد +212" };
+      }
+      
+      if (remainingDigits.length !== 10) {
+        return { isValid: false, message: "رقم الهاتف خاصو يكون فيه 10 أرقام بعد +212" };
+      }
+    } 
+    else {
+      return { isValid: false, message: "رقم الهاتف خاصو يبدا ب 6 ولا 7 ولا 5 ولا 06 ولا 07 ولا 05 بعد +212" };
     }
     
     return { isValid: true, message: "" };
   };
+  
   
   const handlePhoneNumberChange = (text: string) => {
     const formattedNumber = formatPhoneNumber(text);
@@ -159,13 +193,15 @@ const Register: React.FC = () => {
     if (error) {
       console.log(error);
       if (error.message === "Phone number already exists") {
-        router.navigate({
-          pathname: '/InterPassword',
-          params: {
-            userName: error.UserName,
-            phoneNumber: phone  // Use the formatted phone number
-          }
-        });
+        setTimeout(() => {
+          router.navigate({
+            pathname: '/InterPassword',
+            params: {
+              userName: error.UserName,
+              phoneNumber: phone
+            }
+          })
+        }, 500);
       } else {
         setErrorMessage(error.message || "حدث خطأ ما");
       }
@@ -194,24 +230,27 @@ const Register: React.FC = () => {
               />
           </View>
           
-          <Animated.View 
-            className="absolute w-full h-full"
-            style={{ opacity: fadeAnim }}
-          >
-            <ImageBackground
-              source={RegisterFocusBackImage}
-              resizeMode="cover"
-              className="flex-1"
-            >
-              <LinearGradient
-                colors={['#25000B', '#390000']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 1 }}
-                style={{ position: 'absolute', width: '100%', height: '100%', opacity: 0.40 }}
-              />
-            </ImageBackground>
-          </Animated.View>
-          
+          <Animated.View className="absolute w-full h-full" style={{ opacity: fadeAnim }}>
+          <ImageBackground
+            source={RegisterFocusBackImage}
+            resizeMode="cover"
+            className="flex-1"
+          />
+          <LinearGradient
+            colors={['#25000B', '#390000']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+            style={{ 
+              position: 'absolute', 
+              left: 0, 
+              right: 0, 
+              top: 0, 
+              bottom: 0, 
+              opacity: 0.40,
+              zIndex:1
+            }}
+          />
+        </Animated.View>
           <View className="flex-1">
             <AppGradient colors={["rgba(0,0,0,0.4)", "rgba(0,0,0,0.0)"]}>
               <SafeAreaView className="flex-1">
@@ -263,11 +302,15 @@ const Register: React.FC = () => {
                       )}
                     </TouchableOpacity>
                   </View>
-                  {errorMessage ? (
-                      <Text className="text-[#F52525] text-center text-[12px] mb-4 font-tajawal">
-                        {errorMessage}
+                  {errorMessage === "Phone number already exists" ? (
+                      <Text className="text-[#2e752f] text-center text-[12px] mb-4 font-tajawal">
+                        رقم الهاتف موجود بالفعل
                       </Text>
-                    ) : null}
+                    ) : (
+                    <Text className="text-[#F52525] text-center text-[12px] mb-4 font-tajawal">
+                      {errorMessage}
+                    </Text>
+                  )}
                 </View>
               </SafeAreaView>
             </AppGradient>

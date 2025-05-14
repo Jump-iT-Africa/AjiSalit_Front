@@ -1,56 +1,64 @@
-
-// @ts-nocheck
-import React, { useRef } from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { View, Text, Image, TouchableOpacity, Modal } from "react-native";
 import Logowhite from "@/assets/images/whiteLogo.png";
-import ActionSheetComponent from "../../ui/BottomSheetComponent";
+import BottomSheetComponent from "../../ui/BottomSheetComponent";
 import CustomButton from "../../ui/CustomButton";
 import Colors from "@/constants/Colors";
 import { router } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSelector, useDispatch } from 'react-redux';
-import { finishButtonPressed } from '@/store/slices/OrderDetailsSlice';
-import { updateOrderDate, setCurrentOrder } from '@/store/slices/OrdersManagment';
+import { finishButtonPressed, selectOrderButtonState } from '@/store/slices/OrderDetailsSlice';
+import { updateOrderDate, setCurrentOrder, updateToDone } from '@/store/slices/OrdersManagment';
+import successLeon from '@/assets/images/successLeon.png'
+
 
 export default function FinishedButton({orderData}) {
     const actionSheetRef = useRef(null);
     const dispatch = useDispatch();
-    
-    
     const currentOrder = useSelector(state => state.orders.currentOrder || {});
-    const finishBtnClicked = useSelector(state => state.buttons.finishButtonClicked);
     
-    
+    // Get the button state for this specific order pz
     const orderId = currentOrder?.id || orderData?.id;
+    const orderButtonState = useSelector(state => selectOrderButtonState(state, orderId));
     
+    const [isModalVisible, setIsModalVisible] = useState(false);
     
-    const isFinished = currentOrder?.isFinished || finishBtnClicked || orderData?.isFinished;
+    // Check if finished based on order data or button state for this specific order
+    const isFinished = currentOrder?.isFinished || orderData?.isFinished || orderButtonState.finishButtonClicked;
     
-    console.log('FinishedButton - isFinished combined status:', isFinished);
+    console.log('FinishedButton - Order ID:', orderId);
+    console.log('FinishedButton - isFinished status:', isFinished);
     
     const handleSubmit = () => {
         if (!isFinished) {
             
-            dispatch(finishButtonPressed());
+            dispatch(finishButtonPressed({ orderId }));
             
-            
+            dispatch(updateToDone({
+                orderId: orderId,
+                dateData: {"status": "جاهزة للتسليم" }
+            }));
+
             dispatch(updateOrderDate({
                 orderId: orderId,
                 dateData: { isFinished: true }
             }));
-            
             
             dispatch(setCurrentOrder({
                 ...currentOrder,
                 isFinished: true
             }));
             
-            actionSheetRef.current?.show();
+            setIsModalVisible(true)
         }
     };
     
+    const closeBottomSheet = () => {
+        setIsModalVisible(false);
+    };
+
     const buttonColor = isFinished ? 'bg-gray-400' : 'bg-[#F52525]';
-    
+
     return (
         <>
             <TouchableOpacity
@@ -62,34 +70,61 @@ export default function FinishedButton({orderData}) {
                 <Image source={Logowhite} resizeMode="contain" className="w-10 h-10 pr-2" />
             </TouchableOpacity>
             
-            <ActionSheetComponent
-                ref={actionSheetRef}
-                containerStyle={{ backgroundColor: Colors.green, height: 600 }}
-                contentStyle={{ backgroundColor: Colors.green }}
-            >
+            <Modal
+                visible={isModalVisible}
+                transparent={true}
+                animationType="slide"
+                onRequestClose={closeBottomSheet}
+                >
+                
+                <TouchableOpacity 
+                style={{ flex: 1, backgroundColor: 'rgba(47, 117, 47, 0.48)' }}
+                activeOpacity={1}
+                onPress={closeBottomSheet}
+                >
+                <TouchableOpacity 
+                    activeOpacity={1}
+                    style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    backgroundColor: 'white',
+                    borderTopLeftRadius: 20,
+                    borderTopRightRadius: 20,
+                    height: '55%',
+                    padding: 16
+                    }}
+                >
                 <View className="flex-1 items-center justify-left h-full">
-                    <View>
-                        <Ionicons name="checkmark-done-circle-outline" size={190} color="white" />
+                    <View >
+                        <Image
+                            source={successLeon}
+                            resizeMode="contain"
+                            className=""
+                        />
                     </View>
                     <View>
-                        <Text className="text-center text-white text-6xl font-tajawalregular pt-14 mt-0">تهانينا!</Text>
-                        <Text className="text-white text-2xl font-direction text-center p-4">
+                        <Text className="text-center text-[#2F752F] text-4xl font-tajawal pt-3 mt-0">مبروك!</Text>
+                        <Text className="text-black text-2xl text-center p-4 font-tajawalregular">
                             تم إكمال الطلب بنجاح
                         </Text>
                     </View>
-                    <View className="w-full mt-10">
+                    <View className="w-full mt-4">
                         <CustomButton
                             onPress={() => {
                                 actionSheetRef.current?.hide();
                                 router.replace('/(home)');
                             }}
                             title="انتقل للصفحة الرئيسية"
-                            textStyles="text-sm font-tajawal px-2 py-0 text-[#2e752f]"
-                            containerStyles="w-[90%] m-auto bg-white"
+                            textStyles="text-sm font-tajawal pt-2 py-0 text-white"
+                            containerStyles="w-[90%] m-auto bg-[#F52525] pt-2"
                         />
                     </View>
                 </View>
-            </ActionSheetComponent>
+            </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
         </>
     );
 }

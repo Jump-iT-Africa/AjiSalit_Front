@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 import React, { useEffect, useCallback } from 'react';
 import { 
@@ -16,7 +15,7 @@ import {
 import NoOrdersExists from '../NoOrderExists/NoOrdersExists';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { FlashList } from "@shopify/flash-list";
-import AjiSalit from "@/assets/images/logo.png";
+import AjiSalit from "@/assets/images/coloredLogo.png";
 import { useRouter } from 'expo-router';
 import { useSelector, useDispatch } from 'react-redux';
 import { 
@@ -33,7 +32,7 @@ import { finishButtonPressed } from '@/store/slices/OrderDetailsSlice';
 import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { updateOrderDate } from '@/store/slices/OrdersManagment';
-
+import NoSearchResult from '@/assets/images/NoSearchResult.png'
 
 
 
@@ -50,7 +49,11 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
   const [ordersLoaded, setOrdersLoaded] = useState(false);
   const pickupButtonClicked = useSelector(state => state.buttons.pickupButtonClicked);
   const isPickedUp = pickupButtonClicked;
-
+  const allOrders = useSelector(state => state.orders.orders);
+  const searchTerm = useSelector(state => state.orders.searchTerm);
+ 
+  console.log('search code', SearchCode);
+  
 
   useEffect(() => {
     if (SearchCode !== undefined && SearchCode !== null) {
@@ -58,11 +61,13 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
     }
   }, [SearchCode, dispatch]);
 
+
   useEffect(() => {
     if (statusFilter !== undefined && statusFilter !== null) {
       dispatch(setStatusFilter(statusFilter));
     }
   }, [statusFilter, dispatch]);
+
 
   useEffect(() => {
     if (isAuthenticated && token) {
@@ -80,6 +85,7 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
     }
   }, [dispatch, isAuthenticated, token]);
 
+
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     dispatch(fetchOrders())
@@ -92,7 +98,6 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
         setRefreshing(false);
       });
   }, [dispatch]);
-
 
   
   const handleItemPress = async (item) => {
@@ -109,14 +114,16 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
   };
 
 
-
   const OrderItem = ({ item }) => {
 
-    console.log('this is item', item);
+
     
-    const [isGray, setIsGray] = useState(true);
-    const [isConfirmed, setIsConfirmed] = useState(false);
+
+    // console.log('this is item', item);
+    
+    const [localFinished, setLocalFinished] = useState(item.isFinished);
     const [showModal, setShowModal] = useState(false);
+
 
     const getStatusColor = (type) => {
       switch (type) {
@@ -131,27 +138,40 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
       }
     };
 
+    useEffect(() => {
+      setLocalFinished(item.isFinished);
+    }, [item.isFinished]);
+  
     const handleConfirm = () => {
+      setLocalFinished(true);
+      
       dispatch(finishButtonPressed());
       dispatch(markOrderFinished(item.id));
       dispatch(updateOrderDate({
         orderId: item.id,
         dateData: {
           isFinished: true
-         } 
-    }));
-      setIsGray(!isGray);
-      setIsConfirmed(true);
+        } 
+      }));
+      
       setShowModal(false);
+      
+      setTimeout(() => {
+        dispatch(fetchOrders());
+      }, 500);
     };
-  
+
+    const borderStyle = item.isToday 
+    ? "bg-white rounded-3xl p-4 mb-3 border-2 border-[#FD8900] flex-row-reverse justify-between items-center border" 
+    : "bg-white rounded-3xl p-4 mb-3 border border-[#295f2b] flex-row-reverse justify-between items-center ";
+
     return (
       <View>
         <TouchableOpacity 
           activeOpacity={0.7}
           onPress={() => handleItemPress(item)}
           style={{ width: '100%' }}>
-          <View className="bg-white rounded-3xl p-4 mb-3 shadow-md border border-[#295f2b] flex-row-reverse justify-between items-center">
+          <View className={borderStyle}>
             <View>
               <View className="flex flex-row-reverse justify-between items-center mb-1">
                 <View className="flex flex-row-reverse items-center">
@@ -176,32 +196,32 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
                 <View className="flex flex-col items-end">
                   <View className='flex-row-reverse mb-1 gap-1'>
                     <Text className="text-black mr-2 font-tajawalregular text-[14px]">صاحب(ة) الطلب:</Text>
-                    <Text className="text-gray-900 font-tajawalregular text-[#295f2b]">{item.customerDisplayName}</Text>
+                    <Text className="text-gray-900 font-tajawalregular text-[#295f2b]">{item.clientId.Fname}</Text>
                   </View>
                   <View className='flex flex-row gap-1 mr-2'>
-                    <Text className="text-black">{item.date}</Text>
+                    <Text className="text-black">{item.newDate === 'غير محدد' ? item.date : item.newDate}</Text>
                     <AntDesign name="calendar" size={15} color="#F52525" />
                   </View>
                 </View>
               </View>
             </View>
             <Pressable 
-              onPress={() => !isConfirmed && setShowModal(true)}
-              disabled={isConfirmed || item.isFinished}
-            >
-              <Image 
-                source={AjiSalit}
-                style={{
-                  width: 36,
-                  height: 36,
-                  opacity: isConfirmed || item.isFinished ? 1 : 1,
-                  tintColor: isConfirmed || item.isFinished ? 'red' : '#808080',
-                }}
-                resizeMode='contain'
-              />
-            </Pressable>
+            onPress={() => !localFinished && setShowModal(true)}
+            disabled={localFinished}
+          >
+            <Image 
+              source={AjiSalit}
+              style={{
+                width: 30,
+                height: 30,
+                // Use localFinished for immediate visual feedback
+                tintColor: localFinished ? undefined : 'gray',
+              }}
+              resizeMode='contain'
+            />
+          </Pressable>
           </View>
-        </TouchableOpacity>
+        </TouchableOpacity> 
 
         <Modal
           animationType="fade"
@@ -212,7 +232,6 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
               <Text style={styles.modalText} className='font-tajawalregular'>واش متأكد بغي تأكد الطلب ؟</Text>
-              
               <View style={styles.buttonContainer}>
                 <Pressable
                   style={[styles.button, styles.buttonConfirm]}
@@ -236,7 +255,7 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
   };
 
   const renderOrder = useCallback(({ item }) => {
-    return <OrderItem item={item} />;
+    return <OrderItem key={`${item.id}-${item.isFinished}`} item={item} />;
   }, []);
 
   if (loading && !refreshing && !ordersLoaded) {
@@ -249,38 +268,29 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
   }
 
   if (error && !refreshing) {
-    const errorMessage = typeof error === 'object' 
-      ? error.message || JSON.stringify(error) 
-      : String(error);
-      
     return (
-      <View className="flex-1 justify-center items-center">
-        <Text className="text-red-500 mb-4">{errorMessage}</Text>
-        <TouchableOpacity 
-          className="bg-green-500 px-4 py-2 rounded" 
-          onPress={() => dispatch(fetchOrders())}
-        >
-          <Text className="text-white font-medium">إعادة المحاولة</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
-  if (ordersLoaded && Array.isArray(filteredOrders) && filteredOrders.length === 0) {
-    console.log("No orders found, showing NoOrdersExists component");
-    return (
-      <SafeAreaView className="flex-1 bg-gray-100">
+      <SafeAreaView className="flex-1 bg-gray-100 ">
         <NoOrdersExists />
       </SafeAreaView>
     );
   }
   
+  if (Array.isArray(filteredOrders) && filteredOrders.length === 0) {
+    return (
+      <SafeAreaView className="flex-1 bg-gray-100 ">
+        <NoOrdersExists />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-gray-100 p-4 pb-10">
       <FlashList
         data={filteredOrders || []}
         renderItem={renderOrder}
         estimatedItemSize={200}
+        extraData={filteredOrders.map(order => order.isFinished).join(',')}
+        keyExtractor={item => `${item.id}-${item.isFinished ? 'finished' : 'unfinished'}`}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
@@ -304,7 +314,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 35,
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: 'red',
     shadowOffset: {
       width: 0,
       height: 2
@@ -336,7 +346,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center'
   },
-  modalText: {
+  modalText: {  
     marginBottom: 15,
     textAlign: 'center',
     fontSize: 16,

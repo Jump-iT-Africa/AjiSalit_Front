@@ -17,7 +17,6 @@ import AppGradient from "@/components/ui/AppGradient";
 import Color from "@/constants/Colors";
 import HeaderWithBack from "@/components/ui/HeaderWithToolTipAndback";
 import Whitelogo from "@/assets/images/whiteLogo.png";
-import { useToast } from "react-native-toast-notifications";
 import { Audio } from 'expo-av';
 import { Feather } from "@expo/vector-icons";
 

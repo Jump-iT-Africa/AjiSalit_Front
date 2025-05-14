@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, Image } from 'react-native';
+import { View, Text, SafeAreaView, Image, Touchable, TouchableOpacity } from 'react-native';
 import React from 'react';
 import { useSelector } from 'react-redux';
 import ProfilePicture from '@/assets/images/profilePage.jpeg';
@@ -8,6 +8,7 @@ import Colors from '@/constants/Colors';
 import { selectUserData } from '@/store/slices/userSlice'; 
 import InitialsAvatar from '@/components/CreateUserAvatar/AvatarUserProfile';
 import {selectUserRole} from "@/store/slices/userSlice";
+import { router } from 'expo-router';
 
 
 const ProfileHeader = () => {
@@ -20,9 +21,9 @@ const ProfileHeader = () => {
   return (
     <SafeAreaView className='w-100 p-0'>
       <View className='flex-row-reverse items-center justify-between pt-2'>
-        <View className='flex-row-reverse items-center gap-2'>
+        <TouchableOpacity className='flex-row-reverse items-center gap-2' onPress={() => router.push('(profile)/Profile')}>
           <View>
-            < InitialsAvatar name={userData.Fname} />
+            <InitialsAvatar name={userData.Fname}/>
           </View>
           <View className='flex items-end justify-start'>
             <Text className='text-start font-tajawal' style={{color: Colors.green}}>
@@ -36,7 +37,7 @@ const ProfileHeader = () => {
               }
             </Text>
           </View>
-        </View>
+        </TouchableOpacity>
         
         <View className='flex-row gap-2 justify-center items-center'>
           <View>

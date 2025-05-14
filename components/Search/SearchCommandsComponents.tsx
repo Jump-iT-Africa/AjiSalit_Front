@@ -38,12 +38,13 @@ const SearchBar = ({ onSearch, onFilter, placeholder = "بحث..." }: SearchBarP
   return (
     <View className="bg-gray-100 mt-2">
       <View className="flex-row items-center bg-white rounded-full px-2.5 h-[50px] shadow-sm border-[#2e752f] border-[1.5px]">
-        <TouchableOpacity 
+       
+        {/* <TouchableOpacity 
           className="p-1 bg-[#2e752f] rounded-full"
           onPress={() => setModalVisible(true)}
         >
           <Ionicons name="options-outline" size={24} color="white" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
         
         <TextInput
           className="flex-1 text-base px-2.5 text-gray-700 items-center placeholder:-mt-2 font-medium"
