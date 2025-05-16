@@ -99,7 +99,7 @@ export default function RootLayout() {
         <AuthCheck />
         <HandleNotification />
         <NavigationHandler firstLaunch={false} />
-        <BackgroundNotificationService />
+        {/* <BackgroundNotificationService /> */}
 
         <Stack>
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
