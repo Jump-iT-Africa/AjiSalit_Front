@@ -1,10 +1,10 @@
 import * as TaskManager from 'expo-task-manager';
-import * as BackgroundFetch from 'expo-background-fetch';
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import * as FileSystem from 'expo-file-system';
+import { AppState, Platform } from 'react-native';
 
 // API URL - same as in your Redux files
 const API_URL = 'https://api.ajisalit.com';
@@ -20,7 +20,7 @@ const MORNING_NOTIFICATION_TIME = 10; // 10 AM
 const AFTERNOON_NOTIFICATION_TIME = 17; // 5 PM
 
 // Test mode intervals in minutes
-const TEST_INTERVAL_MINUTES = 1; // Run every 3 minutes for testing
+const TEST_INTERVAL_MINUTES = 1; // Run every 1 minute for testing
 
 // Setup logging system
 const LOG_FILE_PATH = FileSystem.documentDirectory + 'notification_logs.txt';
@@ -72,17 +72,17 @@ export const readNotificationLogs = async () => {
   }
 };
 
-// Configure notification handler
-Notifications.setNotificationHandler({
-  handleNotification: async () => {
-    await logMessage("Handling incoming notification");
-    return {
-      shouldShowAlert: true,
-      shouldPlaySound: true,
-      shouldSetBadge: true,
-    };
-  },
-});
+// Clear logs function for testing
+export const clearNotificationLogs = async () => {
+  try {
+    await FileSystem.deleteAsync(LOG_FILE_PATH, { idempotent: true });
+    await logMessage('=== Log file cleared for new test ===');
+    return "Logs cleared successfully";
+  } catch (error) {
+    console.error('Error clearing logs:', error);
+    return "Error clearing logs: " + error.message;
+  }
+};
 
 // Function to parse date strings
 const parseDate = (dateString) => {
@@ -151,7 +151,7 @@ const isDeliveryDatePassed = (order) => {
   }
 };
 
-// Function to send API notification
+// Function to send API notification (your database-based notification)
 const sendDeliveryReminderApi = async () => {
   try {
     const token = await AsyncStorage.getItem('token');
@@ -163,13 +163,20 @@ const sendDeliveryReminderApi = async () => {
     
     logMessage('Sending API reminder notification...');
     
+    // Make a more detailed log of the request for debugging
+    logMessage(`API Request details: 
+      URL: ${API_URL}/notifications/reminder
+      Token: ${token ? token.substring(0, 10) + '...' : 'null'}
+    `);
+    
     const response = await axios.post(
       `${API_URL}/notifications/reminder`,
       {},
       {
         headers: {
           Authorization: `Bearer ${token}`
-        }
+        },
+        timeout: 15000 // 15 second timeout to prevent hanging
       }
     );
     
@@ -180,6 +187,12 @@ const sendDeliveryReminderApi = async () => {
     if (error.response) {
       logMessage(`API error status: ${error.response.status}`);
       logMessage(`API error data: ${JSON.stringify(error.response.data)}`);
+    } else if (error.request) {
+      // The request was made but no response was received
+      logMessage(`No response received from API: ${error.request}`);
+    } else {
+      // Something happened in setting up the request
+      logMessage(`Error setting up API request: ${error.message}`);
     }
     return false;
   }
@@ -224,10 +237,10 @@ const canSendTestNotification = async () => {
   return (now - lastCheckTime) >= (TEST_INTERVAL_MINUTES * 60 * 1000);
 };
 
-// Define the background task
-TaskManager.defineTask(BACKGROUND_DELIVERY_CHECK, async () => {
+// The core notification logic that does all the checks and sends notifications
+export const checkAndSendNotifications = async () => {
   try {
-    await logMessage('Background delivery check task started');
+    await logMessage('Starting delivery check');
     
     // Special handling for test mode
     if (TEST_MODE) {
@@ -239,7 +252,7 @@ TaskManager.defineTask(BACKGROUND_DELIVERY_CHECK, async () => {
         const lastTestCheck = await AsyncStorage.getItem('lastTestReminderCheck');
         const lastTime = new Date(parseInt(lastTestCheck)).toLocaleTimeString();
         await logMessage(`Test interval (${TEST_INTERVAL_MINUTES} minutes) not elapsed since last test at ${lastTime}`);
-        return BackgroundFetch.BackgroundFetchResult.NoData;
+        return false;
       }
       
       await logMessage(`Test interval of ${TEST_INTERVAL_MINUTES} minutes has elapsed, proceeding with test notification`);
@@ -248,7 +261,7 @@ TaskManager.defineTask(BACKGROUND_DELIVERY_CHECK, async () => {
       const notificationPeriod = isNotificationTime();
       if (!notificationPeriod) {
         await logMessage('Not notification time (10 AM or 5 PM), exiting task');
-        return BackgroundFetch.BackgroundFetchResult.NoData;
+        return false;
       }
       
       await logMessage(`It's ${notificationPeriod} notification time`);
@@ -260,12 +273,12 @@ TaskManager.defineTask(BACKGROUND_DELIVERY_CHECK, async () => {
       
       if (notificationPeriod === 'morning' && lastMorningCheck === today) {
         await logMessage('Already sent morning reminders today');
-        return BackgroundFetch.BackgroundFetchResult.NoData;
+        return false;
       }
       
       if (notificationPeriod === 'afternoon' && lastAfternoonCheck === today) {
         await logMessage('Already sent afternoon reminders today');
-        return BackgroundFetch.BackgroundFetchResult.NoData;
+        return false;
       }
     }
     
@@ -273,14 +286,14 @@ TaskManager.defineTask(BACKGROUND_DELIVERY_CHECK, async () => {
     const token = await AsyncStorage.getItem('token');
     if (!token) {
       await logMessage('No authentication token, skipping check');
-      return BackgroundFetch.BackgroundFetchResult.NoData;
+      return false;
     }
     
     // Get cached orders from AsyncStorage
     const cachedOrdersJson = await AsyncStorage.getItem('cachedOrders');
     if (!cachedOrdersJson) {
       await logMessage('No cached orders found');
-      return BackgroundFetch.BackgroundFetchResult.NoData;
+      return false;
     }
     
     const cachedOrders = JSON.parse(cachedOrdersJson);
@@ -295,51 +308,38 @@ TaskManager.defineTask(BACKGROUND_DELIVERY_CHECK, async () => {
     await logMessage(`Found ${overdueOrders.length} overdue orders`);
     
     if (overdueOrders.length > 0) {
-      // Send API notification
-      await logMessage('Sending notifications for overdue orders');
+      // Since you want to use ONLY your API notification system, not local notifications
+      // We'll focus on sending the API notification
+      await logMessage('Sending API notifications for overdue orders');
       const apiSuccess = await sendDeliveryReminderApi();
       
       if (apiSuccess) {
         await logMessage('API notification sent successfully');
-      } else {
-        await logMessage('API notification failed, trying to send local notification');
-      }
-      
-      // Also send a local notification
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: "طلبات متأخرة",
-          body: `هناك ${overdueOrders.length} طلب(ات) متأخرة تحتاج إلى تأكيد`,
-          data: { 
-            screen: 'orders',
-            orderCodes: overdueOrders.map(o => o.orderCode || o.id).join(', ')
-          },
-        },
-        trigger: null, // Send immediately
-      });
-      
-      await logMessage('Local notification scheduled');
-      
-      // Record that we sent reminders
-      if (TEST_MODE) {
-        // In test mode, store timestamp for interval checking
-        await AsyncStorage.setItem('lastTestReminderCheck', new Date().getTime().toString());
-        await logMessage(`Test notification sent and recorded at ${new Date().toLocaleTimeString()}`);
-      } else {
-        // In production mode, store the date
-        const today = new Date().toDateString();
-        const notificationPeriod = isNotificationTime();
         
-        if (notificationPeriod === 'morning') {
-          await AsyncStorage.setItem('lastMorningReminderCheck', today);
-          await logMessage('Morning reminder recorded for today');
+        // Record that we sent reminders
+        if (TEST_MODE) {
+          // In test mode, store timestamp for interval checking
+          await AsyncStorage.setItem('lastTestReminderCheck', new Date().getTime().toString());
+          await logMessage(`Test notification sent and recorded at ${new Date().toLocaleTimeString()}`);
         } else {
-          await AsyncStorage.setItem('lastAfternoonReminderCheck', today);
-          await logMessage('Afternoon reminder recorded for today');
+          // In production mode, store the date
+          const today = new Date().toDateString();
+          const notificationPeriod = isNotificationTime();
+          
+          if (notificationPeriod === 'morning') {
+            await AsyncStorage.setItem('lastMorningReminderCheck', today);
+            await logMessage('Morning reminder recorded for today');
+          } else {
+            await AsyncStorage.setItem('lastAfternoonReminderCheck', today);
+            await logMessage('Afternoon reminder recorded for today');
+          }
         }
+        
+        return true;
+      } else {
+        await logMessage('API notification failed');
+        return false;
       }
-      
-      return BackgroundFetch.BackgroundFetchResult.NewData;
     } else {
       await logMessage('No overdue orders found that need reminders');
       
@@ -349,78 +349,78 @@ TaskManager.defineTask(BACKGROUND_DELIVERY_CHECK, async () => {
         await logMessage(`Test check completed at ${new Date().toLocaleTimeString()} - no overdue orders`);
       }
       
-      return BackgroundFetch.BackgroundFetchResult.NoData;
+      return true;
     }
   } catch (error) {
-    await logMessage(`Error in background delivery check: ${error.message}`);
-    return BackgroundFetch.BackgroundFetchResult.Failed;
+    await logMessage(`Error in check and send notifications: ${error.message}`);
+    return false;
   }
-});
+};
+
+// Setup the task definition - this is just for potential use in production builds
+// but we don't rely on it working in Expo Go
+try {
+  TaskManager.defineTask(BACKGROUND_DELIVERY_CHECK, async () => {
+    await logMessage('Background task executed via TaskManager');
+    await checkAndSendNotifications();
+  });
+} catch (error) {
+  console.log('Error defining task:', error);
+}
 
 // Setup notifications permission
 const setupNotifications = async () => {
   try {
     await logMessage('Setting up notification permissions');
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    await logMessage(`Current notification permission status: ${existingStatus}`);
     
-    if (existingStatus !== 'granted') {
-      await logMessage('Requesting notification permissions');
-      const { status } = await Notifications.requestPermissionsAsync();
-      await logMessage(`New notification permission status: ${status}`);
-      if (status !== 'granted') {
-        await logMessage('Notification permission denied by user');
-        return false;
+    if (Platform.OS === 'ios') {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      await logMessage(`Current notification permission status: ${existingStatus}`);
+      
+      if (existingStatus !== 'granted') {
+        await logMessage('Requesting notification permissions');
+        const { status } = await Notifications.requestPermissionsAsync();
+        await logMessage(`New notification permission status: ${status}`);
+        if (status !== 'granted') {
+          await logMessage('Notification permission denied by user');
+          return false;
+        }
       }
     }
     
-    await logMessage('Notification permissions granted');
+    await logMessage('Notification setup complete');
     return true;
   } catch (error) {
-    await logMessage(`Error checking notification permissions: ${error.message}`);
+    await logMessage(`Error in notification setup: ${error.message}`);
     return false;
   }
 };
 
-// Register the background fetch task
-const registerBackgroundFetchTask = async () => {
+// Try to register the background task
+const registerBackgroundTask = async () => {
   try {
-    await logMessage('Registering background fetch task');
+    await logMessage('Attempting to register background task');
     
     // First check if task is already registered
     const isRegistered = await TaskManager.isTaskRegisteredAsync(BACKGROUND_DELIVERY_CHECK);
     await logMessage(`Background task already registered: ${isRegistered}`);
     
+    // In Expo Go, background tasks won't work, so we'll mainly rely on the foreground timer
+    // But we'll try to register anyway for standalone builds
     if (!isRegistered) {
-      // In test mode, use a shorter interval
-      const interval = TEST_MODE ? 
-        Math.max(60, TEST_INTERVAL_MINUTES * 60) : // Minimum 60 seconds
-        900; // 15 minutes minimum for production
-      
-      await BackgroundFetch.registerTaskAsync(BACKGROUND_DELIVERY_CHECK, {
-        minimumInterval: interval,
-        stopOnTerminate: false, // continue task when app is terminated
-        startOnBoot: true, // start task when device reboots
-      });
-      
-      await logMessage(`Background fetch task registered with ${interval} second interval (${TEST_MODE ? 'TEST MODE' : 'PRODUCTION MODE'})`);
-    } else {
-      // Update the task to make sure it has the correct settings
-      await BackgroundFetch.unregisterTaskAsync(BACKGROUND_DELIVERY_CHECK);
-      await logMessage('Unregistered existing task to update settings');
-      
-      // In test mode, use a shorter interval
-      const interval = TEST_MODE ? 
-        Math.max(60, TEST_INTERVAL_MINUTES * 60) : // Minimum 60 seconds
-        900; // 15 minutes minimum for production
-      
-      await BackgroundFetch.registerTaskAsync(BACKGROUND_DELIVERY_CHECK, {
-        minimumInterval: interval,
-        stopOnTerminate: false,
-        startOnBoot: true,
-      });
-      
-      await logMessage(`Re-registered background fetch task with ${interval} second interval (${TEST_MODE ? 'TEST MODE' : 'PRODUCTION MODE'})`);
+      try {
+        // Try using TaskManager directly - this may not work in Expo Go
+        await TaskManager.registerTaskAsync(BACKGROUND_DELIVERY_CHECK, {
+          requiredNetworkType: TaskManager.TaskNetworkType.ANY,
+          requiresCharging: false,
+          requiresDeviceIdle: false,
+        });
+        
+        await logMessage('Background task registered successfully');
+      } catch (error) {
+        await logMessage(`Error registering background task: ${error.message}`);
+        await logMessage('Will use foreground timer as fallback');
+      }
     }
     
     // Clear any previous test record to force an immediate check
@@ -430,124 +430,93 @@ const registerBackgroundFetchTask = async () => {
     }
     
   } catch (error) {
-    await logMessage(`Error registering background fetch task: ${error.message}`);
+    await logMessage(`Error in registerBackgroundTask: ${error.message}`);
   }
 };
 
-// Helper function to get the next notification time (10 AM or 5 PM)
-const getNextNotificationTime = () => {
-  // In test mode, calculate based on the test interval
-  if (TEST_MODE) {
-    const now = new Date();
-    const result = new Date(now);
-    result.setMinutes(now.getMinutes() + TEST_INTERVAL_MINUTES);
-    return result;
-  }
-  
-  // Production mode - 10 AM or 5 PM logic
-  const now = new Date();
-  const result = new Date(now);
-  
-  // If before 10 AM, set to 10 AM today
-  if (now.getHours() < MORNING_NOTIFICATION_TIME) {
-    result.setHours(MORNING_NOTIFICATION_TIME, 0, 0, 0);
-    return result;
-  }
-  
-  // If before 5 PM, set to 5 PM today
-  if (now.getHours() < AFTERNOON_NOTIFICATION_TIME) {
-    result.setHours(AFTERNOON_NOTIFICATION_TIME, 0, 0, 0);
-    return result;
-  }
-  
-  // After 5 PM, set to 10 AM tomorrow
-  result.setDate(result.getDate() + 1);
-  result.setHours(MORNING_NOTIFICATION_TIME, 0, 0, 0);
-  return result;
-};
-
-// React component that sets up the background service
+// React component that sets up the notification service
 const BackgroundNotificationService = () => {
+  const timerRef = useRef(null);
+  const appStateRef = useRef(AppState.currentState);
+  
+  // Function to run the interval check when the app is in foreground
+  const setupIntervalCheck = () => {
+    // Clear any existing timer
+    if (timerRef.current) clearInterval(timerRef.current);
+    
+    // Set up a new timer
+    const intervalTime = TEST_MODE ? 
+      TEST_INTERVAL_MINUTES * 60 * 1000 : // Test mode - check every minute
+      5 * 60 * 1000; // Production - check every 5 minutes when app is open
+    
+    logMessage(`Setting up foreground interval check every ${intervalTime / 1000} seconds`);
+    
+    timerRef.current = setInterval(async () => {
+      await logMessage('Running foreground interval check');
+      await checkAndSendNotifications();
+    }, intervalTime);
+  };
+  
   useEffect(() => {
-    const setupBackgroundService = async () => {
+    const setupService = async () => {
       await logMessage('=== BackgroundNotificationService component mounted ===');
+      await logMessage(`Platform: ${Platform.OS}, Version: ${Platform.Version}`);
       
-      // Request notification permissions
-      const notificationPermissionGranted = await setupNotifications();
+      // Set up permissions and try to register background task
+      await setupNotifications();
+      await registerBackgroundTask();
       
-      if (notificationPermissionGranted) {
-        await logMessage('Notification permissions granted, registering background task');
+      // Set up the foreground interval check
+      setupIntervalCheck();
+      
+      // Run an immediate check
+      setTimeout(async () => {
+        await logMessage('Running immediate check...');
+        await checkAndSendNotifications();
+      }, 2000);
+    };
+    
+    setupService();
+    
+    // Handle app state changes
+    const handleAppStateChange = nextAppState => {
+      logMessage(`App state changed from ${appStateRef.current} to ${nextAppState}`);
+      appStateRef.current = nextAppState;
+      
+      if (nextAppState === 'active') {
+        // App came to foreground - set up interval
+        setupIntervalCheck();
         
-        // Register background fetch task
-        await registerBackgroundFetchTask();
-        
-        if (TEST_MODE) {
-          await logMessage('TEST MODE ACTIVE: Running check immediately');
-          
-          // In test mode, run the task immediately to test notifications
-          await AsyncStorage.removeItem('lastTestReminderCheck');
-          await logMessage('Cleared test timestamp to force immediate check');
-          
-          // Execute the task after a short delay to ensure everything is set up
-          setTimeout(async () => {
-            await logMessage('Running immediate test check...');
-            try {
-              const result = await BackgroundFetch.executeTaskAsync(BACKGROUND_DELIVERY_CHECK);
-              await logMessage(`Immediate test check complete with result: ${result}`);
-            } catch (error) {
-              await logMessage(`Error running immediate test: ${error.message}`);
-            }
-          }, 2000);
-        } else {
-          // Production mode
-          const notificationPeriod = isNotificationTime();
-          if (notificationPeriod) {
-            await logMessage(`Current time is within ${notificationPeriod} notification window`);
-            
-            // Check if we've already sent a notification for this period today
-            const today = new Date().toDateString();
-            const lastCheck = await AsyncStorage.getItem(
-              notificationPeriod === 'morning' ? 'lastMorningReminderCheck' : 'lastAfternoonReminderCheck'
-            );
-            
-            if (lastCheck !== today) {
-              await logMessage('Running task manually since we are in notification window');
-              await BackgroundFetch.executeTaskAsync(BACKGROUND_DELIVERY_CHECK);
-            } else {
-              await logMessage(`Already sent ${notificationPeriod} notification today, skipping`);
-            }
-          } else {
-            await logMessage('Not in notification window (10 AM or 5 PM), skipping immediate check');
-            
-            // Log when the next check will be
-            const nextTime = getNextNotificationTime();
-            await logMessage(`Next scheduled notification time: ${nextTime.toLocaleString()}`);
-          }
+        // Also run a check immediately when app comes to foreground
+        checkAndSendNotifications();
+      } else if (nextAppState.match(/inactive|background/)) {
+        // App went to background - clear interval to save battery
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+          timerRef.current = null;
         }
-      } else {
-        await logMessage('Notification permissions not granted, background service will not work properly');
       }
     };
     
-    setupBackgroundService();
+    // Subscribe to app state changes
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
     
+    // Cleanup function
     return () => {
-      // We don't unregister on component unmount since we want it to continue running in background
-      logMessage('BackgroundNotificationService component unmounted, but background task remains active');
+      logMessage('BackgroundNotificationService component unmounting');
+      
+      // Clear any timers
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      
+      // Remove app state subscription
+      subscription.remove();
     };
   }, []);
   
   return null; // This component doesn't render anything
-};
-
-// Function to manually view logs (can be called from a settings screen)
-export const viewNotificationLogs = async () => {
-  try {
-    return await readNotificationLogs();
-  } catch (error) {
-    console.error('Error reading logs:', error);
-    return "Error reading logs: " + error.message;
-  }
 };
 
 // Function to manually trigger a check (can be used for testing)
@@ -560,7 +529,9 @@ export const manuallyTriggerCheck = async () => {
     await logMessage('Cleared last test timestamp to force notification');
   }
   
-  return await BackgroundFetch.executeTaskAsync(BACKGROUND_DELIVERY_CHECK);
+  const result = await checkAndSendNotifications();
+  await logMessage(`Manual check completed with result: ${result}`);
+  return result;
 };
 
 // Function to toggle test mode (for UI)
@@ -569,21 +540,6 @@ export const toggleTestMode = async (enabled) => {
   
   // Store the test mode setting
   await AsyncStorage.setItem('notificationTestMode', enabled ? 'true' : 'false');
-  
-  // Re-register the task with new settings
-  await BackgroundFetch.unregisterTaskAsync(BACKGROUND_DELIVERY_CHECK);
-  
-  const interval = enabled ? 
-    Math.max(60, TEST_INTERVAL_MINUTES * 60) : // Minimum 60 seconds for test mode
-    900; // 15 minutes for production
-  
-  await BackgroundFetch.registerTaskAsync(BACKGROUND_DELIVERY_CHECK, {
-    minimumInterval: interval,
-    stopOnTerminate: false,
-    startOnBoot: true,
-  });
-  
-  await logMessage(`Background task re-registered with ${interval} second interval (${enabled ? 'TEST MODE' : 'PRODUCTION MODE'})`);
   
   // Clear the last check timestamp to force a new check
   if (enabled) {

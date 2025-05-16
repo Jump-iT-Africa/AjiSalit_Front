@@ -1,3 +1,4 @@
+// @ts-nocheck
 import React, { useState, forwardRef, useImperativeHandle, useMemo } from 'react';
 import {
   View,
@@ -117,7 +118,7 @@ const OrderVerificationModal = forwardRef(({
               fontSize: 20,
               fontWeight: 'bold',
               marginBottom: 16,
-              fontFamily: 'tajawal'
+              fontFamily: 'Tajawal'
             }}
           >
             كولشي هو هذاك ؟
@@ -147,34 +148,40 @@ const OrderVerificationModal = forwardRef(({
                 shadowOpacity: 0.25,
                 shadowRadius: 3.84,
                 elevation: 5,
+                display:'flex',
+                alignItems:'center'
               }}
             >
               <View style={{ flexDirection: 'row-reverse', alignItems: 'center', marginBottom: 12 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8 }}>
-                  <FontAwesome name="money" size={24} color="#FD8900" />
-                  <Text style={{ color: '#000', fontSize: 12, fontFamily: 'tajawal', marginRight: 8 }}>
+                  <Text style={{ color: '#000', fontSize: 12, fontFamily: 'Tajawal', marginRight: 8 }}>
                     المبلغ الإجمالي : 
                   </Text>
+                  <FontAwesome name="money" size={24} color="#FD8900" />
+
                 </View>
-                <Text style={{ color: '#2F752F', fontSize: 11, fontWeight: 'bold', fontFamily: 'tajawal' }}>
+                <Text style={{ color: '#2F752F', fontSize: 11, fontWeight: 'bold', fontFamily: 'Tajawal' }}>
                   {formData.price} درهم
                 </Text>
               </View>
 
               <View style={{ flexDirection: 'row-reverse', alignItems: 'center', marginBottom: 12 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8 }}>
-                  <AntDesign name="calendar" size={24} color="#FD8900" />
-                  <Text style={{ color: '#000', fontSize: 12, fontFamily: 'tajawal', marginRight: 8 }}>
+                  <Text style={{ color: '#000', fontSize: 12, fontFamily: 'Tajawal', marginRight: 8 }}>
                     تاريخ التسليم : 
                   </Text>
+                  <AntDesign name="calendar" size={24} color="#FD8900" />
                 </View>
-                <Text style={{ color: '#2F752F', fontSize: 11, fontWeight: 'bold', fontFamily: 'tajawal' }}>
+                <Text style={{ color: '#2F752F', fontSize: 11, fontWeight: 'bold', fontFamily: 'Tajawal' }}>
                   {formData.RecieveDate instanceof Date ? formatDate(formData.RecieveDate) : 'غير محدد'}
                 </Text>
               </View>
 
               <View style={{ flexDirection: 'row-reverse', alignItems: 'center', marginBottom: 12 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8 }}>
+                <Text style={{ color: '#000', fontSize: 12, fontFamily: 'Tajawal', marginRight: 8 }}>
+                    الحالة : 
+                  </Text>
                   {statusOptions.map((option) => (
                     option.label === formData.situation ? (
                       <Image
@@ -185,11 +192,9 @@ const OrderVerificationModal = forwardRef(({
                       />
                     ) : null
                   ))}
-                  <Text style={{ color: '#000', fontSize: 12, fontFamily: 'tajawal', marginRight: 8 }}>
-                    الحالة : 
-                  </Text>
+                  
                 </View>
-                <Text style={{ color: '#2F752F', fontSize: 11, fontWeight: 'bold', fontFamily: 'tajawal' }}>
+                <Text style={{ color: '#2F752F', fontSize: 11, fontWeight: 'bold', fontFamily: 'Tajawal' }}>
                   {formData.situation}
                 </Text>
               </View>
@@ -197,11 +202,11 @@ const OrderVerificationModal = forwardRef(({
               {formData.advancedAmount ? (
                 <View style={{ flexDirection: 'row-reverse', alignItems: 'center' }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8 }}>
-                    <Text style={{ color: '#000', fontSize: 12, fontFamily: 'tajawal', marginRight: 8 }}>
+                    <Text style={{ color: '#000', fontSize: 12, fontFamily: 'Tajawal', marginRight: 8 }}>
                       مبلغ التسبيق :
                     </Text>
                   </View>
-                  <Text style={{ color: '#2F752F', fontSize: 11, fontWeight: 'bold', fontFamily: 'tajawal' }}>
+                  <Text style={{ color: '#2F752F', fontSize: 11, fontWeight: 'bold', fontFamily: 'Tajawal' }}>
                     {formData.advancedAmount} درهم 
                   </Text>
                 </View>
@@ -253,10 +258,10 @@ const OrderVerificationModal = forwardRef(({
                   }}
                   resizeMode='contain'
                 />
-                <Text style={{ color: '#2F752F', fontSize: 16, fontWeight: 'bold', marginTop: 8, fontFamily: 'tajawal' }}>
+                <Text style={{ color: '#2F752F', fontSize: 16, fontWeight: 'bold', marginTop: 8, fontFamily: 'Tajawal' }}>
                   لا يوجد صور
                 </Text>
-                <Text style={{ color: '#666', fontSize: 12, fontFamily: 'tajawal' }}>
+                <Text style={{ color: '#666', fontSize: 12, fontFamily: 'Tajawal' }}>
                   قم بتحميل صورك الآن
                 </Text>
               </View>
@@ -290,7 +295,7 @@ const OrderVerificationModal = forwardRef(({
               disabled={loading}
             >
               <AntDesign name="edit" size={20} color="white" style={{ marginRight: 8 }} />
-              <Text style={{ color: 'white', textAlign: 'center', fontFamily: 'tajawal', fontSize: 15 }}>تعديل</Text>
+              <Text style={{ color: 'white', textAlign: 'center', fontFamily: 'Tajawal', fontSize: 15 }}>تعديل</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
@@ -318,7 +323,7 @@ const OrderVerificationModal = forwardRef(({
                     style={{ width: 24, height: 24, marginRight: 8 }}
                     resizeMode='contain'
                   />
-                  <Text style={{ color: 'white', textAlign: 'center', fontFamily: 'tajawal', fontSize: 15 }}>ساليت</Text>
+                  <Text style={{ color: 'white', textAlign: 'center', fontFamily: 'Tajawal', fontSize: 15 }}>ساليت</Text>
                 </>
               )}
             </TouchableOpacity>

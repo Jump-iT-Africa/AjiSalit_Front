@@ -25,8 +25,15 @@
         "NSCameraUsageDescription": "This app uses the camera to scan QR codes",
         "UIBackgroundModes": [
           "fetch",
-          "remote-notification"
-        ]
+          "remote-notification",
+          "processing"
+        ],
+        "BGTaskSchedulerPermittedIdentifiers": [
+          "background-delivery-check"
+        ],
+        "NSUserNotificationsUsageDescription": "This app sends notifications for overdue orders that need your attention.",
+        "NSNotificationCenterUsageDescription": "This app sends notifications for overdue orders that need your attention.",
+        "NSCriticalAlertsEnabled": true
       }
     },
     "android": {
@@ -62,12 +69,19 @@
         {
           "icon": "./assets/images/logooo.png",
           "color": "#FFFFFF",
+          "sounds": ["./assets/sounds/notification.wav"],
           "androidMode": "default",
-          "androidCollapsedTitle": "Aji Salit"
+          "androidCollapsedTitle": "Aji Salit",
+          "iosDisplayInForeground": true
         }
       ],
       "expo-font"
     ],
+    "notification": {
+      "icon": "./assets/images/logooo.png",
+      "color": "#FFFFFF",
+      "iosDisplayInForeground": true
+    },
     "newArchEnabled": true,
     "extra": {
       "router": {

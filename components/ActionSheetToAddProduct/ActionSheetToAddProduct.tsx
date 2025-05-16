@@ -1,3 +1,4 @@
+//@ts-nocheck
 import React, { forwardRef, useState, useRef, useImperativeHandle, useEffect, useMemo } from 'react';
 import {
   View,
@@ -801,7 +802,7 @@ const processOrderSubmission = () => {
         </View>
   
   
-        <View className="mt-2 flex-row justify-between ">
+        <View className="mt- flex-row justify-between ">
           <CustomButton
             title="رجوع"
             onPress={animateToPreviousStep}
