@@ -29,7 +29,6 @@ export default function HandleNotification() {
                             Authorization: `Bearer ${token}`
                         }
                     })
-                    console.log(response)
                     console.log("Response is ", response.data, {tag: 'Notification'});
                 }
             } catch (e) {

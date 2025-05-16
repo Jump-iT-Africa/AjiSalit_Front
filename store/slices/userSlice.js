@@ -8,16 +8,14 @@ export const fetchCurrentUserData = createAsyncThunk(
   'user/fetchCurrentUserData',
   async (_, { rejectWithValue }) => {
     try {
-      
-      const UserId = (await AsyncStorage.getItem('userId'))?.replace(/^"|"$/g, '');
      
       const response = await fetchUserData();
 
       console.log('here is the response of get users', response);
       
       if (response) {
-        // await AsyncStorage.setItem('user', JSON.stringify(response));
         console.log('responsessssss',response);
+        await AsyncStorage.setItem('user',JSON.stringify(response) )
         return response;
 
       }

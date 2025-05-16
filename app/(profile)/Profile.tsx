@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { 
   View, 
   Text, 
@@ -13,6 +13,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
+  Dimensions,
 } from 'react-native';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
@@ -28,10 +29,20 @@ import regionsAndCitiesData from "@/constants/Cities/Cities.json";
 import CompanyFieldDropDown from '@/components/CompanyRegister/CompanyFieldDropDown';
 import Color from "@/constants/Colors";
 import CustomButton from '@/components/ui/CustomButton';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 
 
 const Profile = () => {
+
+
+  const { width, height } = Dimensions.get('window');
+  const isSmallScreen = height < 700; 
+  
+  const bottomSheetHeight = useMemo(() => {
+      return isSmallScreen ? hp('80%') : hp('62%');
+  }, [isSmallScreen]);
+
     const dispatch = useDispatch();
     const user = useSelector(selectUserData); 
     const [profileImage, setProfileImage] = useState(null);
@@ -71,7 +82,6 @@ const Profile = () => {
         if (user.profileImage) {
           setProfileImage(user.profileImage);
         }
-        
         
         setInitialFname(user.Fname || '');
         setInitialLname(user.Lname || '');
@@ -500,7 +510,7 @@ const Profile = () => {
                   backgroundColor: 'white',
                   borderTopLeftRadius: 20,
                   borderTopRightRadius: 20,
-                  height: '60%',
+                  height:bottomSheetHeight,
                   padding: 16
                 }}>
                   <View style={{ 

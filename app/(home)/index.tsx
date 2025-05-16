@@ -72,21 +72,21 @@ const Home = () => {
   };
   
   const getWalletColorAndMessage = () => {
-    if (userPocket >= 250) {
+    if (userPocket >= 54) {
       return {
         amountColor: '#295f2b', 
         messageColor: '#295f2b',
         message: 'رصيد ديالك كافي للطلبات الجديدة',
         walletImage: WalletRich
       };
-    } else if (userPocket >= 50 && userPocket < 250) {
+    } else if (userPocket >= 25 && userPocket < 54) {
       return {
         amountColor: '#FFA30E', 
         messageColor: '#FFA30E',
         message: 'رصيد ديالك قرب يسالي',
         walletImage: Wallet
       };
-    } else if (userPocket > 0 && userPocket < 50) {
+    } else if (userPocket > 0 && userPocket < 24) {
       return {
         amountColor: '#F52525', 
         messageColor: '#F52525',

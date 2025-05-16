@@ -155,7 +155,6 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
       }, 500);
     };
 
-    // Define styles for the order item
     const containerStyle = {
       backgroundColor: 'white',
       borderRadius: wp('7%'),
@@ -164,12 +163,12 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
       flexDirection: 'row-reverse',
       justifyContent: 'space-between',
       alignItems: 'center',
-      borderWidth: item.isToday ? 2 : 1,
+      borderWidth: item.isToday ? 1 : 1,
       borderColor: item.isToday ? '#FD8900' : '#295f2b'
     };
 
     const textBaseStyle = {
-      fontFamily: 'Tajawal',
+      fontFamily: 'TajawalRegular',
       fontSize: wp('3.5%')
     };
 
@@ -225,7 +224,7 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
                 <View style={[statusStyle, { backgroundColor: item.type === 'paid' ? '#10b981' : item.type === 'unpaid' ? '#ef4444' : item.type === 'installment' ? '#f97316' : '#6b7280' }]}>
                   {item.value !== null && (
                     <Text style={[statusTextStyle, { fontWeight: 'bold' }]}>
-                      {item.advancedAmount} {item.currency}
+                      {item.advancedAmount} {item.currency} 
                     </Text>
                   )}
                   <Text style={statusTextStyle}>
@@ -234,12 +233,12 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
                 </View>
               </View>
               <View style={{ flexDirection: 'row-reverse', justifyContent: 'space-between' }}>
-                <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
+                <View style={{ flexDirection: 'column', alignItems: 'flex-end', justifyContent:'center'}}>
                   <View style={{ flexDirection: 'row-reverse', marginBottom: hp('0.5%'), gap: wp('0.5%') }}>
                     <Text style={labelTextStyle}>صاحب(ة) الطلب:</Text>
-                    <Text style={[valueTextStyle, { color: '#295f2b' }]}>{item.clientId.Fname}</Text>
+                    <Text style={[valueTextStyle, { color: '#295f2b' }]}>{item.clientId.Fname} </Text>
                   </View>
-                  <View style={{ flexDirection: 'row', gap: wp('0.5%'), marginRight: wp('2%') }}>
+                  <View style={{ flexDirection: 'row', gap: wp('0.5%'), marginRight: wp('2%') , justifyContent:'center', alignItems:'center'}}>
                     <Text style={dateTextStyle}>{item.newDate === 'غير محدد' ? item.date : item.newDate}</Text>
                     <AntDesign name="calendar" size={wp('3.5%')} color="#F52525" />
                   </View>
@@ -334,7 +333,7 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
       paddingBottom: hp('5%')
     }}>
       <FlashList
-        data={filteredOrders || []}
+        data={filteredOrders || []} 
         renderItem={renderOrder}
         estimatedItemSize={wp('50%')}
         extraData={filteredOrders.map(order => order.isFinished).join(',')}
@@ -343,7 +342,7 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         showsVerticalScrollIndicator={false}
-        ListFooterComponent={<View style={{ height: hp('40%') }} />}
+        ListFooterComponent={<View style={{ height: hp('100%') }} />}
       />
     </SafeAreaView>
   );

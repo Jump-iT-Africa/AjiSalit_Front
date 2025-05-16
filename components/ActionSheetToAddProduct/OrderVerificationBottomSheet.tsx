@@ -1,4 +1,4 @@
-import React, { useState, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, forwardRef, useImperativeHandle, useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,8 @@ import {
   FlatList,
   Image,
   ActivityIndicator,
-  SafeAreaView
+  SafeAreaView,
+  Dimensions
 } from 'react-native';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -19,6 +20,7 @@ import Noimages from "@/assets/images/noImages.png"
 import NoMoneyYellow from "@/assets/images/createProductIcons/noMoney-yellow.png";
 import PaidYellow from "@/assets/images/createProductIcons/paid-yellow.png";
 import AdvancedMoneyYellow from "@/assets/images/createProductIcons/givingMoney-yellow.png";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 
 
@@ -32,6 +34,15 @@ const OrderVerificationModal = forwardRef(({
 }, ref) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
 
+
+
+
+  const { width, height } = Dimensions.get('window');
+    const isSmallScreen = height < 700; 
+    
+    const bottomSheetHeight = useMemo(() => {
+        return isSmallScreen ? hp('75%') : hp('60%');
+    }, [isSmallScreen]);
 
     // console.log('hello', formData);
     
@@ -100,7 +111,7 @@ const OrderVerificationModal = forwardRef(({
             backgroundColor: '#F5F6F7',
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
-            height: '64%',
+            height: bottomSheetHeight,
             padding: 16
           }}
           onPress={(e) => e.stopPropagation()}
@@ -228,7 +239,11 @@ const OrderVerificationModal = forwardRef(({
                   <Image 
                     source={Noimages}
                     resizeMode='contain'
-                    className='flex items-center justify-center w-32 h-32'
+                    className='flex items-center justify-center'
+                    style={{
+                      width: isSmallScreen ? wp('30%') : wp('30%'),
+                      height: isSmallScreen ? wp('30%') : wp('30%'),
+                    }}
                   />
                 </View>
               )}

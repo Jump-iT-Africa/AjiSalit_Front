@@ -10,6 +10,8 @@ import { useDispatch } from 'react-redux';
 import { login } from "@/store/slices/userSlice";
 import { Feather } from "@expo/vector-icons";
 
+
+
 export default function interPassword() {
   const router = useRouter();
   const [code, setCode] = useState('');

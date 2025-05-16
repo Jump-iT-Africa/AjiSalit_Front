@@ -32,8 +32,18 @@ const BottomSheetComponent = forwardRef<BottomSheetComponentRef, BottomSheetComp
     customHeight,
     scrollable = true
   }, ref) => {
+
+
+    
+    const { width, height } = Dimensions.get('window');
+    const isSmallScreen = height < 700; 
+    
+    const bottomSheetHeight = useMemo(() => {
+        return isSmallScreen ? hp('85%') : hp('73%');
+    }, [isSmallScreen]);
+
+
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
-    const windowHeight = Dimensions.get('window').height;
     const [isOpen, setIsOpen] = useState(false);
     
     
@@ -41,9 +51,9 @@ const BottomSheetComponent = forwardRef<BottomSheetComponentRef, BottomSheetComp
       let height;
 
       if (!customHeight) {
-        height = hp('70%');
+        height =bottomSheetHeight;
       } else {
-        height = customHeight;
+        height = bottomSheetHeight;
       }
 
       

@@ -191,7 +191,7 @@ export default function DetailsPage() {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" color="#295f2b" />
-        <Text style={{ marginTop: 10 }}>جاري تحميل بيانات الطلب...</Text>
+        <Text style={{ marginTop: 10 }} className="font-tajawalregular">جاري تحميل بيانات الطلب...</Text>
       </View>
     );
   }
@@ -200,7 +200,7 @@ export default function DetailsPage() {
   if (!orderData) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-        <Text style={{ fontSize: 18, textAlign: 'center', marginBottom: 20 }}>
+        <Text style={{ fontSize: 18, textAlign: 'center', marginBottom: 20 }} className="font-tajawalregular">
           لم يتم العثور على بيانات الطلب
         </Text>
         <TouchableOpacity 
@@ -212,7 +212,7 @@ export default function DetailsPage() {
             borderRadius: 8 
           }}
         >
-          <Text style={{ color: 'white', fontSize: 16 }}>العودة</Text>
+          <Text style={{ color: 'white', fontSize: 16 }} className="font-tajawalregular">العودة</Text>
         </TouchableOpacity>
       </View>
     );

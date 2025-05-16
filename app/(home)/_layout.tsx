@@ -24,10 +24,11 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { selectUserRole, selectUserData, fetchCurrentUserData } from "@/store/slices/userSlice";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
-
 import { Stack } from "expo-router";
 import { createStackNavigator } from '@react-navigation/stack';
 const AppStack = createStackNavigator();
+
+
 
 function MainTabs() {
   const dispatch = useDispatch();
@@ -38,7 +39,6 @@ function MainTabs() {
   const [isSheetVisible, setIsSheetVisible] = useState(false);
   const [pocketValue, setPocketValue] = useState(0);
   
-  // Function to get the latest pocket value directly from AsyncStorage
   const getLatestPocketValue = async () => {
     try {
       const userDataStr = await AsyncStorage.getItem('user');
@@ -51,7 +51,6 @@ function MainTabs() {
         }
       }
       
-      // If no value found in AsyncStorage, use value from Redux
       if (userData && userData.pocket !== undefined) {
         console.log("Using pocket value from Redux:", userData.pocket);
         setPocketValue(userData.pocket);

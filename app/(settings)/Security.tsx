@@ -85,7 +85,6 @@ const Security = () => {
               className='font-tajawalregular'
             />
           ) : (
-            // Render plain text with your existing formatting function
             <ScrollView contentContainerStyle={{ padding: 20 }}>
               {Array.isArray(formatArabicText(content.content)) ? (
                 formatArabicText(content.content).map((paragraph, index) => (

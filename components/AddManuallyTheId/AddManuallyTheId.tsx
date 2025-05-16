@@ -54,7 +54,7 @@ export default function AddManuallyTheId({
             setError('')
           }
           else{
-            setError('الكود مكملش 😢')
+            setError('الكود مصحيحش 😢')
           }
       }
     }catch (error) {

@@ -40,9 +40,9 @@ const ProfileHeader = () => {
         </TouchableOpacity>
         
         <View className='flex-row gap-2 justify-center items-center'>
-          <View>
+          {/* <View>
             <Notifications />
-          </View>
+          </View> */}
           <View>
             <SettingsIconComponent />
           </View>

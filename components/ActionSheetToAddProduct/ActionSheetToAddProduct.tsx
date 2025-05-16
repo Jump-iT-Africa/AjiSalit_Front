@@ -1,4 +1,4 @@
-import React, { forwardRef, useState, useRef, useImperativeHandle, useEffect } from 'react';
+import React, { forwardRef, useState, useRef, useImperativeHandle, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,8 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Image,
-  ActivityIndicator
+  ActivityIndicator,
+  Dimensions
 } from 'react-native';
 
 import { router } from 'expo-router';
@@ -28,9 +29,20 @@ import Noimages from "@/assets/images/noImages.png"
 import UniqueIdModal from '../QrCodeGeneration/GenerateQrCode';
 import PaymentStatus from './PaymenStatus';
 import OrderVerificationBottomSheet from './OrderVerificationBottomSheet';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 
 const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) => {
+
+
+  const { width, height } = Dimensions.get('window');
+  const isSmallScreen = height < 700; 
+  
+  const bottomSheetHeight = useMemo(() => {
+      return isSmallScreen ? hp('80%') : hp('62%');
+  }, [isSmallScreen]);
+
+  
   const actionSheetRef = useRef(null);
   const dispatch = useDispatch();
   const verificationSheetRef = useRef(null);
@@ -193,17 +205,37 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
   const validateStep1 = () => {
     let valid = true;
     let newErrors = { ...errors };
-
+  
     if (!formData.price.trim()) {
       newErrors.price = 'المبلغ مطلوب ';
       valid = false;
     } else {
       newErrors.price = '';
     }
-
     
+    // Add validation for payment status
+    if (!formData.situation || formData.situation.trim() === '') {
+      newErrors.status = 'الحالة مطلوبة';
+      valid = false;
+    } else {
+      newErrors.status = '';
+      
+      // Check if advanced amount is valid when تسبيق is selected
+      if (formData.situation === 'تسبيق') {
+        if (!formData.advancedAmount || formData.advancedAmount.trim() === '') {
+          newErrors.advancedAmount = 'مبلغ التسبيق مطلوب';
+          valid = false;
+        } else if (parseFloat(formData.advancedAmount) > parseFloat(formData.price)) {
+          newErrors.advancedAmount = 'مبلغ التسبيق لا يمكن أن يتجاوز المبلغ الإجمالي';
+          valid = false;
+        } else {
+          newErrors.advancedAmount = '';
+        }
+      }
+    }
+  
     newErrors.RecieveDate = '';
-
+  
     setErrors(newErrors);
     return valid;
   };
@@ -569,6 +601,7 @@ const processOrderSubmission = () => {
                 title="التالي"
                 onPress={() => {
                   if (validateStep1()) {
+                    Keyboard.dismiss()
                     animateToNextStep();
                   }
                 }}
@@ -605,43 +638,114 @@ const processOrderSubmission = () => {
         </Text>
         <Divider />
   
-        <View className="my-2">
-          <Text className="text-right text-gray-700 font-tajawal mb-5" style={{ color: Color.green }}>
+        <View style={{ marginVertical: hp('1%') }}>
+          <Text style={{
+            textAlign: 'right',
+            color: Color.green,
+            fontSize: isSmallScreen ? wp('3.5%') : wp('4%'),
+            marginBottom: hp('2.5%'),
+            fontFamily: 'Tajawal',
+          }}>
             تحميل الصور:
           </Text>
           
-          <View className="border border-dashed border-[#2e752f] rounded-lg p-4 items-center mb-4 ">
-            <AntDesign name="camera" size={32} color="#2e752f" />
-            <Text className="text-center text-gray-500 mt-2 font-tajawalregular">
+          <View style={{
+            borderWidth: 1,
+            borderStyle: 'dashed',
+            borderColor: '#2e752f',
+            borderRadius: wp('3%'),
+            padding: hp('2%'),
+            alignItems: 'center',
+            marginBottom: hp('2%'),
+          }}>
+            <AntDesign name="camera" size={wp('8%')} color="#2e752f" />
+            <Text style={{
+              textAlign: 'center',
+              color: '#6b7280',
+              marginTop: hp('1%'),
+              fontFamily: 'TajawalRegular',
+              fontSize: wp('3.5%'),
+            }}>
               حمل صورك (JPG, PNG)
             </Text>
             
-            <View className="flex-row justify-center space-x-2 mt-3">
+            <View style={{
+              flexDirection: 'row',
+              justifyContent: 'center',
+              marginTop: hp('1.5%'),
+            }}>
               <TouchableOpacity 
-                className="border border-[#2e752f] rounded-full px-4 py-2 flex-row items-center"
+                style={{
+                  borderWidth: 1,
+                  borderColor: '#2e752f',
+                  borderRadius: wp('10%'),
+                  paddingVertical: hp('1%'),
+                  paddingHorizontal: wp('3%'),
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                }}
                 onPress={takePhoto}
               >
-                <AntDesign name="camera" size={16} color="#2e752f" style={{ marginRight: 5 }} />
-                <Text className="text-[#2e752f] font-tajawalregular">التقط صورة</Text>
+                <AntDesign name="camera" size={wp('4%')} color="#2e752f" style={{ marginRight: wp('1.2%') }} />
+                <Text style={{
+                  color: '#2e752f',
+                  fontFamily: 'TajawalRegular',
+                  fontSize: wp('3.5%'),
+                }}>التقط صورة</Text>
               </TouchableOpacity>
             </View>
           </View>
        
           {uploadedImages.length > 0 ? (
-            <View className="  ">
+            <View>
               {uploadedImages.map((image) => (
-                <View key={image.id} className="flex-row justify-between items-center bg-gray-100 rounded-lg p-3 mb-2">
+                <View key={image.id} style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  backgroundColor: '#f3f4f6',
+                  borderRadius: wp('3%'),
+                  padding: hp('1.5%'),
+                  marginBottom: hp('1%'),
+                }}>
                   <TouchableOpacity onPress={() => removeImage(image.id)}>
-                    <View className="w-6 h-6 rounded-full bg-red-500 items-center justify-center">
-                      <AntDesign name="close" size={16} color="white" />
+                    <View style={{
+                      width: wp('6%'),
+                      height: wp('6%'),
+                      borderRadius: wp('3%'),
+                      backgroundColor: '#ef4444',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                      <AntDesign name="close" size={wp('4%')} color="white" />
                     </View>
                   </TouchableOpacity>
-                  <View className="flex-row items-center flex-1 justify-end">
-                    {/* <Text className="text-gray-500 mr-2 font-tajawalregular">{image.size}</Text> */}
-                    <Text className="text-black font-tajawalregular" numberOfLines={1} ellipsizeMode="middle" style={{ maxWidth: 180 }}>
+                  <View style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    flex: 1,
+                    justifyContent: 'flex-end',
+                  }}>
+                    <Text 
+                      style={{
+                        color: 'black',
+                        fontFamily: 'TajawalRegular',
+                        fontSize: wp('3.5%'),
+                        maxWidth: wp('45%'),
+                      }}
+                      numberOfLines={1} 
+                      ellipsizeMode="middle"
+                    >
                       {image.name}
                     </Text>
-                    <View className="h-10 w-10 bg-gray-300 rounded ml-2 overflow-hidden">
+                    <View style={{
+                      height: wp('10%'),
+                      width: wp('10%'),
+                      backgroundColor: '#d1d5db',
+                      borderRadius: wp('1%'),
+                      marginLeft: wp('2%'),
+                      overflow: 'hidden',
+                    }}>
                       {image.uri ? (
                         <Image 
                           source={{ uri: image.uri }} 
@@ -649,8 +753,13 @@ const processOrderSubmission = () => {
                           resizeMode="cover"
                         />
                       ) : (
-                        <View className="h-full w-full items-center justify-center">
-                          <AntDesign name="picture" size={20} color="#666" />
+                        <View style={{
+                          height: '100%',
+                          width: '100%',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}>
+                          <AntDesign name="picture" size={wp('5%')} color="#666" />
                         </View>
                       )}
                     </View>  
@@ -659,24 +768,40 @@ const processOrderSubmission = () => {
               ))}
             </View>
           ) : (
-            <View className='w-full  flex-1 items-center mt-1'>
+            <View style={{
+              width: '100%',
+              flex: 1,
+              alignItems: 'center',
+              marginTop: hp('1%'),
+            }}>
               <Image
                 source={Noimages}
                 resizeMode='contain'
-                className=' w-40 h-40 '
+                style={{
+                  width: isSmallScreen ? wp('30%') : wp('30%'),
+                  height: isSmallScreen ? wp('30%') : wp('30%'),
+                }}
               />
-              <Text className='font-tajawal text-[#2e752f] mt-2 text-xl'>
-              لا يوجد صور 
+              <Text style={{
+                fontFamily: 'Tajawal',
+                color: '#2e752f',
+                marginTop: hp('1%'),
+                fontSize: isSmallScreen ? wp('4%') : wp('4%'),
+              }}>
+                لا يوجد صور 
               </Text>
-              <Text className='font-tajawalregular'>
-              قم بتحميل صورك الآن
+              <Text style={{
+                fontFamily: 'TajawalRegular',
+                fontSize: wp('3%'),
+              }}>
+                قم بتحميل صورك الآن
               </Text>
             </View>
           )}
         </View>
   
   
-        <View className="mt-12 flex-row justify-between ">
+        <View className="mt-2 flex-row justify-between ">
           <CustomButton
             title="رجوع"
             onPress={animateToPreviousStep}

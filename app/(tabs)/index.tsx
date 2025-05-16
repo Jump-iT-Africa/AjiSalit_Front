@@ -14,7 +14,7 @@ const App = () => {
 
   useEffect(() => {
     if (notification) {
-      alert("You received a notification!");
+      // alert("You received a notification!");
     }
   }, [notification]);
   
