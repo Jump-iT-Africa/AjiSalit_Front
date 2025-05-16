@@ -1,5 +1,5 @@
-import React, { useRef, useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, Modal, Image } from "react-native";
+import React, { useRef, useEffect, useState, useMemo } from "react";
+import { View, Text, TouchableOpacity, Modal, Image, Dimensions } from "react-native";
 import BottomSheetComponent from "../../ui/BottomSheetComponent";
 import CustomButton from "../../ui/CustomButton";
 import Colors from "@/constants/Colors";
@@ -10,8 +10,20 @@ import { useSelector, useDispatch } from 'react-redux';
 import { pickupButtonPressed, selectOrderButtonState } from '@/store/slices/OrderDetailsSlice';
 import { updateOrderDate, setCurrentOrder, updateToPickUp } from '@/store/slices/OrdersManagment';
 import successLeon from '@/assets/images/successLeon.png'
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+
 
 export default function PickUpButton({orderData}) {
+
+
+    const { width, height } = Dimensions.get('window');
+    const isSmallScreen = height < 700; // Define what constitutes a small screen
+    
+    // Calculate bottomsheet height based on screen size
+    const bottomSheetHeight = useMemo(() => {
+        return isSmallScreen ? hp('80%') : hp('55%');
+    }, [isSmallScreen]);
+    
     const actionSheetRef = useRef(null);
     const dispatch = useDispatch();
     
@@ -88,7 +100,7 @@ export default function PickUpButton({orderData}) {
                         backgroundColor: 'white',
                         borderTopLeftRadius: 20,
                         borderTopRightRadius: 20,
-                        height: '55%',
+                        height: bottomSheetHeight,
                         padding: 16
                         }}
                     >

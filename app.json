@@ -22,7 +22,11 @@
       "bundleIdentifier": "app.ajisalit.com",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "NSCameraUsageDescription": "This app uses the camera to scan QR codes"
+        "NSCameraUsageDescription": "This app uses the camera to scan QR codes",
+        "UIBackgroundModes": [
+          "fetch",
+          "remote-notification"
+        ]
       }
     },
     "android": {
@@ -33,9 +37,14 @@
         "userInterfaceStyle": "light"
       },
       "package": "app.ajisalit.com",
+      "useNextNotificationsApi": true,
       "permissions": [
         "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "RECEIVE_BOOT_COMPLETED",
+        "NOTIFICATIONS",
+        "SCHEDULE_EXACT_ALARM",
+        "ACCESS_NOTIFICATION_POLICY"
       ]
     },
     "plugins": [

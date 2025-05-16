@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
-import { View, Text, Image, TouchableOpacity, Modal } from "react-native";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { View, Text, Image, TouchableOpacity, Modal, Dimensions } from "react-native";
 import Logowhite from "@/assets/images/whiteLogo.png";
 import BottomSheetComponent from "../../ui/BottomSheetComponent";
 import CustomButton from "../../ui/CustomButton";
@@ -10,9 +10,19 @@ import { useSelector, useDispatch } from 'react-redux';
 import { finishButtonPressed, selectOrderButtonState } from '@/store/slices/OrderDetailsSlice';
 import { updateOrderDate, setCurrentOrder, updateToDone } from '@/store/slices/OrdersManagment';
 import successLeon from '@/assets/images/successLeon.png'
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 
 export default function FinishedButton({orderData}) {
+    const { width, height } = Dimensions.get('window');
+    const isSmallScreen = height < 700; // Define what constitutes a small screen
+    
+    // Calculate bottomsheet height based on screen size
+    const bottomSheetHeight = useMemo(() => {
+        return isSmallScreen ? hp('80%') : hp('55%');
+    }, [isSmallScreen]);
+
+
     const actionSheetRef = useRef(null);
     const dispatch = useDispatch();
     const currentOrder = useSelector(state => state.orders.currentOrder || {});
@@ -92,7 +102,7 @@ export default function FinishedButton({orderData}) {
                     backgroundColor: 'white',
                     borderTopLeftRadius: 20,
                     borderTopRightRadius: 20,
-                    height: '55%',
+                    height: bottomSheetHeight,
                     padding: 16
                     }}
                 >

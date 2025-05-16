@@ -169,6 +169,9 @@ const ordersSlice = createSlice({
         state.loading = false;
         // console.log('Fetch orders fulfilled:', action.payload);
         state.items = transformOrderData(action.payload);
+
+        AsyncStorage.setItem('cachedOrders', JSON.stringify(transformOrderData(action.payload)));
+        AsyncStorage.setItem('lastOrdersFetchTime', new Date().toISOString());
       })
       .addCase(fetchOrders.rejected, (state, action) => {
         state.loading = false;
