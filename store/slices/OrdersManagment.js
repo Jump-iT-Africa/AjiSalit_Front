@@ -271,13 +271,13 @@ export const sendDeliveryReminder = createAsyncThunk(
     try {
       console.log('im here');
       const token = await AsyncStorage.getItem('token');
-      
+      console.log('this is the tokennn', token);
       if (!token) {
         return rejectWithValue('No authentication token available');
       }
-      
       const response = await axios.post(
         `${API_BASE_URL}/notifications/reminder`,
+        {},
         {
           headers: {
             Authorization: `Bearer ${token}`

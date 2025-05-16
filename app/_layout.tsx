@@ -95,9 +95,7 @@ export default function RootLayout() {
       <Provider store={store}>
         <AuthCheck />
         <HandleNotification />
-        {/* <NavigationHandler firstLaunch={isAppFirstLaunched} /> */}
         <NavigationHandler firstLaunch={false} />
-        {/* <OrderResetManager /> */}
         <DeliveryReminderService />
 
         <Stack>

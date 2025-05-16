@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback, useRef,useMemo } from "react";
 import {
   View,
   Text,
@@ -8,7 +8,8 @@ import {
   RefreshControl,
   Modal,
   ScrollView,
-  Image
+  Image,
+  Dimensions
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { FlashList } from "@shopify/flash-list";
@@ -23,9 +24,18 @@ import Color from '@/constants/Colors';
 import Noimages from "@/assets/images/noImages.png";
 // import NoOrdersExists from "@/components/NoOrderExists/NoOrdersExists";
 import NoOrdersExistsHistory from "@/components/NoOrderExists/NoOrdersExistsHistory";
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 const OrderDetailsModal = ({ isVisible, onClose, orderData }) => {
 
+
+
+  const { width, height } = Dimensions.get('window');
+    const isSmallScreen = height < 700; 
+    
+    const bottomSheetHeight = useMemo(() => {
+        return isSmallScreen ? hp('75%') : hp('55%');
+    }, [isSmallScreen]);
   console.log('This is Order Data ', orderData);
 
   const formatDate = (dateValue) => {
@@ -76,7 +86,7 @@ const OrderDetailsModal = ({ isVisible, onClose, orderData }) => {
             backgroundColor: '#F5F6F7',
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
-            height: '58%',
+            height: bottomSheetHeight,
             padding: 16
           }}
           onPress={(e) => e.stopPropagation()}

@@ -186,7 +186,7 @@ const DeliveryReminderService = () => {
     
     const timer = setTimeout(() => {
       checkOverdueOrders();
-    }, 3600000);
+    }, 3000);
     
     return () => clearTimeout(timer);
   }, [dispatch, filteredOrders, isAuthenticated, token]);
