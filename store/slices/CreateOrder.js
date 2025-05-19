@@ -2,7 +2,28 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSelector } from 'react-redux';
+import * as FileSystem from 'expo-file-system';
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 
+
+const compressImage = async (uri, quality = 0.5, maxWidth = 1200) => {
+  try {
+    
+    const manipulatedImage = await manipulateAsync(
+      uri,
+      [{ resize: { width: maxWidth } }],
+      { compress: quality, format: SaveFormat.JPEG }
+    );
+    
+    return manipulatedImage.uri;
+  } catch (error) {
+    console.error('Error compressing image:', error);
+    return uri; 
+  }
+};
+
+
+// Corrected createOrder thunk in your Redux slice
 export const createOrder = createAsyncThunk(
   'order/createOrder',
   async (orderData, { rejectWithValue, getState }) => {
@@ -15,18 +36,78 @@ export const createOrder = createAsyncThunk(
         return rejectWithValue('No authentication token available');
       }
       
-      const response = await axios.post('https://api.ajisalit.com/order', orderData, {
-        headers: {
-          Authorization: `Bearer ${token}`
+      // If there are images to upload
+      if (orderData.images && orderData.images.length > 0) {
+        // Create a FormData object
+        const formData = new FormData();
+        
+        // Add all non-image order data to FormData
+        Object.keys(orderData).forEach(key => {
+          if (key !== 'images') {
+            formData.append(key, orderData[key]);
+          }
+        });
+        
+        // Process and append each image - THIS IS THE CRITICAL PART
+        for (let i = 0; i < orderData.images.length; i++) {
+          const image = orderData.images[i];
+          
+          // Compress the image
+          const compressedUri = await compressImage(image.uri, 0.3);
+          
+          // Log the file size after compression
+          const fileInfo = await FileSystem.getInfoAsync(compressedUri);
+          console.log(`Compressed image size: ${fileInfo.size / 1024} KB`);
+          
+          // IMPORTANT: Create a file object for upload
+          // The key change is here - append the actual file with just "images"
+          // as the field name with no additional JSON structure
+          formData.append('images', {
+            uri: compressedUri,
+            type: image.type || 'image/jpeg',
+            name: image.name || `image_${i}.jpg`
+          });
+          
+          // This creates multiple fields with the same name "images"
+          // which translates to an array of files on the server
         }
-      });
-      return response.data;
+        
+        console.log('Sending form data with image files');
+        
+        // Send with appropriate headers for multipart form data
+        const response = await axios.post('https://api.ajisalit.com/order', formData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
+          },
+          timeout: 60000,
+          maxBodyLength: Infinity,
+          maxContentLength: Infinity,
+        });
+        
+        return response.data;
+      } else {
+        // If no images, send regular JSON data
+        const response = await axios.post('https://api.ajisalit.com/order', orderData, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        return response.data;
+      }
     } catch (error) {
-      console.log('Order error:', error.message);
-      return rejectWithValue(error.response?.data || 'Failed to create order');
+      console.log('Order error:', error.response?.status || error.message);
+      
+      if (error.response && error.response.status === 413) {
+        return rejectWithValue('الصور كبيرة جدًا. يرجى التقاط صور بجودة أقل أو تقليل عددها.');
+      }
+      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to create order');
     }
   }
 );
+
+
 
 const initialState = {
   orders: [],

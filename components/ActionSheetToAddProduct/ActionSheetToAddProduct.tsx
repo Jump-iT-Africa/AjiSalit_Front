@@ -1,4 +1,3 @@
-//@ts-nocheck
 import React, { forwardRef, useState, useRef, useImperativeHandle, useEffect, useMemo } from 'react';
 import {
   View,
@@ -104,7 +103,24 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
     };
   }, [dispatch]);
 
-  const takePhoto = async () => {
+
+
+
+  const prepareImagesForUpload = (images) => {
+  if (!images || images.length === 0) return [];
+  
+  return images.map((image, index) => {
+    // Make sure each image has the required properties for upload
+    return {
+      uri: image.uri,
+      type: image.type || 'image/jpeg', // Default to JPEG if type is not specified
+      name: image.name || `image_${index}.jpg`, // Use provided name or generate one
+      size: image.size || '0kb' // Include size information if available
+    };
+  });
+};
+
+const takePhoto = async () => {
   try {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
@@ -115,19 +131,25 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 1,
+      quality: 0.5, 
     });
 
     if (!result.canceled) {
+      const uri = result.assets[0].uri;
+      const fileExtension = uri.split('.').pop().toLowerCase();
+      const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
+      
+      const compressedSize = Math.round((result.assets[0].fileSize || 0) / 1024 * 0.5);
+      
       const newImage = {
         id: Date.now(), 
-        uri: result.assets[0].uri,
-        name: `photo_${photoCounter}.jpg`,
-        size: `${Math.round(result.assets[0].fileSize / 1024)}kb`,
+        uri: uri,
+        name: `photo_${photoCounter}.${fileExtension}`,
+        type: mimeType,
+        size: `${compressedSize}kb`,
       };
       
       setUploadedImages([...uploadedImages, newImage]);
-      
       setPhotoCounter(prevCounter => prevCounter + 1);
     }
   } catch (error) {
@@ -351,22 +373,24 @@ const formatDateToYYYYMMDD = (date) => {
 };
 
 
+
 const processOrderSubmission = () => {
   const newUniqueId = generateUniqueId(12);
   setUniqueId(newUniqueId);
   
   const today = new Date();
   
-  
   const deliveryDate = isDatePickerEnabled ? (formData.RecieveDate || selectedDate) : today;
   const formattedDeliveryDate = formatDateToYYYYMMDD(deliveryDate);
-  
   
   const pickupDateObj = new Date(deliveryDate);
   pickupDateObj.setDate(pickupDateObj.getDate() + 2);
   const formattedPickupDate = formatDateToYYYYMMDD(pickupDateObj);
   
+  // Process the uploaded images to ensure they're properly formatted
+  const processedImages = prepareImagesForUpload(uploadedImages);
   
+  // Create the order data object with all necessary fields
   const orderData = {
     price: parseFloat(formData.price),
     situation: formData.situation || "خالص",
@@ -376,11 +400,11 @@ const processOrderSubmission = () => {
     pickupDate: formattedPickupDate,     
     qrCode: newUniqueId,
     isFinished: false,
-    isPickUp: false
+    isPickUp: false,
+    images: processedImages
   };
   
   console.log("Component - Order data before dispatch:", JSON.stringify(orderData));
-  
   
   if (!formattedDeliveryDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
     alert('خطأ في تنسيق التاريخ. يرجى التأكد من أن التاريخ بتنسيق YYYY-MM-DD');
@@ -390,6 +414,8 @@ const processOrderSubmission = () => {
   dispatch(createOrder(orderData));
   setShowIdModal(true);
 };
+
+
 
   const handleModalClose = () => {
     setShowIdModal(false);

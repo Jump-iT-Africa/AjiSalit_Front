@@ -1,5 +1,5 @@
 // @ts-nocheck
-import React, { useState, forwardRef, useImperativeHandle, useMemo } from 'react';
+import React, { useState, forwardRef, useImperativeHandle } from 'react';
 import {
   View,
   Text,
@@ -9,10 +9,8 @@ import {
   FlatList,
   Image,
   ActivityIndicator,
-  SafeAreaView,
   Dimensions,
-  Platform,
-  StatusBar
+  Platform
 } from 'react-native';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -24,7 +22,7 @@ import PaidYellow from "@/assets/images/createProductIcons/paid-yellow.png";
 import AdvancedMoneyYellow from "@/assets/images/createProductIcons/givingMoney-yellow.png";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
-const OrderVerificationModal = forwardRef(({
+const OrderVerificationBottomSheet = forwardRef(({
   formData,
   uploadedImages,
   onConfirm,
@@ -35,9 +33,8 @@ const OrderVerificationModal = forwardRef(({
   const { width, height } = Dimensions.get('window');
   const isSmallScreen = height < 700;
 
-  const statusBarHeight = Platform.OS === 'android' ? StatusBar.currentHeight : 0;
-
   const bottomSheetHeight = isSmallScreen ? '80%' : '70%';
+  const platform = Platform.OS === 'android'? "50" : "0"
 
   useImperativeHandle(ref, () => ({
     show: () => {
@@ -53,7 +50,7 @@ const OrderVerificationModal = forwardRef(({
   };
 
   const formatDate = (date) => {
-    if (!(date instanceof Date)) return '';
+    if (!(date instanceof Date)) return 'غير محدد';
     return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
   };
 
@@ -87,18 +84,26 @@ const OrderVerificationModal = forwardRef(({
         style={{ 
           flex: 1, 
           backgroundColor: 'rgba(47, 117, 47, 0.48)',
-          justifyContent: 'flex-end' 
+          justifyContent: 'flex-end',
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: width,
+          height: height
         }}
       >
         <View 
           style={{
-            backgroundColor: '#F5F6F7',
+            backgroundColor: 'white',
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
             height: bottomSheetHeight,
             width: '100%'
           }}
         >
+          {/* Top handle */}
           <View 
             style={{ 
               width: 60, 
@@ -111,12 +116,12 @@ const OrderVerificationModal = forwardRef(({
             }} 
           />
 
+          {/* Title */}
           <Text 
             style={{
               textAlign: 'center',
               color: '#F52525',
               fontSize: 20,
-              fontWeight: 'bold',
               marginBottom: 16,
               fontFamily: 'Tajawal'
             }}
@@ -134,6 +139,7 @@ const OrderVerificationModal = forwardRef(({
             }}
             showsVerticalScrollIndicator={false}
           >
+            {/* Order Info Card */}
             <View 
               style={{
                 backgroundColor: '#FFFFFF',
@@ -149,37 +155,40 @@ const OrderVerificationModal = forwardRef(({
                 shadowRadius: 3.84,
                 elevation: 5,
                 display:'flex',
-                alignItems:'center'
+                alignItems: 'center',
+                justifyContent:'center'
               }}
             >
-              <View style={{ flexDirection: 'row-reverse', alignItems: 'center', marginBottom: 12 }}>
+              {/* Total Amount Row */}
+              <View style={{ flexDirection: 'row-reverse', alignItems: 'center', marginBottom: 12, width: '100%' }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8 }}>
                   <Text style={{ color: '#000', fontSize: 12, fontFamily: 'Tajawal', marginRight: 8 }}>
                     المبلغ الإجمالي : 
                   </Text>
                   <FontAwesome name="money" size={24} color="#FD8900" />
-
                 </View>
-                <Text style={{ color: '#2F752F', fontSize: 11, fontWeight: 'bold', fontFamily: 'Tajawal' }}>
+                <Text style={{ color: '#2F752F', fontSize: 12,  fontFamily: 'Tajawal' }}>
                   {formData.price} درهم
                 </Text>
               </View>
 
-              <View style={{ flexDirection: 'row-reverse', alignItems: 'center', marginBottom: 12 }}>
+              {/* Delivery Date Row */}
+              <View style={{ flexDirection: 'row-reverse', alignItems: 'center', marginBottom: 12, width: '100%' }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8 }}>
                   <Text style={{ color: '#000', fontSize: 12, fontFamily: 'Tajawal', marginRight: 8 }}>
                     تاريخ التسليم : 
                   </Text>
                   <AntDesign name="calendar" size={24} color="#FD8900" />
                 </View>
-                <Text style={{ color: '#2F752F', fontSize: 11, fontWeight: 'bold', fontFamily: 'Tajawal' }}>
+                <Text style={{ color: '#2F752F', fontSize: 12,  fontFamily: 'Tajawal' }}>
                   {formData.RecieveDate instanceof Date ? formatDate(formData.RecieveDate) : 'غير محدد'}
                 </Text>
               </View>
 
-              <View style={{ flexDirection: 'row-reverse', alignItems: 'center', marginBottom: 12 }}>
+              {/* Status Row */}
+              <View style={{ flexDirection: 'row-reverse', alignItems: 'center', marginBottom: formData.advancedAmount ? 12 : 0, width: '100%' }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8 }}>
-                <Text style={{ color: '#000', fontSize: 12, fontFamily: 'Tajawal', marginRight: 8 }}>
+                  <Text style={{ color: '#000', fontSize: 12, fontFamily: 'Tajawal', marginRight: 8 }}>
                     الحالة : 
                   </Text>
                   {statusOptions.map((option) => (
@@ -192,27 +201,28 @@ const OrderVerificationModal = forwardRef(({
                       />
                     ) : null
                   ))}
-                  
                 </View>
-                <Text style={{ color: '#2F752F', fontSize: 11, fontWeight: 'bold', fontFamily: 'Tajawal' }}>
-                  {formData.situation}
+                <Text style={{ color: '#2F752F', fontSize: 12,  fontFamily: 'Tajawal' }}>
+                  {formData.situation || 'خالص'}
                 </Text>
               </View>
 
+              {/* Advanced Amount Row (conditional) */}
               {formData.advancedAmount ? (
-                <View style={{ flexDirection: 'row-reverse', alignItems: 'center' }}>
+                <View style={{ flexDirection: 'row-reverse', alignItems: 'center', width: '100%' }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8 }}>
                     <Text style={{ color: '#000', fontSize: 12, fontFamily: 'Tajawal', marginRight: 8 }}>
                       مبلغ التسبيق :
                     </Text>
                   </View>
-                  <Text style={{ color: '#2F752F', fontSize: 11, fontWeight: 'bold', fontFamily: 'Tajawal' }}>
+                  <Text style={{ color: '#2F752F', fontSize: 12,  fontFamily: 'Tajawal' }}>
                     {formData.advancedAmount} درهم 
                   </Text>
                 </View>
               ) : null}
             </View>
 
+            {/* Image Upload Section */}
             {uploadedImages.length > 0 ? (
               <View style={{ marginVertical: 16 }}>
                 <FlatList
@@ -258,7 +268,7 @@ const OrderVerificationModal = forwardRef(({
                   }}
                   resizeMode='contain'
                 />
-                <Text style={{ color: '#2F752F', fontSize: 16, fontWeight: 'bold', marginTop: 8, fontFamily: 'Tajawal' }}>
+                <Text style={{ color: '#2F752F', fontSize: 16, marginTop: 8, fontFamily: 'Tajawal' }}>
                   لا يوجد صور
                 </Text>
                 <Text style={{ color: '#666', fontSize: 12, fontFamily: 'Tajawal' }}>
@@ -334,4 +344,4 @@ const OrderVerificationModal = forwardRef(({
   );
 });
 
-export default OrderVerificationModal;
+export default OrderVerificationBottomSheet;

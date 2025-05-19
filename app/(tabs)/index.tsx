@@ -32,7 +32,7 @@ const App = () => {
                 textStyles="font-tajawal text-[14]"
               />
               <Text 
-                className="text-white text-center mt-3 font-[700] text-tajawal" 
+                className="text-white text-center mt-3  text-tajawal" 
                 onPress={() => router.push('register')}  
                 style={styles.textConfig}
               >
