@@ -255,7 +255,7 @@ export default function CombinedCompanyForm({ onInputFocus, onLoadingModalChange
         zIndex: 9
       }}
     >
-      <Text className="text-center text-[#F52525] text-lg font-bold mb-6 font-tajawal" style={styles.textConfig}>
+      <Text className="text-center text-[#F52525] text-lg  mb-6 font-tajawal" style={styles.textConfig}>
         أدخل معلومات شركتك
       </Text>
       <Divider />
@@ -354,7 +354,7 @@ export default function CombinedCompanyForm({ onInputFocus, onLoadingModalChange
         width: "100%",
       }}
     >
-      <Text className="text-center text-[#F52525] text-lg font-bold mb-6 font-tajawal">
+      <Text className="text-center text-[#F52525] text-lg  mb-6 font-tajawal">
         أدخل تفاصيل الشركة
       </Text>
       <Divider />
@@ -514,7 +514,7 @@ export default function CombinedCompanyForm({ onInputFocus, onLoadingModalChange
               style={{ width: 240, height: 240 }}
               resizeMode="contain"
             />
-            <Text className="text-center text-black text-2xl font-tajawal font-bold" style={styles.FontText}>
+            <Text className="text-center text-black text-2xl font-tajawal " style={styles.FontText}>
               مبروك!
             </Text>
             <Text className="text-gray-700 text-base text-center p-2 font-tajawalregular">
@@ -527,7 +527,7 @@ export default function CombinedCompanyForm({ onInputFocus, onLoadingModalChange
                 }}
                 title="انتقل للصفحة الرئيسية"
                 textStyles="text-sm font-tajawal px-2 py-0 text-white"
-                containerStyles="w-[90%] m-auto bg-[#F52525] rounded-full  pt-1"
+                containerStyles="w-[90%] m-auto bg-[#F52525] rounded-full  pt-0"
                 disabled={false}
               />
             </View>

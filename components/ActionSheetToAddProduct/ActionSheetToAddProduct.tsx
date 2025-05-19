@@ -500,7 +500,7 @@ const processOrderSubmission = () => {
           zIndex: 9,
         }}
       >
-        <Text className="text-center text-[#F52525] text-xl font-bold mb-6 font-tajawal">
+        <Text className="text-center text-[#F52525] text-xl  mb-6 font-tajawal">
           معلومات الطلب
         </Text>
   
@@ -660,7 +660,7 @@ const processOrderSubmission = () => {
           width: '100%',
         }}
       >
-        <Text className="text-center text-[#F52525] text-xl font-bold mb-6 font-tajawal">
+        <Text className="text-center text-[#F52525] text-xl  mb-6 font-tajawal">
           معلومات الطلب
         </Text>
         <Divider />
@@ -884,7 +884,7 @@ const processOrderSubmission = () => {
           </View>
           <View>
             <Text className="text-center text-white text-6xl font-tajawal pt-7 mt-4">مبروك!</Text>
-            <Text className="text-white text-lg font-bold text-center p-4 font-tajawalregular">
+            <Text className="text-white text-lg  text-center p-4 font-tajawalregular">
               تم إنشاء الطلب بنجاح.
             </Text>
           </View>

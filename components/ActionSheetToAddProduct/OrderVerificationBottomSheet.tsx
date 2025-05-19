@@ -85,13 +85,14 @@ const OrderVerificationBottomSheet = forwardRef(({
           flex: 1, 
           backgroundColor: 'rgba(47, 117, 47, 0.48)',
           justifyContent: 'flex-end',
-          position: "absolute",
+          position:"absolute",
           top: 0,
           left: 0,
           right: 0,
           bottom: 0,
           width: width,
-          height: height
+          height: height,
+          zIndex:999999
         }}
       >
         <View 
@@ -132,10 +133,11 @@ const OrderVerificationBottomSheet = forwardRef(({
           <ScrollView 
             style={{ 
               paddingHorizontal: 16,
-              flex: 1
+              flex: 1,
             }}
             contentContainerStyle={{ 
-              paddingBottom: 20
+              paddingBottom: 20,
+             
             }}
             showsVerticalScrollIndicator={false}
           >
