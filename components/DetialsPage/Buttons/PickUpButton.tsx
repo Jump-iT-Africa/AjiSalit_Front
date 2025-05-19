@@ -17,9 +17,7 @@ export default function PickUpButton({orderData}) {
 
 
     const { width, height } = Dimensions.get('window');
-    const isSmallScreen = height < 700; // Define what constitutes a small screen
-    
-    // Calculate bottomsheet height based on screen size
+    const isSmallScreen = height < 700;
     const bottomSheetHeight = useMemo(() => {
         return isSmallScreen ? hp('80%') : hp('55%');
     }, [isSmallScreen]);
@@ -50,7 +48,6 @@ export default function PickUpButton({orderData}) {
                 dateData: { isPickUp: true }
             }));
 
-            
             
             dispatch(setCurrentOrder({
                 ...currentOrder,

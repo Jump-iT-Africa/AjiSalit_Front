@@ -210,7 +210,10 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
     if (!formData.price.trim()) {
       newErrors.price = 'المبلغ مطلوب ';
       valid = false;
-    } else {
+    } else if (!/\d/.test(formData.price)) {
+      newErrors.price = 'الرجاء إدخال مبلغ صالح';
+      valid = false;
+    }else {
       newErrors.price = '';
     }
     
@@ -456,8 +459,7 @@ const processOrderSubmission = () => {
   };
   
   const Step1Form = (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false} >
-    <KeyboardAvoidingView >
+    <View>
       <Animated.View
         style={{
           opacity: step1Animation,
@@ -475,7 +477,7 @@ const processOrderSubmission = () => {
         <Text className="text-center text-[#F52525] text-xl font-bold mb-6 font-tajawal">
           معلومات الطلب
         </Text>
-
+  
         <View>
           <View>
           <View className="mb-4 mt-6">
@@ -492,12 +494,12 @@ const processOrderSubmission = () => {
             />
             {errors.price ? <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[13px]">{errors.price}</Text> : null}
           </View> 
-
+  
           <View className="mb-0 mt-2">
             <Text className="text-right text-gray-700 mb-2 font-tajawal text-[12px]" style={{ color: Color.green }}>
               الحالة: <Text className="text-red-500">*</Text>
             </Text>
-
+  
             <PaymentStatus 
               onStatusChange={(status, advancedAmount) => {
                 console.log("PaymentStatus callback with:", status, advancedAmount);
@@ -509,14 +511,14 @@ const processOrderSubmission = () => {
               }} 
               currentPrice={formData.price}
             />
-
+  
             {errors.status ? (
               <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[13px]">
                 {errors.status}
               </Text>
             ) : null}
           </View>
-
+  
           <View className="mb-0 mt-8">
             <TouchableOpacity 
               onPress={() => setIsDatePickerEnabled(!isDatePickerEnabled)}
@@ -525,13 +527,13 @@ const processOrderSubmission = () => {
                <View className={`w-5 h-5 border rounded ${isDatePickerEnabled ? 'bg-[#2e752f] border-[#2e752f]' : 'bg-white border-[#2e752f]'} justify-center items-center ml-2`}>
                 {isDatePickerEnabled && <AntDesign name="check" size={14} color="white" />}
               </View>
-
+  
               <Text className="text-right text-gray-700 mr-2 font-tajawal text-[14px]" style={{ color: Color.green }}>
                 تاريخ التسليم
               </Text>
             </TouchableOpacity>
           </View>
-
+  
           <View className="mt-2 mb-6">
             <TouchableOpacity
               onPress={() => isDatePickerEnabled && setShowCalendar(true)}
@@ -545,7 +547,7 @@ const processOrderSubmission = () => {
                   : (isDatePickerEnabled ? formatDateForDisplay(selectedDate) : 'يرجى إدخال تاريخ التسليم')}
               </Text>
             </TouchableOpacity>
-
+  
             {Platform.OS === 'ios' ? (
               <Modal
                 transparent={true}
@@ -588,21 +590,20 @@ const processOrderSubmission = () => {
                 />
               )
             )}
-
+  
             {errors.RecieveDate ?
               <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[13px]">{errors.RecieveDate}</Text> :
               null
             }
           </View>
           </View>
-
+  
           <View className='mt-2'>
             <View className="mt-0 ">
               <CustomButton
                 title="التالي"
                 onPress={() => {
                   if (validateStep1()) {
-                    Keyboard.dismiss()
                     animateToNextStep();
                   }
                 }}
@@ -612,12 +613,11 @@ const processOrderSubmission = () => {
             </View>
           </View>
         </View> 
-
+  
       </Animated.View>
-    </KeyboardAvoidingView>
-    
-    </TouchableWithoutFeedback>
+    </View>
   );
+  
 
   const Step2Form = (
     <KeyboardAvoidingView>

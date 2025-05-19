@@ -51,7 +51,7 @@ export default function FinishedButton({orderData}) {
 
             dispatch(updateOrderDate({
                 orderId: orderId,
-                dateData: { isFinished: true }
+                dateData: { isFinished: true}
             }));
             
             dispatch(setCurrentOrder({
