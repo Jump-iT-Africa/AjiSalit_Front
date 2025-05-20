@@ -267,8 +267,9 @@ export default function interPassword() {
                 {index === lastVisibleIndex ? (
                   <Text style={{ 
                     color: 'white', 
-                    fontFamily: 'Tajawal', 
+                    fontWeight:"bold",
                     fontSize: Math.min(wp('4.5%'), hp('2.2%'))
+                    
                   }}>
                     {code[index]}
                   </Text>

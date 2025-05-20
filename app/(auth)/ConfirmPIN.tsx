@@ -276,8 +276,8 @@ export default function ConfirmPIN() {
                 {index === lastVisibleIndex ? (
                   <Text style={{ 
                     color: 'white', 
-                    fontFamily: 'Tajawal', 
-                    fontSize: Math.min(wp('5.5%'), hp('1.4%'))
+                    fontWeight:"bold",
+                    fontSize: Math.min(wp('5.5%'), hp('2%'))
 
 
                   }}>

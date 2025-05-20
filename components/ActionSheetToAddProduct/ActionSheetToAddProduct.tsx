@@ -99,6 +99,8 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
 
   const [uploadedImages, setUploadedImages] = useState([]);
 
+
+  console.log('this is array of uploaded Images' , uploadedImages);
   
   useEffect(() => {
     return () => {
@@ -108,17 +110,16 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
 
 
 
-
   const prepareImagesForUpload = (images) => {
   if (!images || images.length === 0) return [];
   
   return images.map((image, index) => {
-    // Make sure each image has the required properties for upload
+    
     return {
       uri: image.uri,
-      type: image.type || 'image/jpeg', // Default to JPEG if type is not specified
-      name: image.name || `image_${index}.jpg`, // Use provided name or generate one
-      size: image.size || '0kb' // Include size information if available
+      type: image.type || 'image/jpeg', 
+      name: image.name || `image_${index}.jpg`, 
+      size: image.size || '0kb' 
     };
   });
 };
@@ -139,11 +140,18 @@ const takePhoto = async () => {
 
     if (!result.canceled) {
       const uri = result.assets[0].uri;
+      console.log('this is uri', uri);
+      
       const fileExtension = uri.split('.').pop().toLowerCase();
+      console.log('this is fileExtenstion', fileExtension);
+      
       const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
+      console.log('this is mimeType', mimeType);
       
       const compressedSize = Math.round((result.assets[0].fileSize || 0) / 1024 * 0.5);
-      
+
+      console.log('size Of compressed Size');
+
       const newImage = {
         id: Date.now(), 
         uri: uri,
@@ -162,6 +170,7 @@ const takePhoto = async () => {
 
   const removeImage = (id) => {
     const newImages = uploadedImages.filter(img => img.id !== id);
+
     setUploadedImages(newImages);
   };
 
@@ -242,14 +251,14 @@ const takePhoto = async () => {
       newErrors.price = '';
     }
     
-    // Add validation for payment status
+    
     if (!formData.situation || formData.situation.trim() === '') {
       newErrors.status = 'الحالة مطلوبة';
       valid = false;
     } else {
       newErrors.status = '';
       
-      // Check if advanced amount is valid when تسبيق is selected
+      
       if (formData.situation === 'تسبيق') {
         if (!formData.advancedAmount || formData.advancedAmount.trim() === '') {
           newErrors.advancedAmount = 'مبلغ التسبيق مطلوب';
@@ -390,10 +399,10 @@ const processOrderSubmission = () => {
   pickupDateObj.setDate(pickupDateObj.getDate() + 2);
   const formattedPickupDate = formatDateToYYYYMMDD(pickupDateObj);
   
-  // Process the uploaded images to ensure they're properly formatted
+  
   const processedImages = prepareImagesForUpload(uploadedImages);
   
-  // Create the order data object with all necessary fields
+  
   const orderData = {
     price: parseFloat(formData.price),
     situation: formData.situation || "خالص",
