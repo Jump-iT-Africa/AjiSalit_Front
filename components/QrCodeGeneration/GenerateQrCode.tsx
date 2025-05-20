@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, Modal, TouchableOpacity, StyleSheet, Image, Dimensions } from 'react-native';
+import { View, Text, Modal, TouchableOpacity, StyleSheet, Image, Dimensions, Platform } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Colors from '@/constants/Colors';
@@ -9,13 +9,11 @@ import WhiteImage from "@/assets/images/ajisalit_white.png";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 const UniqueIdModal = ({ visible, onClose, uniqueId }) => {
-  const { height } = Dimensions.get('window');
+  const { width, height } = Dimensions.get('window');
   const isSmallScreen = height < 700; 
   
-  const bottomSheetHeight = useMemo(() => {
-    return isSmallScreen ? hp('90%') : hp('75%');
-  }, [isSmallScreen]);
-
+  const bottomSheetHeight = isSmallScreen ? '90%' : '80%';
+  
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const copyToClipboard = async (uniqueId) => {
@@ -23,7 +21,7 @@ const UniqueIdModal = ({ visible, onClose, uniqueId }) => {
   };
 
   const closeModal = () => {
-    setIsModalVisible(false);
+    onClose();
   };
 
   const handlePressed = () => {
@@ -36,26 +34,46 @@ const UniqueIdModal = ({ visible, onClose, uniqueId }) => {
       transparent={true}
       animationType="slide"
       onRequestClose={onClose}
+      statusBarTranslucent={true}
     >
-      <TouchableOpacity 
-        style={{ flex: 1, backgroundColor: 'rgba(47, 117, 47, 0.80)' }}
-        onPress={closeModal}
+      <View 
+        style={{ 
+          flex: 1, 
+          backgroundColor: 'rgba(47, 117, 47, 0.48)',
+          justifyContent: 'flex-end',
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: width,
+          height: height,
+          zIndex: 999999
+        }}
       >
-        <TouchableOpacity 
-          activeOpacity={1}
+        <View 
           style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
             backgroundColor: '#F5F6F7',
-            borderTopLeftRadius: wp('5%'),
-            borderTopRightRadius: wp('5%'),
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
             height: bottomSheetHeight,
-            padding: wp('4%'),
+            width: '100%',
+            marginBottom: Platform.OS === "android" ? "-30" : "0"
           }}
-          onPress={(e) => e.stopPropagation()}
         >
+          {/* Top handle */}
+          <View 
+            style={{ 
+              width: 60, 
+              height: 5, 
+              backgroundColor: Colors.green, 
+              borderRadius: 5, 
+              alignSelf: 'center',
+              marginTop: 10,
+              marginBottom: Platform.OS === "android" ? "-100" : "0"
+            }} 
+          />
+          
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
               <View className='flex-row items-center justify-end w-full'>
@@ -116,8 +134,8 @@ const UniqueIdModal = ({ visible, onClose, uniqueId }) => {
               </View>
             </View>
           </View>
-        </TouchableOpacity>
-      </TouchableOpacity>
+        </View>
+      </View>
     </Modal>
   );
 };
@@ -127,6 +145,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     backgroundColor: '#F5F6F7',
+    paddingHorizontal: 16,
   },
   modalContent: {
     width: '95%',

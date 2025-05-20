@@ -10,7 +10,7 @@ import {
   Image,
   ActivityIndicator,
   Dimensions,
-  Platform
+  Platform,
 } from 'react-native';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -101,7 +101,8 @@ const OrderVerificationBottomSheet = forwardRef(({
             borderTopLeftRadius: 20,
             borderTopRightRadius: 20,
             height: bottomSheetHeight,
-            width: '100%'
+            width: '100%',
+            marginBottom:Platform.OS  === "android" ? "-30" : "0"
           }}
         >
           {/* Top handle */}
@@ -265,8 +266,8 @@ const OrderVerificationBottomSheet = forwardRef(({
                 <Image 
                   source={Noimages}
                   style={{
-                    width: isSmallScreen ? wp('30%') : wp('30%'),
-                    height: isSmallScreen ? wp('30%') : wp('30%'),
+                    width: isSmallScreen ? wp('30%') : wp('452%'),
+                    height: isSmallScreen ? wp('30%') : wp('50%'),
                   }}
                   resizeMode='contain'
                 />
@@ -287,7 +288,8 @@ const OrderVerificationBottomSheet = forwardRef(({
               paddingHorizontal: 16,
               paddingVertical: 16,
               borderTopWidth: 1,
-              borderTopColor: '#E5E5E5'
+              borderTopColor: '#E5E5E5',
+              marginBottom: platform === 'android' ? 0 : 20
             }}
           >
             <TouchableOpacity 
@@ -302,8 +304,10 @@ const OrderVerificationBottomSheet = forwardRef(({
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'center',
-                width: '48%'
+                width: '48%',
+                minHeight:45
               }}
+              activeOpacity={0.7}
               disabled={loading}
             >
               <AntDesign name="edit" size={20} color="white" style={{ marginRight: 8 }} />
@@ -312,6 +316,7 @@ const OrderVerificationBottomSheet = forwardRef(({
 
             <TouchableOpacity 
               onPress={() => {
+                console.log('pressed ')
                 closeModal();
                 if (onConfirm) onConfirm();
               }}
@@ -322,8 +327,11 @@ const OrderVerificationBottomSheet = forwardRef(({
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'center',
-                width: '48%'
+                width: '48%',
+                minHeight:45
+
               }}
+              activeOpacity={0.7}
               disabled={loading}
             >
               {loading ? (

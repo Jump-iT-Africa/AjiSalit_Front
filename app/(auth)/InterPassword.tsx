@@ -153,7 +153,7 @@ export default function interPassword() {
                     style={{
                       width: keySize,
                       height: keySize,
-                      borderRadius: keySize / 2,
+                      borderRadius: keySize / 3,
                       justifyContent: 'center',
                       alignItems: 'center'
                     }}

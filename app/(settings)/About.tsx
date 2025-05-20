@@ -1,4 +1,4 @@
-import { View, Text, ActivityIndicator, ScrollView, I18nManager } from 'react-native';
+import { View, Text, ActivityIndicator, ScrollView, I18nManager, Platform } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchSiteInfo, resetSiteInfo } from '@/store/slices/siteInfoReducer.js';
@@ -48,6 +48,8 @@ const About = () => {
     if (!str) return false;
     return /<[a-z][\s\S]*>/i.test(str);
   };
+
+
   
   const wrapHtml = (htmlContent) => {
     return `
@@ -88,8 +90,11 @@ const About = () => {
   console.log('Content:', content);
   console.log('Is HTML?', content?.content ? isHTML(content.content) : 'No content yet');
   
+
+  const platform = Platform.OS === "ios" ? "pt-12" : "pt-0"
+
   return (
-    <View style={{ flex: 1, backgroundColor: 'white' }} className='mt-10'>
+    <View style={{ flex: 1, backgroundColor: 'white' }} className={`${platform}`}>
       <View className='w-full'>
         <HeaderWithBack
           onPress={() => router.back()}

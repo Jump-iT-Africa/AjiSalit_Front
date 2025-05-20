@@ -14,6 +14,11 @@ import BottomSheetComponent from "@/components/ui/BottomSheetComponent";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export default function AccountnType() {
+
+    const platform = Platform.OS === 'android';
+
+
+
     const router = useRouter();
     const [tooltipVisible, setTooltipVisible] = useState(false);
     const bottomSheetRef = useRef(null);
@@ -21,11 +26,9 @@ export default function AccountnType() {
     const dispatch = useDispatch();
     const [isExpanded, setIsExpanded] = useState(false);
     
-    // Get screen dimensions
     const { width, height } = Dimensions.get('window');
-    const isSmallScreen = height < 700; // Define what constitutes a small screen
+    const isSmallScreen = height < 700;
     
-    // Calculate bottomsheet height based on screen size
     const bottomSheetHeight = useMemo(() => {
         return isSmallScreen ? hp('80%') : hp('62%');
     }, [isSmallScreen]);
@@ -82,7 +85,7 @@ export default function AccountnType() {
                     flex: 1,
                     justifyContent: 'flex-start',
                     alignItems: 'center',
-                    marginTop: isSmallScreen ? hp('15%') : hp('10%')
+                    marginTop: isSmallScreen ? hp('8%') : hp('10%')
                 }}>
                     <Image
                         source={Whitelogo}
@@ -90,7 +93,7 @@ export default function AccountnType() {
                         style={{
                             width: wp('50%'),
                             height: isSmallScreen ? hp('20%') : hp('20%'),
-                            marginBottom: isSmallScreen ? hp('5%') : hp('6%')
+                            marginBottom: isSmallScreen ? hp('10%') : hp('6%')
                         }}
                     />
                     <Text className="text-white font-tajawal text-center mb-2 text-xl px-10">
@@ -103,7 +106,7 @@ export default function AccountnType() {
                 
                 <View style={{ 
                     paddingHorizontal: wp('10%'), 
-                    marginBottom: isSmallScreen ? hp('2%') : hp('4%')
+                    marginBottom: isSmallScreen ? hp('10%') : hp('7%'),
                 }}>
                     <CustomButton
                         onPress={() => handleAccountTypeSelect('شركة')}

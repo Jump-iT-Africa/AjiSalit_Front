@@ -88,7 +88,6 @@ export default function CreatePIN() {
       ['', '0', 'backspace']
     ];
 
-    // Calculate dynamic key size based on screen width
     const keySize = Math.min(wp('15%'), hp('8%'));
     const fontSize = Math.min(wp('5%'), hp('2.5%'));
     const iconSize = Math.min(wp('6%'), hp('3%'));

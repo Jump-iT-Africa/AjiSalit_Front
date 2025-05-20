@@ -291,6 +291,7 @@ const Register: React.FC = () => {
         </Animated.View>
           <View className="flex-1">
             <AppGradient colors={["rgba(0,0,0,0.4)", "rgba(0,0,0,0.0)"]}>
+            <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
               <SafeAreaView className="flex-1">
                 <HeaderWithBack 
                   tooltipVisible={tooltipVisible} 
@@ -357,6 +358,7 @@ const Register: React.FC = () => {
                   )}
                 </View>
               </SafeAreaView>
+              </KeyboardAvoidingView>
             </AppGradient>
           </View>
           <StatusBar style="light" />

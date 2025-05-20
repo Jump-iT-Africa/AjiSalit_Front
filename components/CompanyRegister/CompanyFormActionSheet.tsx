@@ -35,10 +35,13 @@ export default function CombinedCompanyForm({ onInputFocus, onLoadingModalChange
 
   const { width, height } = Dimensions.get('window');
   const isSmallScreen = height < 700; 
-  
+  const isAndoird = Platform.OS === 'android';
+
   const bottomSheetHeight = useMemo(() => {
       return isSmallScreen ? hp('70%') : hp('53%');
   }, [isSmallScreen]);
+
+
 
 
   const dispatch = useDispatch();
@@ -417,7 +420,6 @@ export default function CombinedCompanyForm({ onInputFocus, onLoadingModalChange
 
 
 
-  // Loading Modal
   const LoadingModal = (
     <Modal
       visible={isLoadingModalVisible}
@@ -511,7 +513,7 @@ export default function CombinedCompanyForm({ onInputFocus, onLoadingModalChange
           <View className="flex-1 items-center justify-center h-full py-8">
             <Image 
               source={require('@/assets/images/happyLeon.png')}
-              style={{ width: 240, height: 240 }}
+              className={`${isAndoird ? "w-[200] h-[200]" : "w-[240] h-[240]"}`}
               resizeMode="contain"
             />
             <Text className="text-center text-black text-2xl font-tajawal " style={styles.FontText}>

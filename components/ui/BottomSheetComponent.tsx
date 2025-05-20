@@ -29,7 +29,7 @@ const BottomSheetComponent = forwardRef<BottomSheetComponentRef, BottomSheetComp
     closeOnTouchBackdrop = true, 
     closeOnPressBack = true, 
     gestureEnabled = true, 
-    customHeight,
+    customHeight="90%",
     scrollable = true
   }, ref) => {
 
@@ -39,8 +39,12 @@ const BottomSheetComponent = forwardRef<BottomSheetComponentRef, BottomSheetComp
     const isSmallScreen = height < 700; 
     
     const bottomSheetHeight = useMemo(() => {
-        return isSmallScreen ? hp('85%') : hp('73%');
+        return isSmallScreen ? hp('85%') : hp('80%');
     }, [isSmallScreen]);
+
+
+  const isAndroidAndSmall = Platform.OS === "android"  &&  isSmallScreen;
+
 
 
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
@@ -48,15 +52,8 @@ const BottomSheetComponent = forwardRef<BottomSheetComponentRef, BottomSheetComp
     
     
     const snapPoints = useMemo(() => {
-      let height;
+      let height = isAndroidAndSmall  ? "90" : "80";
 
-      if (!customHeight) {
-        height =bottomSheetHeight;
-      } else {
-        height = bottomSheetHeight;
-      }
-
-      
       if (typeof height === 'string' && height.includes('%')) {
         const percentage = parseInt(height.replace('%', ''), 10);
         return [`${percentage}%`];
@@ -137,6 +134,7 @@ const BottomSheetComponent = forwardRef<BottomSheetComponentRef, BottomSheetComp
             enableHandlePanningGesture={gestureEnabled}
             enableOverDrag={false}
             enableContentPanningGesture={gestureEnabled}
+            
           >
             <ContentComponent
               style={[styles.contentContainer, contentStyle]}

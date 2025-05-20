@@ -9,7 +9,8 @@ import {
   Modal,
   ScrollView,
   Image,
-  Dimensions
+  Dimensions,
+  Platform
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { FlashList } from "@shopify/flash-list";
@@ -100,7 +101,7 @@ const OrderDetailsModal = ({ isVisible, onClose, orderData }) => {
             marginBottom: 10
           }} />
 
-          <Text className="text-center text-[#F52525] text-[20px] font-bold mb-0 font-tajawal">
+          <Text className="text-center text-[#F52525] text-[20px] font-thin mb-0 font-tajawal">
             تفاصيل الطلب
           </Text>
 
@@ -125,7 +126,7 @@ const OrderDetailsModal = ({ isVisible, onClose, orderData }) => {
                   </Text>
                   <AntDesign name="user" size={20} color="#F5B225" />
                 </View>
-                <Text className="text-right text-[11px] font-bold mb-4 font-tajawal text-[#2F752F]">
+                <Text className="text-right text-[11px] font-thin mb-4 font-tajawal text-[#2F752F]">
                   {orderData?.clientId.Fname || ''}
                 </Text>
               </View>
@@ -137,7 +138,7 @@ const OrderDetailsModal = ({ isVisible, onClose, orderData }) => {
                   </Text>
                   <FontAwesome name="money" size={20} color="#F5B225" />
                 </View>
-                <Text className="text-right text-[11px] font-bold mb-4 font-tajawal text-[#2F752F]">
+                <Text className="text-right text-[11px] font-thin mb-4 font-tajawal text-[#2F752F]">
                   {orderData?.price || '0'} درهم
                 </Text>
               </View>
@@ -149,7 +150,7 @@ const OrderDetailsModal = ({ isVisible, onClose, orderData }) => {
                   </Text>
                   <AntDesign name="calendar" size={20} color="#F5B225" />
                 </View>
-                <Text className="text-right text-[11px] font-bold mb-4 font-tajawal text-[#2F752F]">
+                <Text className="text-right text-[11px] font-thin mb-4 font-tajawal text-[#2F752F]">
                   {formatDate(orderData?.rawDeliveryDate)}  
                 </Text>
               </View>
@@ -222,12 +223,12 @@ export default function OrderHistory() {
           onPress={() =>  showOrderDetails(item)
           }
         >
-          <View className="flex-row-reverse items-center justify-center">
+          <View className="flex-row-reverse items-center justify-center ">
             <View className="flex-col items-end justify-center pr-4">
-              <Text className={`text-base font-bold text-[#E23744] mb-2`}>{item.orderCode}</Text>
+              <Text className={`text-base font-bold text-[#ff3737] mb-2`}>{item.orderCode}</Text>
               <View className={`flex-1 items-end px-0 flex-row-reverse text-sm`}>
                 <Text className='text-sm text-[#000] font-tajawalregular pt-2'>صاحب(ة) الطلب: </Text>
-                <Text className={`text-base text-[#295f2b] font-semibold pb-[0.7]`}> {item?.clientId.Fname} </Text>
+                <Text className={`text-base text-[#295f2b]  pb-[0.7] font-tajawalregular`}> {item?.clientId.Fname} </Text>
               </View>
             </View>
           </View>
@@ -253,11 +254,21 @@ export default function OrderHistory() {
   // }
 
 
+    const platform = Platform.OS === "android"  ? "0px" : "px-4";
+    const { width, height } = Dimensions.get('window');
+    const isBigScreen = height > 700; 
 
+
+    
+
+    const isAndroidAndBig = isBigScreen && Platform.OS === "android"
+
+
+  const platforms = Platform.OS === "android" ? "px-0" : "px-4"
   return (
-    <SafeAreaView className={`flex-1 bg-gray-100 p-9 `}>
-      <View className={`px-4 ${filteredOrders.length === 0 ?  "mt-0": "mb-12"} `} >
-        <View>
+    <SafeAreaView className={`flex-1 bg-gray-100 py-0 ${platforms}`}>
+      <View className={`px-0 ${filteredOrders.length === 0 ?  "mt-0": "mb-12"} `} >
+        <View className={`${platform} px-4`}>
           <ProfileHeader />
         </View>
         {/* <View className="mt-2 mb-4">
@@ -273,7 +284,7 @@ export default function OrderHistory() {
       </View>
     {filteredOrders.length === 0 ?
       (
-        <View className={`flex-1  mt-[40%] items-center `}>
+        <View className={`flex-1   items-center ${isAndroidAndBig ? "mt-[55%]" : "mt-[40%]"} `}>
           <NoOrdersExistsHistory />
         </View>
       ):(

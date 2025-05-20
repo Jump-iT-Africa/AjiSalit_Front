@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useMemo } from "react";
-import { View, Text, TouchableOpacity, Modal, Image, Dimensions } from "react-native";
+import { View, Text, TouchableOpacity, Modal, Image, Dimensions, Platform } from "react-native";
 import BottomSheetComponent from "../../ui/BottomSheetComponent";
 import CustomButton from "../../ui/CustomButton";
 import Colors from "@/constants/Colors";
@@ -14,12 +14,10 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-nat
 
 
 export default function PickUpButton({orderData}) {
-
-
     const { width, height } = Dimensions.get('window');
     const isSmallScreen = height < 700;
     const bottomSheetHeight = useMemo(() => {
-        return isSmallScreen ? hp('80%') : hp('55%');
+        return isSmallScreen ? hp('80%') : hp('70%');
     }, [isSmallScreen]);
     
     const actionSheetRef = useRef(null);
@@ -72,7 +70,7 @@ export default function PickUpButton({orderData}) {
                 onPress={handleSubmit}
                 disabled={!isEnabled}
             >
-                <Text className="text-white text-lg font-bold ml-2 font-tajawalregular pt-1 pr-2">تم الاستلام</Text>
+                <Text className="text-white text-lg  ml-2 font-tajawalregular pt-0 pr-2">تم الاستلام</Text>
                 <AntDesign name="checkcircle" size={24} color="white" />
             </TouchableOpacity>
             
@@ -81,27 +79,48 @@ export default function PickUpButton({orderData}) {
                 transparent={true}
                 animationType="slide"
                 onRequestClose={closeBottomSheet}
+                statusBarTranslucent={true}
             >
                 <TouchableOpacity 
-                style={{ flex: 1, backgroundColor: 'rgba(47, 117, 47, 0.48)' }}
-                activeOpacity={1}
-                onPress={closeBottomSheet}
+                    style={{ 
+                        flex: 1, 
+                        backgroundColor: 'rgba(47, 117, 47, 0.48)',
+                        justifyContent: 'flex-end',
+                        width: width,
+                        height: height,
+                    }}
+                    activeOpacity={1}
+                    onPress={closeBottomSheet}
                 >
                     <TouchableOpacity 
                         activeOpacity={1}
                         style={{
-                        position: 'absolute',
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        backgroundColor: 'white',
-                        borderTopLeftRadius: 20,
-                        borderTopRightRadius: 20,
-                        height: bottomSheetHeight,
-                        padding: 16
+                            position: 'absolute',
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            backgroundColor: 'white',
+                            borderTopLeftRadius: 20,
+                            borderTopRightRadius: 20,
+                            height: bottomSheetHeight,
+                            marginBottom: Platform.OS === "android" ? "-30" : "0",
                         }}
+                        onPress={(e) => e.stopPropagation()}
                     >
-                        <View className="flex-1 items-center justify-left h-full">
+                        {/* Top handle */}
+                        <View 
+                            style={{ 
+                                width: 60, 
+                                height: 5, 
+                                backgroundColor: Colors.green, 
+                                borderRadius: 5, 
+                                alignSelf: 'center',
+                                marginTop: 10,
+                                marginBottom: 10
+                            }} 
+                        />
+
+                        <View className="flex-1 items-center justify-left h-full px-4">
                             <View >
                                 <Image
                                     source={successLeon}

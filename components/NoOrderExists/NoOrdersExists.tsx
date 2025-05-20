@@ -13,7 +13,7 @@ export default function NoOrdersExists()
             display:'flex',
             alignItems: 'center', 
             justifyContent: 'center', 
-            marginTop: isSmallScreen ? hp('-2%') : hp('5%')
+            marginTop: isSmallScreen ? hp('-5%') : hp('5%')
         }}>
             <View style={{ 
                 width: wp('100%'), 

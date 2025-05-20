@@ -31,12 +31,12 @@ const EditHistoryModal = ({ visible, onClose, orderCode, reason,newDate }) => {
           {/* Order Code */}
           <View className="p-4 border-b border-gray-200">
             <Text className="text-right font-tajawalregular text-gray-600 text-sm">رقم الطلب</Text>
-            <Text className="text-right font-tajawal font-bold text-lg">#{orderCode}</Text>
+            <Text className="text-right font-tajawal font-thin text-lg">#{orderCode}</Text>
           </View>
           <View className="p-4">
             <View className="border-r-4 border-amber-500 pr-4 mb-4 rounded">
               <View className="flex-row-reverse items-center justify-between">
-                <Text className="text-right font-tajawal font-bold">خياط</Text>
+                <Text className="text-right font-tajawal font-thin">خياط</Text>
                 <View className="bg-amber-500 px-3 py-0 rounded-full">
                   <Text className="text-amber-100 font-tajawal text-xs pt-2">{newDate}</Text>
                 </View>
@@ -203,7 +203,7 @@ const ClientOrderCards = ({ item, orderId }) => {
         <View className='flex-row-reverse items-center justify-between w-full'>
           <View className='flex-row items-center justify-center space-x-2 '>
             <View className="flex items-end ">
-              <Text className={`text-lg font-bold text-[${orderTypeColor}] font-tajawal text-[#2e752f]`}>{orderType}</Text>
+              <Text className={`text-lg font-thin text-[${orderTypeColor}] font-tajawal text-[#2e752f]`}>{orderType}</Text>
               <Text className="text-black text-sm ">#{orderCode}</Text>
             </View>
               {icons.filter(icon => icon.name === item.customerField).map((icon) => (
@@ -213,7 +213,7 @@ const ClientOrderCards = ({ item, orderId }) => {
               ))}
           </View>
           <TouchableOpacity style={{ backgroundColor: currentColor, paddingHorizontal: 20, paddingVertical: 8, borderRadius: 50 }}>
-            <Text className="text-white font-bold text-center font-tajawalregular text-xs pt-1">{orderStatus}</Text>
+            <Text className="text-white font-thin text-center font-tajawalregular text-xs pt-1">{orderStatus}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -222,21 +222,21 @@ const ClientOrderCards = ({ item, orderId }) => {
         <View className="flex-1">
           <View className="bg-gray-100 rounded-lg mx-1 p-2 items-center border border-gray-300 border-1">
             <Text className=" text-gray-600 mb-1 font-tajawalregular ">الباقي</Text>
-            <Text className="text-base font-bold font-tajawal text-[13px] text-[#2F752F]">{remainingAmount} درهم</Text>
+            <Text className="text-base font-thin font-tajawal text-[13px] text-[#2F752F]">{remainingAmount} درهم</Text>
           </View>
         </View>
 
         <View className="flex-1">
           <View className="bg-[#2F752F] rounded-lg mx-1 p-2 items-center border border-gray-300 border-1">
             <Text className=" text-[#fff] mb-1 font-tajawalregular font-[12px]">التسبيق</Text>
-            <Text className="text-base font-bold font-tajawal text-[13px] text-[#FAD513]">{paidAmount} درهم</Text>
+            <Text className="text-base font-thin font-tajawal text-[13px] text-[#FAD513]">{paidAmount} درهم</Text>
           </View>
         </View>
 
         <View className="flex-1">
           <View className="bg-gray-100 rounded-lg mx-1 p-2 items-center border border-gray-300 border-1">
             <Text className=" text-gray-600 mb-1 font-tajawalregular text-[13px]">إجمالي</Text>
-            <Text className="text-base font-bold font-tajawal text-[13px] text-[#2F752F]">{totalAmount} درهم</Text>
+            <Text className="text-base font-thin font-tajawal text-[13px] text-[#2F752F]">{totalAmount} درهم</Text>
           </View>
         </View>
       </View>

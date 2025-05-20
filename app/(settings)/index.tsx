@@ -117,7 +117,7 @@ const Settings = () => {
           <View className="flex-1 justify-center items-center" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
             <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
               <View className="bg-white rounded-lg p-6 w-[85%] items-center">
-                <Text className="text-red-500 text-2xl font-bold text-center mb-6 font-tajawal pt-2">رقم الإستفسار</Text>
+                <Text className="text-red-500 text-2xl font-thin text-center mb-6 font-tajawal pt-2">رقم الإستفسار</Text>
                 <TouchableOpacity className="flex-row items-center mb-6"  onPress={() =>
                     Linking.openURL(
                       "https://wa.me/212652235487?text=" + encodeURIComponent("allooo?")
@@ -185,7 +185,7 @@ const Settings = () => {
             marginBottom: 10
           }} />
 
-          <Text className="text-center text-[#F52525] text-[20px] font-bold mb-4 font-tajawal">
+          <Text className="text-center text-[#F52525] text-[20px] font-thin mb-4 font-tajawal">
             كولشي هو هذاك ؟
           </Text>
         </TouchableOpacity>

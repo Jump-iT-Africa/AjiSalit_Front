@@ -42,6 +42,9 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
       return isSmallScreen ? hp('80%') : hp('62%');
   }, [isSmallScreen]);
 
+
+  const isAndroidAndSmall = Platform.OS === "android" &&  isSmallScreen;
+
   
   const actionSheetRef = useRef(null);
   const dispatch = useDispatch();
@@ -624,7 +627,7 @@ const processOrderSubmission = () => {
           </View>
           </View>
   
-          <View className='mt-2'>
+          <View className='mt-2 mb-40'>
             <View className="mt-0 ">
               <CustomButton
                 title="التالي"
@@ -907,12 +910,12 @@ const processOrderSubmission = () => {
 
   return (
     <>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={true}>
         <BottomSheetComponent 
           ref={actionSheetRef} 
-          containerStyle={{ backgroundColor: 'white' }} 
+          containerStyle={{ backgroundColor: 'white', }} 
           onClose={handleClose}
-          customHeight="80%" 
+          customHeight="50%"
         >
           {formSubmitted && success ? (
             SuccessView
@@ -931,16 +934,16 @@ const processOrderSubmission = () => {
         </BottomSheetComponent>
       </TouchableWithoutFeedback>
       
+      <View>
       <OrderVerificationBottomSheet
-        ref={verificationSheetRef}
-        formData={formData}
-        uploadedImages={uploadedImages}
-        loading={loading}
-        onConfirm={processOrderSubmission}
-        onEdit={() => {
-          
-        }}
-      />
+          ref={verificationSheetRef}
+          formData={formData}
+          uploadedImages={uploadedImages}
+          loading={loading}
+          onConfirm={processOrderSubmission}
+        />
+      </View>
+    
     </>
   );
 });

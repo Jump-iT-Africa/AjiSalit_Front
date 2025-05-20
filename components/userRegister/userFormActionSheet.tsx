@@ -28,11 +28,19 @@ import regionsAndCitiesData from "@/constants/Cities/Cities.json";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 export default function UserFormActionSheet() {
+  
+  
   const { width, height } = Dimensions.get('window');
   const isSmallScreen = height < 700; 
+  const isAndoird = Platform.OS === 'android';
+
   const bottomSheetHeight = useMemo(() => {
-    return isSmallScreen ? hp('70%') : hp('53%');
-}, [isSmallScreen]);
+      return isSmallScreen ? hp('70%') : hp('53%');
+  }, [isSmallScreen]);
+
+
+
+
   const dispatch = useDispatch();
   const userData = useSelector(state => state.user);
   const isLoading = useSelector(selectLoading);
@@ -217,6 +225,7 @@ export default function UserFormActionSheet() {
       transparent={true}
       animationType="slide"
       onRequestClose={() => setIsSuccessModalVisible(false)}
+
     >
       <TouchableOpacity 
         style={{ flex: 1, backgroundColor: 'rgba(47, 117, 47, 0.48)' }}
@@ -248,10 +257,10 @@ export default function UserFormActionSheet() {
           <View className="flex-1 items-center justify-center h-full py-8">
             <Image 
               source={require('@/assets/images/happyLeon.png')}
-              style={{ width: 240, height: 240 }}
+              className={`${isAndoird ? "w-[200] h-[200]" : "w-[240] h-[240]"}`}
               resizeMode="contain"
             />
-            <Text className="text-center text-[#2e752f] text-2xl font-tajawal font-bold" style={styles.FontText}>
+            <Text className="text-center text-black text-2xl font-tajawal " style={styles.FontText}>
               مبروك!
             </Text>
             <Text className="text-gray-700 text-base text-center p-2 font-tajawalregular">
@@ -264,7 +273,7 @@ export default function UserFormActionSheet() {
                 }}
                 title="انتقل للصفحة الرئيسية"
                 textStyles="text-sm font-tajawal px-2 py-0 text-white"
-                containerStyles="w-[90%] m-auto bg-[#F52525] rounded-full p-0 pt-2"
+                containerStyles="w-[90%] m-auto bg-[#F52525] rounded-full  pt-0"
                 disabled={false}
               />
             </View>
@@ -284,7 +293,7 @@ export default function UserFormActionSheet() {
           {LoadingModal}
           {SuccessModal}
 
-          <Text className="text-center text-[#F52525] text-lg font-bold mb-6 font-tajawal">
+          <Text className="text-center text-[#F52525] text-lg font-thin mb-6 font-tajawal">
             أدخل معلوماتك الشخصية
           </Text>
           <Divider />

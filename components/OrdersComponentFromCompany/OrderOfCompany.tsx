@@ -11,7 +11,8 @@ import {
   Pressable,
   Modal,
   StyleSheet,
-  Dimensions
+  Dimensions,
+  Platform
 } from 'react-native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import NoOrdersExists from '../NoOrderExists/NoOrdersExists';
@@ -182,7 +183,6 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
 
     const valueTextStyle = {
       ...textBaseStyle,
-      fontWeight: 'bold',
       color: '#295f2b'
     };
 
@@ -223,7 +223,7 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
                 <Text style={labelTextStyle}>الحالة:</Text>
                 <View style={[statusStyle, { backgroundColor: item.type === 'paid' ? '#10b981' : item.type === 'unpaid' ? '#ef4444' : item.type === 'installment' ? '#f97316' : '#6b7280' }]}>
                   {item.value !== null && (
-                    <Text style={[statusTextStyle, { fontWeight: 'bold' }]}>
+                    <Text style={[statusTextStyle, ]}>
                       {item.advancedAmount} {item.currency} 
                     </Text>
                   )}
@@ -325,12 +325,15 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
     );
   }
 
+
+
   return (
     <SafeAreaView style={{ 
       flex: 1, 
       backgroundColor: '#f3f4f6', 
-      padding: wp('4%'),
+      padding: wp('0%'),
       paddingBottom: hp('5%')
+      
     }}>
       <FlashList
         data={filteredOrders || []} 

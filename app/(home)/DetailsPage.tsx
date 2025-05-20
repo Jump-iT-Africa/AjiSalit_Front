@@ -218,16 +218,28 @@ export default function DetailsPage() {
     );
   }
 
+  const platform = Platform.OS === 'android'? "0" : "mt-10"
+  
+
   return (
     <>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View className={containerClassName}>
+        {/* <View className={containerClassName}>
           <TouchableOpacity onPress={() => router.replace('(home)')}>
-            <View className="bg-[#959393b3] rounded-full w-8 h-8 flex justify-center items-center">
+            <View className="bg-[#959393b3] rounded-full w-8 h-8 flex justify-center items-center x-5">
               <Feather name="chevron-left" size={22} color="white" />
             </View>
           </TouchableOpacity>
          
+        </View> */}
+
+        <View className={`${platform}`}> 
+          <HeaderWithBack
+              onPress={() => router.back()}
+              tooltipVisible={tooltipVisible}
+              setTooltipVisible={setTooltipVisible}
+              content="فهاد الصفحة غدي تختار واش نتا شركة ولا شخص عادي"
+          />
         </View>
 
         {!orderData.images || orderData.images.length === 0 ? (
@@ -269,7 +281,7 @@ export default function DetailsPage() {
                 className={` w-[48%] h-14 rounded-full flex-row justify-center items-center bg-[#F52525]`}
                 onPress={handleShare}
               >
-                <Text className="text-white text-lg font-bold ml-2 font-tajawalregular pt-1 pr-2">مشاركة</Text>
+                <Text className="text-white text-lg  ml-2 font-tajawalregular pt-1 pr-2">مشاركة</Text>
                 <Feather name="share-2" size={24} color="white" />
               </TouchableOpacity>
               <ClientPikUpButton orderData={orderData} />
