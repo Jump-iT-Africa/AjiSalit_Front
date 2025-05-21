@@ -28,9 +28,9 @@ export default function DetailsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [orderData, setOrderData] = useState(null);
   const router = useRouter();
-  
   const currentOrder = useSelector(selectCurrentOrder);
   const userOrders = useSelector(selectUserOrders);
+  const hasSetRefreshFlag = useRef(false);
 
   console.log('order to be fetched', orderData);
   
@@ -61,6 +61,7 @@ export default function DetailsPage() {
   
 
   const params = useLocalSearchParams();
+  const shouldRefreshOnReturn = params.shouldRefreshOnReturn === 'true';
   console.log('All params:', params);
 
 
@@ -177,7 +178,18 @@ export default function DetailsPage() {
     }
   };
 
-
+  const handleGoBack = async () => {
+    if (shouldRefreshOnReturn && !hasSetRefreshFlag.current) {
+      try {
+        await AsyncStorage.setItem('REFRESH_ORDERS_ON_RETURN', 'true');
+        console.log("Set refresh flag on back navigation");
+        hasSetRefreshFlag.current = true;
+      } catch (error) {
+        console.log("Error setting refresh flag:", error);
+      }
+    }
+    router.back();
+  };
  
 
   const [tooltipVisible, setTooltipVisible] = useState(false);
@@ -235,7 +247,7 @@ export default function DetailsPage() {
 
         <View className={`${platform}`}> 
           <HeaderWithBack
-              onPress={() => router.back()}
+              onPress={handleGoBack}
               tooltipVisible={tooltipVisible}
               setTooltipVisible={setTooltipVisible}
               content="فهاد الصفحة غدي تختار واش نتا شركة ولا شخص عادي"

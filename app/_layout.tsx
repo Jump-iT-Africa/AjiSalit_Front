@@ -16,6 +16,7 @@ import OrderResetManager from "./OrderResetManager.js"
 import DeliveryReminderService from "@/components/Notifications/NotificationReminder";
 import BackgroundNotificationService from "@/services/BackgroundNotificationService.js"
 import GlobalStyle from "@/constants/GlobalStyle"
+import { NavigationProvider } from "@/context/NavigationContext";
 
 
 SplashScreen.preventAutoHideAsync()
@@ -99,7 +100,7 @@ export default function RootLayout() {
         <AuthCheck />
         <HandleNotification />
         <NavigationHandler firstLaunch={false} />
-
+        <NavigationProvider>
           <Stack>
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -107,7 +108,7 @@ export default function RootLayout() {
             <Stack.Screen name="(settings)" options={{ headerShown: false }} />
             <Stack.Screen name="(profile)" options={{ headerShown: false }} />
           </Stack>
-
+        </NavigationProvider>
       </Provider>
     </NotificationProvider>
   );

@@ -12,6 +12,7 @@ import {
   selectCurrentOrder
 } from '@/store/slices/OrdersManagment';
 import RestrictedAccessModal from "@/components/AccessNotAllowed/RestrictedAccessModal";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 export default function Scanner() {
@@ -128,13 +129,23 @@ export default function Scanner() {
         if (order) {
           isNavigatingRef.current = true;
           
+
+
+          try {
+            await AsyncStorage.setItem('REFRESH_ORDERS_ON_RETURN', 'true');
+          } catch (storageError) {
+            console.log("Error setting refresh flag:", storageError);
+          }
+
+          
           setTimeout(() => {
             try {
               router.replace({
                 pathname: '/DetailsPage',
                 params: { 
                   orderId: order._id || order.id, 
-                  qrCode: order.qrCode || data 
+                  qrCode: order.qrCode || data,
+                  shouldRefreshOnReturn: true 
                 }
               });
             } catch (navError) {
