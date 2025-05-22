@@ -123,7 +123,7 @@ const Home = () => {
             </View>
           ) : (
             <View className='mt-4 w-full flex items-end'>
-              <View className='bg-white w-[100%] p-2 rounded-xl mx-auto mb-4 flex-row justify-between items-center'>
+              {/* <View className='bg-white w-[100%] p-2 rounded-xl mx-auto mb-4 flex-row justify-between items-center'>
                 <View>
                   <Image
                     source={walletImage}
@@ -140,7 +140,9 @@ const Home = () => {
                     {message}
                   </Text>
                 </View>
-              </View>
+              </View> */}
+
+              
               <Text className='text-end text-xl font-tajawal'>الطلبات المتوفرة</Text>
             </View>
           )}
