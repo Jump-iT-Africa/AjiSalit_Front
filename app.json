@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Aji Salit",
-    "slug": "ajisalit",
+    "slug": "aji-salit",
     "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -74,9 +74,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "58578925-3025-4070-823b-d44a161b2c53"
+        "projectId": "8cf790a2-ae23-491c-8e4d-1ed1a5d3260d"
       }
     },
-    "owner": "expobiling"
+    "owner": "powerfull"
   }
 }
