@@ -870,6 +870,7 @@ const processOrderSubmission = () => {
                   padding: hp('1.5%'),
                   marginBottom: hp('1%'),
                 }}>
+
                   <TouchableOpacity onPress={() => removeImage(image.id)}>
                     <View style={{
                       width: wp('6%'),
@@ -882,7 +883,9 @@ const processOrderSubmission = () => {
                       <AntDesign name="close" size={wp('4%')} color="white" />
                     </View>
                   </TouchableOpacity>
-                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+
+
+                  <View   style={{flexDirection:'row-reverse', gap:10, alignItems:'center'}}>
                     <Image
                       source={{ uri: image.uri }}
                       style={{
@@ -899,30 +902,16 @@ const processOrderSubmission = () => {
                         color: '#4b5563',
                         textAlign: 'right',
                       }}>{image.name}</Text>
-                      <Text style={{
+                      {/* <Text style={{
                         fontSize: wp('2.8%'),
                         fontFamily: 'TajawalRegular',
                         color: '#9ca3af',
                         textAlign: 'right',
-                      }}>{image.size || ''}</Text>
+                      }}>{image.size || ''}</Text> */}
                     </View>
-                    {image.uri ? (
-                      <Image 
-                        source={{ uri: image.uri }} 
-                        style={{ width: '100%', height: '100%' }} 
-                        resizeMode="cover"
-                      />
-                    ) : (
-                      <View style={{
-                        height: '100%',
-                        width: '100%',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}>
-                        <AntDesign name="picture" size={wp('5%')} color="#666" />
-                      </View>
-                    )}
-                  </View>  
+                    
+                  </View>
+                  
                 </View>
               ))}
             </View>
