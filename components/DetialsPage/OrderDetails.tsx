@@ -1,7 +1,20 @@
 // @ts-nocheck
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform, Modal, TextInput,TouchableWithoutFeedback } from 'react-native';
+import { 
+  View, 
+  Text, 
+  TouchableOpacity, 
+  StyleSheet, 
+  Platform, 
+  Modal, 
+  TextInput, 
+  TouchableWithoutFeedback,
+  Image,
+  ScrollView,
+  Dimensions,
+  FlatList
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Feather from '@expo/vector-icons/Feather';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -17,7 +30,8 @@ const OrderDetailsCard = ({
   newDate,
   currency = "درهم",
   situation,
-  orderId, 
+  orderId,
+  images = [], // Add images prop with default empty array
   onDateChange = (newDate, reason) => {}
 }) => {
 
@@ -231,7 +245,7 @@ const OrderDetailsCard = ({
         <TouchableOpacity className="ml-2" onPress={() => setModalVisible(true)}>
           <Feather name="edit" size={21} color="#2e752f"/>
         </TouchableOpacity>
-      </View>
+      </View>      
            
       <Modal
         animationType="slide"

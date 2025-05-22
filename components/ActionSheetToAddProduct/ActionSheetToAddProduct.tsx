@@ -12,6 +12,7 @@ import {
   Keyboard,
   Image,
   ActivityIndicator,
+  Alert,
   Dimensions
 } from 'react-native';
 
@@ -30,10 +31,11 @@ import UniqueIdModal from '../QrCodeGeneration/GenerateQrCode';
 import PaymentStatus from './PaymenStatus';
 import OrderVerificationBottomSheet from './OrderVerificationBottomSheet';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import * as FileSystem from 'expo-file-system';
+
 
 
 const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) => {
-
 
   const { width, height } = Dimensions.get('window');
   const isSmallScreen = height < 700; 
@@ -42,10 +44,8 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
       return isSmallScreen ? hp('80%') : hp('62%');
   }, [isSmallScreen]);
 
-
   const isAndroidAndSmall = Platform.OS === "android" &&  isSmallScreen;
 
-  
   const actionSheetRef = useRef(null);
   const dispatch = useDispatch();
   const verificationSheetRef = useRef(null);
@@ -111,24 +111,31 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
 
 
   const prepareImagesForUpload = (images) => {
-  if (!images || images.length === 0) return [];
-  
-  return images.map((image, index) => {
+    if (!images || images.length === 0) return [];
     
-    return {
-      uri: image.uri,
-      type: image.type || 'image/jpeg', 
-      name: image.name || `image_${index}.jpg`, 
-      size: image.size || '0kb' 
-    };
-  });
-};
+    return images.map((image, index) => {
+      // Ensure we have the correct file extension in the name
+      let fileName = image.name;
+      if (!fileName || !fileName.includes('.')) {
+        // Extract extension from type or default to jpg
+        const extension = image.type ? image.type.split('/')[1] : 'jpeg';
+        fileName = `image_${index}.${extension}`;
+      }
+      
+      return {
+        uri: image.uri,
+        type: image.type || 'image/jpeg',
+        name: fileName,
+        // Don't include size as it's not needed for upload and might cause issues
+      };
+    });
+  };
 
 const takePhoto = async () => {
   try {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
-      alert(' يرجى تمكينها في إعدادات جهازك لاستخدام الكاميرا!');
+      alert('يرجى تمكينها في إعدادات جهازك لاستخدام الكاميرا!');
       return;
     }
     
@@ -138,33 +145,93 @@ const takePhoto = async () => {
       quality: 0.5, 
     });
 
-    if (!result.canceled) {
+    if (!result.canceled && result.assets && result.assets.length > 0) {
       const uri = result.assets[0].uri;
-      console.log('this is uri', uri);
       
+      // Get file extension
       const fileExtension = uri.split('.').pop().toLowerCase();
-      console.log('this is fileExtenstion', fileExtension);
-      
       const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
-      console.log('this is mimeType', mimeType);
       
-      const compressedSize = Math.round((result.assets[0].fileSize || 0) / 1024 * 0.5);
-
-      console.log('size Of compressed Size');
-
+      // Calculate size if possible
+      let fileSizeKB = 0;
+      try {
+        const fileInfo = await FileSystem.getInfoAsync(uri);
+        fileSizeKB = Math.round(fileInfo.size / 1024);
+        console.log(`Image size: ${fileSizeKB} KB`);
+      } catch (error) {
+        console.error('Error getting file info:', error);
+      }
+      
+      // Create image object (matches expected format for FormData)
       const newImage = {
         id: Date.now(), 
         uri: uri,
         name: `photo_${photoCounter}.${fileExtension}`,
         type: mimeType,
-        size: `${compressedSize}kb`,
+        size: `${fileSizeKB}kb`,
       };
       
+      console.log('New image captured:', newImage.name);
+      
+      // Add to state
       setUploadedImages([...uploadedImages, newImage]);
       setPhotoCounter(prevCounter => prevCounter + 1);
     }
   } catch (error) {
     console.log('Error taking photo:', error);
+  }
+};
+
+// Add function to pick image from gallery
+const pickImage = async () => {
+  try {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      alert('يرجى تمكينها في إعدادات جهازك للوصول إلى معرض الصور!');
+      return;
+    }
+    
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.5,
+    });
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const uri = result.assets[0].uri;
+      
+      // Get file extension
+      const fileExtension = uri.split('.').pop().toLowerCase();
+      const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
+      
+      // Calculate size if possible
+      let fileSizeKB = 0;
+      try {
+        const fileInfo = await FileSystem.getInfoAsync(uri);
+        fileSizeKB = Math.round(fileInfo.size / 1024);
+        console.log(`Image size: ${fileSizeKB} KB`);
+      } catch (error) {
+        console.error('Error getting file info:', error);
+      }
+      
+      // Create image object
+      const newImage = {
+        id: Date.now(), 
+        uri: uri,
+        name: `gallery_${photoCounter}.${fileExtension}`,
+        type: mimeType,
+        size: `${fileSizeKB}kb`,
+      };
+      
+      console.log('New image picked from gallery:', newImage.name);
+      
+      // Add to state
+      setUploadedImages([...uploadedImages, newImage]);
+      setPhotoCounter(prevCounter => prevCounter + 1);
+    }
+  } catch (error) {
+    console.log('Error picking image:', error);
   }
 };
 
@@ -263,10 +330,11 @@ const takePhoto = async () => {
         if (!formData.advancedAmount || formData.advancedAmount.trim() === '') {
           newErrors.advancedAmount = 'مبلغ التسبيق مطلوب';
           valid = false;
-        } else if (parseFloat(formData.advancedAmount) > parseFloat(formData.price)) {
+        } else if (parseFloat(formData.advancedAmount) >= parseFloat(formData.price)) {
           newErrors.advancedAmount = 'مبلغ التسبيق لا يمكن أن يتجاوز المبلغ الإجمالي';
           valid = false;
-        } else {
+        }
+         else {
           newErrors.advancedAmount = '';
         }
       }
@@ -399,9 +467,35 @@ const processOrderSubmission = () => {
   pickupDateObj.setDate(pickupDateObj.getDate() + 2);
   const formattedPickupDate = formatDateToYYYYMMDD(pickupDateObj);
   
+  // Prepare images for upload - make sure to format them correctly for your backend
+  // Your backend expects to receive the file itself, not a URL or path
+  let processedImages = [];
   
-  const processedImages = prepareImagesForUpload(uploadedImages);
-  
+  if (uploadedImages && uploadedImages.length > 0) {
+    console.log(`Preparing ${uploadedImages.length} images for upload`);
+    
+    // Map uploaded images to the format expected by the Redux action
+    processedImages = uploadedImages.map((image, index) => {
+      // Make sure we have all required properties
+      const fileName = image.name || `image_${index}.jpg`;
+      // Remove spaces from filename
+      const sanitizedFileName = fileName.replace(/\s+/g, '_');
+      
+      // Ensure type is properly formatted
+      let fileType = image.type || 'image/jpeg';
+      if (!fileType.includes('/')) {
+        fileType = sanitizedFileName.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+      }
+      
+      console.log(`Processing image ${index}: URI=${image.uri.substring(0, 30)}... Type=${fileType} Name=${sanitizedFileName}`);
+      
+      return {
+        uri: image.uri,
+        name: sanitizedFileName,
+        type: fileType
+      };
+    });
+  }
   
   const orderData = {
     price: parseFloat(formData.price),
@@ -411,8 +505,6 @@ const processOrderSubmission = () => {
     deliveryDate: formattedDeliveryDate, 
     pickupDate: formattedPickupDate,     
     qrCode: newUniqueId,
-    isFinished: false,
-    isPickUp: false,
     images: processedImages
   };
   
@@ -712,7 +804,9 @@ const processOrderSubmission = () => {
               flexDirection: 'row',
               justifyContent: 'center',
               marginTop: hp('1.5%'),
+              gap: wp('3%'),
             }}>
+              {/* Camera Button */}
               <TouchableOpacity 
                 style={{
                   borderWidth: 1,
@@ -732,11 +826,40 @@ const processOrderSubmission = () => {
                   fontSize: wp('3.5%'),
                 }}>التقط صورة</Text>
               </TouchableOpacity>
+              
+              {/* Gallery Button */}
+              <TouchableOpacity 
+                style={{
+                  borderWidth: 1,
+                  borderColor: '#2e752f',
+                  borderRadius: wp('10%'),
+                  paddingVertical: hp('1%'),
+                  paddingHorizontal: wp('3%'),
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                }}
+                onPress={pickImage}
+              >
+                <AntDesign name="picture" size={wp('4%')} color="#2e752f" style={{ marginRight: wp('1.2%') }} />
+                <Text style={{
+                  color: '#2e752f',
+                  fontFamily: 'TajawalRegular',
+                  fontSize: wp('3.5%'),
+                }}>معرض الصور</Text>
+              </TouchableOpacity>
             </View>
           </View>
        
           {uploadedImages.length > 0 ? (
-            <View>
+            <View style={{ marginTop: hp('2%') }}>
+              <Text style={{
+                color: '#2e752f',
+                fontFamily: 'TajawalRegular',
+                fontSize: wp('3.8%'),
+                textAlign: 'right',
+                marginBottom: hp('1%'),
+              }}>الصور المحملة: {uploadedImages.length}</Text>
+              
               {uploadedImages.map((image) => (
                 <View key={image.id} style={{
                   flexDirection: 'row',
@@ -759,50 +882,47 @@ const processOrderSubmission = () => {
                       <AntDesign name="close" size={wp('4%')} color="white" />
                     </View>
                   </TouchableOpacity>
-                  <View style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    flex: 1,
-                    justifyContent: 'flex-end',
-                  }}>
-                    <Text 
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Image
+                      source={{ uri: image.uri }}
                       style={{
-                        color: 'black',
-                        fontFamily: 'TajawalRegular',
-                        fontSize: wp('3.5%'),
-                        maxWidth: wp('45%'),
+                        width: wp('12%'),
+                        height: wp('12%'),
+                        borderRadius: wp('1%'),
+                        marginRight: wp('2%'),
                       }}
-                      numberOfLines={1} 
-                      ellipsizeMode="middle"
-                    >
-                      {image.name}
-                    </Text>
-                    <View style={{
-                      height: wp('10%'),
-                      width: wp('10%'),
-                      backgroundColor: '#d1d5db',
-                      borderRadius: wp('1%'),
-                      marginLeft: wp('2%'),
-                      overflow: 'hidden',
-                    }}>
-                      {image.uri ? (
-                        <Image 
-                          source={{ uri: image.uri }} 
-                          style={{ width: '100%', height: '100%' }} 
-                          resizeMode="cover"
-                        />
-                      ) : (
-                        <View style={{
-                          height: '100%',
-                          width: '100%',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}>
-                          <AntDesign name="picture" size={wp('5%')} color="#666" />
-                        </View>
-                      )}
-                    </View>  
-                  </View>
+                    />
+                    <View>
+                      <Text style={{
+                        fontSize: wp('3.5%'),
+                        fontFamily: 'TajawalRegular',
+                        color: '#4b5563',
+                        textAlign: 'right',
+                      }}>{image.name}</Text>
+                      <Text style={{
+                        fontSize: wp('2.8%'),
+                        fontFamily: 'TajawalRegular',
+                        color: '#9ca3af',
+                        textAlign: 'right',
+                      }}>{image.size || ''}</Text>
+                    </View>
+                    {image.uri ? (
+                      <Image 
+                        source={{ uri: image.uri }} 
+                        style={{ width: '100%', height: '100%' }} 
+                        resizeMode="cover"
+                      />
+                    ) : (
+                      <View style={{
+                        height: '100%',
+                        width: '100%',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}>
+                        <AntDesign name="picture" size={wp('5%')} color="#666" />
+                      </View>
+                    )}
+                  </View>  
                 </View>
               ))}
             </View>

@@ -7,6 +7,7 @@ import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
 import WhiteImage from "@/assets/images/ajisalit_white.png";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import { AsyncStorage } from 'react-native';
 
 const UniqueIdModal = ({ visible, onClose, uniqueId }) => {
   const { width, height } = Dimensions.get('window');
@@ -24,8 +25,24 @@ const UniqueIdModal = ({ visible, onClose, uniqueId }) => {
     onClose();
   };
 
-  const handlePressed = () => {
-    router.replace('(home)');
+
+
+  
+  const handlePressed = async () => {
+
+    try {
+      await AsyncStorage.setItem('REFRESH_ORDERS_ON_RETURN', 'true');
+    } catch (storageError) {
+      console.log("Error setting refresh flag:", storageError);
+    }
+
+
+    router.replace({
+      pathname: '/(home)',
+      params: { 
+        shouldRefreshOnReturn: true 
+      }
+    });
   };
 
   return (

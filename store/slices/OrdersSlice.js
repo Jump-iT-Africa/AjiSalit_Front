@@ -88,7 +88,8 @@ const transformOrderData = (apiOrders) => {
     companyId:{
       companyName: order.companyId.companyName,
       field: order.companyId.field
-    }
+    },
+    images: order.images
 
   }));
   

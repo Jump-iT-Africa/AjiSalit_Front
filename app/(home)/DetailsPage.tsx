@@ -20,24 +20,19 @@ import { selectCurrentOrder, selectUserOrders, setCurrentOrder, fetchORderById }
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSearchParams } from "expo-router/build/hooks";
 
-
-
 export default function DetailsPage() {
-
   const [remaining, setRemaining] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [orderData, setOrderData] = useState(null);
+  
   const router = useRouter();
   const currentOrder = useSelector(selectCurrentOrder);
   const userOrders = useSelector(selectUserOrders);
   const hasSetRefreshFlag = useRef(false);
-
-  console.log('order to be fetched', orderData);
   
   const ViewShotRef = useRef();
   const dispatch = useDispatch();
   const [role, setRole] = useState(null);
-
 
   useEffect(() => {
     const loadRole = async () => {
@@ -59,17 +54,13 @@ export default function DetailsPage() {
   const {ItemID} = useLocalSearchParams();
   console.log('this is the id of the command from details', ItemID);
   
-
   const params = useLocalSearchParams();
   const shouldRefreshOnReturn = params.shouldRefreshOnReturn === 'true';
   console.log('All params:', params);
 
-
-
   useEffect(() => {
     console.log('Current order updated:', currentOrder);
   }, [currentOrder]);
-  
   
   useEffect(() => {
     const loadOrderData = async () => {
@@ -82,10 +73,8 @@ export default function DetailsPage() {
           return;
         }
         
-
-
         // this block of code is not working you should fine a solution to the item id its null
-          if (ItemID) {
+        if (ItemID) {
           console.log("Looking for order with ID:", ItemID);
           
           const foundOrder = userOrders.find(order => 
@@ -101,7 +90,7 @@ export default function DetailsPage() {
           }
           
           try {
-            const result = await dispatch(fetchORderById(ItemID)).unwrap();
+            const result = await dispatch(fetchORderById(ItemID));
             console.log('this is result from details page', result);
             
             if (result) {
@@ -114,7 +103,6 @@ export default function DetailsPage() {
             console.log("Error fetching order:", fetchError);
           }
         }
-        
         
         try {
           const storedOrder = await AsyncStorage.getItem('lastScannedOrder');
@@ -140,9 +128,11 @@ export default function DetailsPage() {
     loadOrderData();
   }, [currentOrder, ItemID, dispatch, userOrders]);
   
-  
   useEffect(() => {
     if (!orderData) return;
+    
+    // Add this console log here, after orderData is set
+    console.log("Image URLs to display:", orderData.images);
     
     if (orderData.situation === 'خالص' || orderData.label === 'خالص') {
       setRemaining(0);
@@ -151,19 +141,19 @@ export default function DetailsPage() {
     }
   }, [orderData]);
 
-    const handleDateChange = async (newDate, reason) => {
-      console.log('New delivery date:', newDate);
-      console.log('Reason for change:', reason);
-      
-      if (orderData?.id) {
-        try {
-          await dispatch(fetchORderById(orderData.id));
-          console.log('Order data refreshed after date change');
-        } catch (error) {
-          console.log('Failed to refresh order data:', error);
-        }
+  const handleDateChange = async (newDate, reason) => {
+    console.log('New delivery date:', newDate);
+    console.log('Reason for change:', reason);
+    
+    if (orderData?.id) {
+      try {
+        await dispatch(fetchORderById(orderData.id));
+        console.log('Order data refreshed after date change');
+      } catch (error) {
+        console.log('Failed to refresh order data:', error);
       }
-    };
+    }
+  };
 
   const handleShare = async () => {
     try {
@@ -191,14 +181,12 @@ export default function DetailsPage() {
     router.back();
   };
  
-
   const [tooltipVisible, setTooltipVisible] = useState(false);
   
   const containerClassName = Platform.OS === 'ios'
     ? "flex-row justify-between mx-5 mt-16"
     : "flex-row justify-between mx-0 mt-14";
 
-  
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -207,7 +195,6 @@ export default function DetailsPage() {
       </View>
     );
   }
-
   
   if (!orderData) {
     return (
@@ -230,21 +217,14 @@ export default function DetailsPage() {
     );
   }
 
-  const platform = Platform.OS === 'android'? "0" : "mt-10"
+  const platform = Platform.OS === 'android'? "0" : "mt-10";
   
+  const orderImages = orderData.images || [];
+  console.log("Rendering with images:", orderImages);
 
   return (
     <>
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* <View className={containerClassName}>
-          <TouchableOpacity onPress={() => router.replace('(home)')}>
-            <View className="bg-[#959393b3] rounded-full w-8 h-8 flex justify-center items-center x-5">
-              <Feather name="chevron-left" size={22} color="white" />
-            </View>
-          </TouchableOpacity>
-         
-        </View> */}
-
         <View className={`${platform}`}> 
           <HeaderWithBack
               onPress={handleGoBack}
@@ -254,7 +234,9 @@ export default function DetailsPage() {
           />
         </View>
 
-        {!orderData.images || orderData.images.length === 0 ? (
+        {Array.isArray(orderImages) && orderImages.length > 0 ? (
+          <ImagesSlider images={orderImages} />
+        ) : (
           <View className="w-80 h-80 m-auto">
             <Image
               source={DetailsOrdersNoImages}
@@ -262,8 +244,6 @@ export default function DetailsPage() {
               resizeMode="contain"
             />
           </View>
-        ) : (
-          <ImagesSlider images={orderData.images} />
         )}
 
         <Viewshot ref={ViewShotRef} options={{ format: "jpg", quality: 1 }}>
@@ -278,7 +258,7 @@ export default function DetailsPage() {
               newDate={orderData?.newDate}
               currency="درهم"
               situation={orderData?.label || orderData?.situation}
-              images={orderData?.images || []}
+              images={orderImages}
               onDateChange={handleDateChange}
               orderId={orderData?.id}
             />

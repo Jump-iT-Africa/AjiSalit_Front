@@ -1,18 +1,15 @@
 import React, { useState } from 'react';
-import { View, Image, TouchableOpacity, StyleSheet, Dimensions, ScrollView } from 'react-native';
+import { View, Image, TouchableOpacity, StyleSheet, Dimensions, ScrollView, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/Colors';
 
-const ImagesSlider = () => {
+const ImagesSlider = ({ images = [] }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   
-  const images = [
-    require('@/assets/images/product2.avif'),
-    require('@/assets/images/product3.jpg'),
-    require('@/assets/images/product4.jpg'),
-    require('@/assets/images/product5.jpg'),
-    require('@/assets/images/product2.avif'),
-  ];
+  // Early return if no images provided
+  if (!images || images.length === 0) {
+    return null;
+  }
   
   const nextImage = () => {
     setActiveIndex((prevIndex) => 
@@ -31,58 +28,66 @@ const ImagesSlider = () => {
   };
   
   return (
-    <View style={styles.container}>
-      <View style={styles.imageContainer}>
-        <Image 
-          source={images[activeIndex]} 
-          style={styles.mainImage} 
-          resizeMode="cover"
-        />
+
+    <>
+      <View style={styles.container}>
+        <View style={styles.imageContainer}>
+          <Image 
+            source={{ uri: images[activeIndex] }} 
+            style={styles.mainImage} 
+            resizeMode="cover"
+          />
+          
+          {images.length > 1 && (
+            <>
+              <TouchableOpacity 
+                style={[styles.navButton, styles.leftButton]} 
+                onPress={prevImage}
+              >
+                <Ionicons name="chevron-back" size={24} color="white" />
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.navButton, styles.rightButton]} 
+                onPress={nextImage}
+              >
+                <Ionicons name="chevron-forward" size={24} color="white" />
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
         
-        <TouchableOpacity 
-          style={[styles.navButton, styles.leftButton]} 
-          onPress={prevImage}
-        >
-          <Ionicons name="chevron-back" size={24} color="white" />
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[styles.navButton, styles.rightButton]} 
-          onPress={nextImage}
-        >
-          <Ionicons name="chevron-forward" size={24} color="white" />
-        </TouchableOpacity>
-      </View>
-      
-      <ScrollView 
-        horizontal 
-        showsHorizontalScrollIndicator={true}
-        contentContainerStyle={styles.thumbnailStrip}
-      >
-        {images.map((image, index) => (
-          <TouchableOpacity 
-            key={index} 
-            onPress={() => selectImage(index)}
-            style={[
-              styles.thumbnailContainer,
-              activeIndex === index && styles.activeThumbnail
-            ]}
+        {images.length > 1 && (
+          <ScrollView 
+            horizontal 
+            showsHorizontalScrollIndicator={true}
+            contentContainerStyle={styles.thumbnailStrip}
           >
-            <Image 
-              source={image} 
-              style={styles.thumbnail} 
-              resizeMode="cover"
-            />
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-    </View>
+            {images.map((image, index) => (
+              <TouchableOpacity 
+                key={index} 
+                onPress={() => selectImage(index)}
+                style={[
+                  styles.thumbnailContainer,
+                  activeIndex === index && styles.activeThumbnail
+                ]}
+              >
+                <Image 
+                  source={{ uri: image }} 
+                  style={styles.thumbnail} 
+                  resizeMode="cover"
+                />
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
+      </View>
+    </>
   );
 };
 
 const { width } = Dimensions.get('window');
 const styles = StyleSheet.create({
- 
   imageContainer: {
     width: '100%',
     height: width * 0.8, 
@@ -97,7 +102,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.20,
     shadowRadius: 1.41,
     elevation: 2,
-
   },
   mainImage: {
     paddingLeft:10,
@@ -106,7 +110,6 @@ const styles = StyleSheet.create({
     borderRadius:10,
     width: '100%',
     height: '100%',
-    
   },
   navButton: {
     position: 'absolute',
@@ -129,7 +132,6 @@ const styles = StyleSheet.create({
   },
   thumbnailStrip: {
     padding: 10,
-    
   },
   thumbnailContainer: {
     width: 85,
@@ -139,11 +141,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 2,
     borderColor: 'transparent',
-    
   },
   activeThumbnail: {
     borderColor: '#FF4646',
-    
   },
   thumbnail: {
     width: '100%',
