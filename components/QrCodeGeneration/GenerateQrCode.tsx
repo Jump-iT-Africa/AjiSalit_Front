@@ -7,7 +7,7 @@ import * as Clipboard from 'expo-clipboard';
 import { router } from 'expo-router';
 import WhiteImage from "@/assets/images/ajisalit_white.png";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import { AsyncStorage } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const UniqueIdModal = ({ visible, onClose, uniqueId }) => {
   const { width, height } = Dimensions.get('window');
@@ -16,33 +16,69 @@ const UniqueIdModal = ({ visible, onClose, uniqueId }) => {
   const bottomSheetHeight = isSmallScreen ? '90%' : '80%';
   
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false); // Add processing state
 
   const copyToClipboard = async (uniqueId) => {
-    await Clipboard.setStringAsync(uniqueId);
+    try {
+      await Clipboard.setStringAsync(uniqueId);
+      // Optional: Show a toast or feedback that text was copied
+      console.log("Copied to clipboard:", uniqueId);
+    } catch (error) {
+      console.log("Error copying to clipboard:", error);
+    }
   };
 
   const closeModal = () => {
     onClose();
   };
 
-
-
-  
   const handlePressed = async () => {
-
+    // Prevent multiple taps
+    if (isProcessing) {
+      return;
+    }
+    
+    setIsProcessing(true);
+    
     try {
+      console.log("Setting refresh flag before navigating to home");
+      
       await AsyncStorage.setItem('REFRESH_ORDERS_ON_RETURN', 'true');
+      console.log("Refresh flag set successfully");
+      
+      onClose();
+      
+      setTimeout(() => {
+        try {
+          router.replace({
+            pathname: '/(home)',
+            params: { 
+              shouldRefreshOnReturn: true,
+              timestamp: Date.now() 
+            }
+          });
+        } catch (navigationError) {
+          console.log("Navigation error:", navigationError);
+          setIsProcessing(false);
+        }
+      }, 300);
+      
     } catch (storageError) {
       console.log("Error setting refresh flag:", storageError);
+      setIsProcessing(false);
+      
+      // Still navigate even if storage fails
+      onClose();
+      setTimeout(() => {
+        router.replace({
+          pathname: '/(home)',
+          params: { 
+            shouldRefreshOnReturn: true,
+            timestamp: Date.now()
+          }
+        });
+      }, 300);
     }
-
-
-    router.replace({
-      pathname: '/(home)',
-      params: { 
-        shouldRefreshOnReturn: true 
-      }
-    });
   };
 
   return (
@@ -94,7 +130,11 @@ const UniqueIdModal = ({ visible, onClose, uniqueId }) => {
           <View style={styles.modalContainer}>
             <View style={styles.modalContent}>
               <View className='flex-row items-center justify-end w-full'>
-                <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                <TouchableOpacity 
+                  style={styles.closeButton} 
+                  onPress={onClose}
+                  disabled={isProcessing}
+                >
                 </TouchableOpacity>
                 <Text style={[styles.title, { fontSize: wp('6%') }]} className='font-tajawalregular text-right mr-4'>رمز الطلب</Text>
               </View>
@@ -123,7 +163,8 @@ const UniqueIdModal = ({ visible, onClose, uniqueId }) => {
                 </Text>
                 <TouchableOpacity 
                   style={[styles.copyButton, { width: wp('15%'), height: wp('15%'), borderRadius: wp('12.5%') }]} 
-                  onPress={()=>copyToClipboard(uniqueId)}
+                  onPress={() => copyToClipboard(uniqueId)}
+                  disabled={isProcessing}
                 >
                   <Ionicons name="copy-outline" size={wp('6%')} color="white" />
                 </TouchableOpacity>
@@ -137,10 +178,15 @@ const UniqueIdModal = ({ visible, onClose, uniqueId }) => {
                 <TouchableOpacity 
                   onPress={handlePressed}
                   className="bg-[#2e752f] rounded-full flex-row items-center justify-center"
-                  style={{ width: wp('48%'), padding: wp('3%') }}
+                  style={{ 
+                    width: wp('48%'), 
+                    padding: wp('3%'),
+                    opacity: isProcessing ? 0.7 : 1 // Visual feedback when processing
+                  }}
+                  disabled={isProcessing}
                 >
                   <Text style={{ fontSize: wp('4.5%') }} className="text-white text-center font-tajawal mr-2">
-                    تأكيد
+                    {isProcessing ? "جاري التأكيد..." : "تأكيد"}
                   </Text>
                   <Image 
                     source={WhiteImage}

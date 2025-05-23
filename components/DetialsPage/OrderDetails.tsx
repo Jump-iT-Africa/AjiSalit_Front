@@ -31,7 +31,7 @@ const OrderDetailsCard = ({
   currency = "درهم",
   situation,
   orderId,
-  images = [], // Add images prop with default empty array
+  images = [], 
   onDateChange = (newDate, reason) => {}
 }) => {
 
@@ -51,7 +51,7 @@ const OrderDetailsCard = ({
     if (typeof dateValue === 'string' && dateValue) {
       try {
         const dateObj = new Date(dateValue);
-        if (!isNaN(dateObj.getTime())) { // Check if valid date
+        if (!isNaN(dateObj.getTime())) {
           return `${dateObj.getDate()}/${dateObj.getMonth() + 1}/${dateObj.getFullYear()}`;
         }
       } catch (error) {
@@ -103,27 +103,22 @@ const OrderDetailsCard = ({
   };
   
   const saveChanges = async () => {
-    // Get formatted date - use current date if no date is selected
     let formattedForAPI;
     
     if (!selectedDate) {
-      // No date selected, use current date
       const today = new Date();
       const year = today.getFullYear();
       const month = String(today.getMonth() + 1).padStart(2, '0');
       const day = String(today.getDate()).padStart(2, '0');
       formattedForAPI = `${year}-${month}-${day}`;
     } else {
-      // Format the selected date to ensure YYYY-MM-DD format
       const dateParts = selectedDate.split('/');
       if (dateParts.length === 3) {
-        // Convert from DD/MM/YYYY to YYYY-MM-DD
         const day = dateParts[0].padStart(2, '0');
         const month = dateParts[1].padStart(2, '0');
         const year = dateParts[2];
         formattedForAPI = `${year}-${month}-${day}`;
       } else {
-        // If the date is already in another format, try to parse it correctly
         try {
           const dateObj = new Date(selectedDate);
           if (!isNaN(dateObj.getTime())) {
@@ -136,7 +131,6 @@ const OrderDetailsCard = ({
           }
         } catch (error) {
           console.log("Date parsing error:", error);
-          // Fallback to current date if parsing fails
           const today = new Date();
           const year = today.getFullYear();
           const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -162,9 +156,8 @@ const OrderDetailsCard = ({
       
       console.log('Date updated successfully:', result);
       setUpdateStatus('تم تحديث التاريخ بنجاح');
-      console.log('Date sent to API:', formattedForAPI); // Debug log to verify format
+      console.log('Date sent to API:', formattedForAPI);
       
-      // Use the correct date format for the callback
       const displayDate = selectedDate || formatDateForDisplay(new Date());
       onDateChange(displayDate, reason);
       

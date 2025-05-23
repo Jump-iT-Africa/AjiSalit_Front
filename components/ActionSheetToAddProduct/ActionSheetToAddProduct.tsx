@@ -32,7 +32,7 @@ import PaymentStatus from './PaymenStatus';
 import OrderVerificationBottomSheet from './OrderVerificationBottomSheet';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import * as FileSystem from 'expo-file-system';
-
+import CalculatorModal from '../Calculator/CalculatorModal';
 
 
 const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) => {
@@ -73,19 +73,20 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
   
   
   const [isDatePickerEnabled, setIsDatePickerEnabled] = useState(false);
-  
   const [step, setStep] = useState(1);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
-
   const step1Animation = useRef(new Animated.Value(1)).current;
   const step2Animation = useRef(new Animated.Value(0)).current;
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [uniqueId, setUniqueId] = useState('');
   const [showIdModal, setShowIdModal] = useState(false);
   const [photoCounter, setPhotoCounter] = useState(1);
+  const [showCalculator, setShowCalculator] = useState(false);
 
-
+  const handleCalculatorConfirm = (calculatedValue) => {
+    setFormData({ ...formData, price: calculatedValue });
+  };
 
   useImperativeHandle(ref, () => ({
     show: () => {
@@ -614,14 +615,36 @@ const processOrderSubmission = () => {
             <Text className="text-right text-gray-700 mb-2 font-tajawal text-[12px]" style={{ color: Color.green }}>
               المبلغ (بالدرهم): <Text className="text-red-500">*</Text>
             </Text>
-            <TextInput
-              placeholder="يرجى إدخال المبلغ"
-              placeholderTextColor="#888"
-              value={formData.price}
-              keyboardType='number-pad'
-              onChangeText={(text) => setFormData({ ...formData, price: text })}
-              className={`border ${errors.price ? 'border-red-500' : 'border-[#2e752f]'} rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}
-            />
+            
+
+            <View className="relative">
+              <TextInput
+                placeholder="يرجى إدخال المبلغ"
+                placeholderTextColor="#888"
+                value={formData.price}
+                keyboardType='number-pad'
+                onChangeText={(text) => setFormData({ ...formData, price: text })}
+                className={`border-[0.9px] ${errors.price ? 'border-red-500' : 'border-[#398d3a]'}  rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}
+                style={{ paddingRight: 50 }} 
+              />
+              
+              <TouchableOpacity
+                onPress={() => setShowCalculator(true)}
+                style={{
+                  position: 'absolute',
+                  right: 12,
+                  top: 12,
+                  backgroundColor: Color.green,
+                  borderRadius: 6,
+                  padding: 6,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+                activeOpacity={0.8}
+              >
+                <AntDesign name="calculator" size={18} color="white" />
+              </TouchableOpacity>
+            </View>
             {errors.price ? <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[13px]">{errors.price}</Text> : null}
           </View> 
   
@@ -743,7 +766,11 @@ const processOrderSubmission = () => {
             </View>
           </View>
         </View> 
-  
+        <CalculatorModal
+        visible={showCalculator}
+        onClose={() => setShowCalculator(false)}
+        onConfirm={handleCalculatorConfirm}
+      />
       </Animated.View>
     </View>
   );
@@ -828,7 +855,7 @@ const processOrderSubmission = () => {
               </TouchableOpacity>
               
               {/* Gallery Button */}
-              <TouchableOpacity 
+              {/* <TouchableOpacity 
                 style={{
                   borderWidth: 1,
                   borderColor: '#2e752f',
@@ -846,7 +873,7 @@ const processOrderSubmission = () => {
                   fontFamily: 'TajawalRegular',
                   fontSize: wp('3.5%'),
                 }}>معرض الصور</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
           </View>
        

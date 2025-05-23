@@ -13,7 +13,7 @@ export default function NoOrdersExists()
             display:'flex',
             alignItems: 'center', 
             justifyContent: 'center', 
-            marginTop: isSmallScreen ? hp('-5%') : hp('5%')
+            marginTop: isSmallScreen ? hp('1%') : hp('0%')
         }}>
             <View style={{ 
                 width: wp('100%'), 
@@ -25,13 +25,13 @@ export default function NoOrdersExists()
                     source={NoOrders}
                     resizeMode="contain"
                     style={{
-                        width: isSmallScreen ? wp('70%') : wp('80%'),
-                        height: isSmallScreen ? hp('30%') : hp('35%')
+                        width: isSmallScreen ? wp('70%') : wp('70%'),
+                        height: isSmallScreen ? hp('30%') : hp('30%')
                     }}
                 />
             </View>
             <View style={{ 
-                marginTop: isSmallScreen ? hp('0%') : hp('2%')
+                marginTop: isSmallScreen ? hp('0%') : hp('0%')
             }}>
             <Text style={{
                     fontFamily: 'Tajawal',

@@ -165,7 +165,7 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
       justifyContent: 'space-between',
       alignItems: 'center',
       borderWidth: item.isToday ? 1 : 1,
-      borderColor: item.isToday ? '#FD8900' : '#295f2b'
+      borderColor: '#295f2b'
     };
 
     const textBaseStyle = {

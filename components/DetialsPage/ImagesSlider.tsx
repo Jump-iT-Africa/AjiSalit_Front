@@ -1,6 +1,18 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Image, TouchableOpacity, StyleSheet, Dimensions, ScrollView, ActivityIndicator } from 'react-native';
+import { 
+  View, 
+  Image, 
+  TouchableOpacity, 
+  StyleSheet, 
+  Dimensions, 
+  ScrollView, 
+  ActivityIndicator,
+  Modal,
+  StatusBar,
+  Text
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import ImageViewer from 'react-native-image-zoom-viewer';
 import Colors from '@/constants/Colors';
 
 const LazyImage = ({ source, style, resizeMode, isVisible, onLoad }) => {
@@ -31,11 +43,14 @@ const LazyImage = ({ source, style, resizeMode, isVisible, onLoad }) => {
 
   return (
     <View style={style}>
+      {/* Always show loading while image is loading */}
       {isLoading && (
         <View style={[style, styles.loadingContainer]}>
-          <ActivityIndicator size="small" color={Colors.red} />
+          <ActivityIndicator size="large" color={Colors.red} />
+          <Text style={styles.loadingText}>جاري التحميل...</Text>
         </View>
       )}
+      {/* Show image once loaded */}
       {(isLoading || isLoaded) && (
         <Image
           source={source}
@@ -45,18 +60,137 @@ const LazyImage = ({ source, style, resizeMode, isVisible, onLoad }) => {
           onError={handleError}
         />
       )}
+      {/* Show error state if image fails to load */}
       {hasError && (
         <View style={[style, styles.errorContainer]}>
-          <Ionicons name="image-outline" size={24} color="#ccc" />
+          <Ionicons name="image-outline" size={30} color="#ccc" />
+          <Text style={styles.errorText}>فشل تحميل الصورة</Text>
         </View>
       )}
     </View>
   );
 };
 
+// Fullscreen Image Modal Component using react-native-image-zoom-viewer
+const FullscreenImageModal = ({ visible, onClose, images, initialIndex }) => {
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (visible) {
+      setCurrentIndex(initialIndex);
+      setIsLoading(true);
+      // Give a small delay to ensure modal is fully rendered
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 100);
+    }
+  }, [visible, initialIndex]);
+
+  // Convert images array to format expected by ImageViewer
+  const imageObjects = images.map((imageUrl, index) => ({
+    url: imageUrl,
+    // Add unique props for each image
+    props: {
+      resizeMode: 'contain',
+      source: { uri: imageUrl }
+    }
+  }));
+
+  if (!visible) return null;
+
+  return (
+    <Modal
+      visible={visible}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={onClose}
+      statusBarTranslucent={true}
+    >
+      <StatusBar hidden />
+      
+      {isLoading ? (
+        // Loading state
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0, 0, 0, 0.95)',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+          <ActivityIndicator size="large" color="white" />
+          <Text style={{ color: 'white', marginTop: 10, fontSize: 16 }}>جاري تحميل الصورة...</Text>
+        </View>
+      ) : (
+        <ImageViewer
+          imageUrls={imageObjects}
+          index={currentIndex}
+          onSwipeDown={onClose}
+          enableSwipeDown={true}
+          backgroundColor="rgba(0, 0, 0, 0.95)"
+          enableImageZoom={true}
+          doubleClickInterval={250}
+          maxOverflow={300}
+          flipThreshold={80}
+          swipeDownThreshold={100}
+          onChange={(index) => setCurrentIndex(index)}
+          loadingRender={() => (
+            <View style={{
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+              <ActivityIndicator size="large" color="white" />
+              <Text style={{ color: 'white', marginTop: 10, fontSize: 16 }}>جاري التحميل...</Text>
+            </View>
+          )}
+          renderHeader={(currentIndex) => (
+            <View style={styles.headerContainer}>
+              <TouchableOpacity 
+                style={styles.closeButton}
+                onPress={onClose}
+              >
+                <Ionicons name="close" size={30} color="white" />
+              </TouchableOpacity>
+            </View>
+          )}
+          renderFooter={(currentIndex) => (
+            <View style={styles.footerContainer}>
+              {/* <Text style={styles.counterText}>
+                {currentIndex + 1} / {images.length}
+              </Text> */}
+            </View>
+          )}
+          renderIndicator={(currentIndex, allSize) => (
+            <View style={styles.indicatorContainer}>
+              {images.length > 1 && images.map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.indicator,
+                    { opacity: index === currentIndex ? 1 : 0.3 }
+                  ]}
+                />
+              ))}
+            </View>
+          )}
+          saveToLocalByLongPress={false}
+          menuContext={{ saveToLocal: '', cancel: '' }}
+          onLongPress={() => {}}
+          // Smooth and responsive zoom settings
+          minScale={1}
+          maxScale={3}
+          useNativeDriver={true}
+          failImageSource={{ uri: 'https://via.placeholder.com/400x400?text=Image+Not+Found' }}
+        />
+      )}
+    </Modal>
+  );
+};
+
 const ImagesSlider = ({ images = [], preloadRange = 2 }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [visibleImages, setVisibleImages] = useState(new Set());
+  const [modalVisible, setModalVisible] = useState(false);
 
   // Early return if no images provided
   if (!images || images.length === 0) {
@@ -112,6 +246,15 @@ const ImagesSlider = ({ images = [], preloadRange = 2 }) => {
     setActiveIndex(index);
   };
 
+  const openModal = () => {
+    console.log('Opening image modal at index:', activeIndex, 'URL:', images[activeIndex]);
+    setModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setModalVisible(false);
+  };
+
   // Check if thumbnail should be visible (load thumbnails around active area)
   const isThumbnailVisible = (index) => {
     const distance = Math.min(
@@ -126,12 +269,14 @@ const ImagesSlider = ({ images = [], preloadRange = 2 }) => {
     <>
       <View style={styles.container}>
         <View style={styles.imageContainer}>
-          <LazyImage
-            source={{ uri: images[activeIndex] }}
-            style={styles.mainImage}
-            resizeMode="cover"
-            isVisible={visibleImages.has(activeIndex)}
-          />
+          <TouchableOpacity onPress={openModal} activeOpacity={0.9}>
+            <LazyImage
+              source={{ uri: images[activeIndex] }}
+              style={styles.mainImage}
+              resizeMode="cover"
+              isVisible={visibleImages.has(activeIndex)}
+            />
+          </TouchableOpacity>
                    
           {images.length > 1 && (
             <>
@@ -178,11 +323,18 @@ const ImagesSlider = ({ images = [], preloadRange = 2 }) => {
           </ScrollView>
         )}
       </View>
+
+      <FullscreenImageModal
+        visible={modalVisible}
+        onClose={closeModal}
+        images={images}
+        initialIndex={activeIndex}
+      />
     </>
   );
 };
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
   },
@@ -260,6 +412,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f8f8f8',
+    borderRadius: 10,
+  },
+  loadingText: {
+    marginTop: 8,
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
   },
   errorContainer: {
     position: 'absolute',
@@ -270,6 +429,67 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f0f0f0',
+    borderRadius: 10,
+  },
+  errorText: {
+    marginTop: 8,
+    fontSize: 12,
+    color: '#999',
+    textAlign: 'center',
+  },
+  // ImageViewer Modal Styles
+  headerContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 100,
+    zIndex: 1000,
+    paddingTop: 50,
+    paddingHorizontal: 20,
+    backgroundColor: 'transparent',
+  },
+  closeButton: {
+    alignSelf: 'flex-end',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 20,
+    padding: 8,
+  },
+  footerContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  counterText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '500',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 15,
+    textAlign: 'center',
+  },
+  indicatorContainer: {
+    position: 'absolute',
+    bottom: 120,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  indicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: 'white',
+    marginHorizontal: 4,
   },
 });
 

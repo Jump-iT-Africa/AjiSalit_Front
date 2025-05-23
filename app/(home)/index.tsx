@@ -14,6 +14,8 @@ import Wallet from "@/assets/images/wallet.png"
 import WalletPoor from "@/assets/images/walletPoor.png"
 import WalletRich from "@/assets/images/walletRich.png"
 import { useFocusEffect } from '@react-navigation/native';
+import OrdersTabs from '@/components/TabsComponent/OrdersTabs'
+import {setTabFilter} from "@/store/slices/OrdersSlice.js"
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -108,6 +110,11 @@ const Home = () => {
   console.log('User role:', role);
   console.log('User pocket displayed in Home:', userPocket);
 
+
+  const handleTabChange = (tabFilter) => {
+    console.log('Tab changed to:', tabFilter);
+    dispatch(setTabFilter(tabFilter));
+  };
   return (
     <SafeAreaView className='flex'>
       <View className='px-0'>
@@ -142,12 +149,21 @@ const Home = () => {
                 </View>
               </View> */}
 
-              
+
               <Text className='text-end text-xl font-tajawal'>الطلبات المتوفرة</Text>
             </View>
           )}
         </View>
       </View>
+      
+      {role === 'company' && (
+        <OrdersTabs 
+          onTabChange={handleTabChange}
+          activeTab="all"
+        />
+      )}
+
+
       <View className='w-full h-full px-2 mt-4 '>
         {role === 'client' && <OrdersManagment 
           SearchCode={searchCode} 
