@@ -3,12 +3,6 @@ import axios from 'axios';
 import * as FileSystem from 'expo-file-system';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 
-
-
-
-
-
-
 export const createOrder = createAsyncThunk(
   'order/createOrder',
   async (orderData, { rejectWithValue, getState }) => {
@@ -21,39 +15,30 @@ export const createOrder = createAsyncThunk(
         return rejectWithValue('No authentication token available');
       }
 
-      
       const formData = new FormData();
       
-      
-      formData.append('price', orderData.price);
+      // Convert price to number and append
+      formData.append('price', Number(orderData.price));
       formData.append('situation', orderData.situation || "خالص");
       formData.append('status', orderData.status || "في طور الانجاز");
       
       if (orderData.advancedAmount) {
-        formData.append('advancedAmount', orderData.advancedAmount);
+        formData.append('advancedAmount', Number(orderData.advancedAmount));
       }
       
       formData.append('deliveryDate', orderData.deliveryDate);
       formData.append('pickupDate', orderData.pickupDate);
       formData.append('qrCode', orderData.qrCode);
       
+      // Convert boolean values properly
+      formData.append('isFinished', orderData.isFinished || false);
+      formData.append('isPickUp', orderData.isPickUp || false);
       
-      formData.append('isFinished', 'false');
-      formData.append('isPickUp', 'false');
-      
-      
+      // Handle images
       if (orderData.images && orderData.images.length > 0) {
         console.log(`Processing ${orderData.images.length} images for upload`);
         
-        
-        console.log('Image array structure:', JSON.stringify(orderData.images));
-        
-        
-        
         const imageFieldName = 'images';
-        
-        
-        
         
         for (let i = 0; i < orderData.images.length; i++) {
           const image = orderData.images[i];
@@ -64,20 +49,15 @@ export const createOrder = createAsyncThunk(
           }
           
           try {
-            
             const compressedUri = await compressImage(image.uri, 0.5);
-            
-            
             
             const originalName = image.name || `image_${i}.jpg`;
             const fileName = originalName.replace(/\s+/g, '_');
-            
             
             let fileType = image.type || 'image/jpeg';
             if (!fileType.includes('/')) {
               fileType = fileName.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
             }
-            
             
             const fileObj = {
               uri: compressedUri,
@@ -86,18 +66,12 @@ export const createOrder = createAsyncThunk(
             };
             
             console.log(`Adding image ${i}: ${fileName} (${fileType})`);
-            
-            
-            
             formData.append(imageFieldName, fileObj);
-            
-            
             formData.append('imageOrder', i.toString());
           } catch (error) {
             console.error(`Error processing image ${i}:`, error);
           }
         }
-        
         
         formData.append('imageCount', orderData.images.length.toString());
       } else {
@@ -113,32 +87,20 @@ export const createOrder = createAsyncThunk(
       
       console.log('Sending request to API');
       
-      console.log('Request details:', {
-        url: 'https://api.ajisalit.com/order',
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token.substring(0, 10)}...`,
-          'Content-Type': 'multipart/form-data',
-          'Accept': 'application/json',
-        },
-        timeout: 60000,
-      });
-      
       const response = await axios.post('https://api.ajisalit.com/order', formData, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
           'Accept': 'application/json',
         },
-        timeout: 60000, 
-        transformRequest: (data) => data, 
+        timeout: 120000, // Increased timeout to 2 minutes
+        transformRequest: (data) => data,
         
         onUploadProgress: (progressEvent) => {
           const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
           console.log(`Upload progress: ${percentCompleted}%`);
         },
       });
-      
       
       console.log('Server response:', response.status, response.statusText);
       if (response.data) {
@@ -165,11 +127,9 @@ export const createOrder = createAsyncThunk(
   }
 );
 
-
 const compressImage = async (uri, quality = 0.5, maxWidth = 800) => {
   try {
     console.log(`Processing image: ${uri}`);
-    
     
     const fileInfo = await FileSystem.getInfoAsync(uri);
     if (!fileInfo.exists) {
@@ -178,9 +138,7 @@ const compressImage = async (uri, quality = 0.5, maxWidth = 800) => {
     
     console.log(`Original size: ${(fileInfo.size / 1024).toFixed(2)} KB`);
     
-    
     if (fileInfo.size > 200 * 1024) {
-      
       const manipResult = await manipulateAsync(
         uri,
         [{ resize: { width: maxWidth } }],
@@ -197,13 +155,9 @@ const compressImage = async (uri, quality = 0.5, maxWidth = 800) => {
     }
   } catch (error) {
     console.error("Error in compressImage:", error);
-    
     return uri;
   }
 };
-
-
-
 
 const orderSlice = createSlice({
   name: 'order',

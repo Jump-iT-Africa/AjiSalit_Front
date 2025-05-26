@@ -468,21 +468,16 @@ const processOrderSubmission = () => {
   pickupDateObj.setDate(pickupDateObj.getDate() + 2);
   const formattedPickupDate = formatDateToYYYYMMDD(pickupDateObj);
   
-  // Prepare images for upload - make sure to format them correctly for your backend
-  // Your backend expects to receive the file itself, not a URL or path
+  // Prepare images for upload
   let processedImages = [];
   
   if (uploadedImages && uploadedImages.length > 0) {
     console.log(`Preparing ${uploadedImages.length} images for upload`);
     
-    // Map uploaded images to the format expected by the Redux action
     processedImages = uploadedImages.map((image, index) => {
-      // Make sure we have all required properties
       const fileName = image.name || `image_${index}.jpg`;
-      // Remove spaces from filename
       const sanitizedFileName = fileName.replace(/\s+/g, '_');
       
-      // Ensure type is properly formatted
       let fileType = image.type || 'image/jpeg';
       if (!fileType.includes('/')) {
         fileType = sanitizedFileName.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
@@ -499,13 +494,15 @@ const processOrderSubmission = () => {
   }
   
   const orderData = {
-    price: parseFloat(formData.price),
+    price: parseFloat(formData.price), // Ensure it's a number
     situation: formData.situation || "خالص",
     status: "في طور الانجاز",
-    advancedAmount: parseFloat(formData.advancedAmount) || null,
+    advancedAmount: formData.advancedAmount ? parseFloat(formData.advancedAmount) : null,
     deliveryDate: formattedDeliveryDate, 
     pickupDate: formattedPickupDate,     
     qrCode: newUniqueId,
+    isFinished: false, // Explicit boolean
+    isPickUp: false,   // Explicit boolean
     images: processedImages
   };
   
@@ -855,7 +852,7 @@ const processOrderSubmission = () => {
               </TouchableOpacity>
               
               {/* Gallery Button */}
-              {/* <TouchableOpacity 
+              <TouchableOpacity 
                 style={{
                   borderWidth: 1,
                   borderColor: '#2e752f',
@@ -873,7 +870,7 @@ const processOrderSubmission = () => {
                   fontFamily: 'TajawalRegular',
                   fontSize: wp('3.5%'),
                 }}>معرض الصور</Text>
-              </TouchableOpacity> */}
+              </TouchableOpacity>
             </View>
           </View>
        
