@@ -1,9 +1,10 @@
-import { View, Text, ActivityIndicator, ScrollView, I18nManager } from 'react-native';
+import { View, Text, ActivityIndicator, ScrollView, I18nManager, Platform } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchSiteInfo, resetSiteInfo } from '@/store/slices/siteInfoReducer.js';
 import HeaderWithBack from '@/components/ui/HeaderWithToolTipAndback';
 import { useRouter } from 'expo-router';
+import { WebView } from 'react-native-webview';
 
 const About = () => {
   const dispatch = useDispatch();
@@ -42,6 +43,41 @@ const About = () => {
     
     return paragraphs;
   };
+
+  const isHTML = (str) => {
+    if (!str) return false;
+    return /<[a-z][\s\S]*>/i.test(str);
+  };
+
+
+  
+  const wrapHtml = (htmlContent) => {
+    return `
+      <!DOCTYPE html>
+      <html dir="${I18nManager.isRTL ? 'rtl' : 'ltr'}">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+        <style>
+          body {
+            font-family: System;
+            padding: 0;
+            margin: 0;
+            direction: ${I18nManager.isRTL ? 'rtl' : 'ltr'};
+          }
+          p {
+            margin-bottom: 15px;
+            line-height: 1.5;
+            text-align: right;
+            direction: ${I18nManager.isRTL ? 'rtl' : 'ltr'};
+          }
+        </style>
+      </head>
+      <body style="font-family:'monospace'">
+        ${htmlContent}
+      </body>
+      </html>
+    `;
+  };
   
   useEffect(() => {
     dispatch(fetchSiteInfo('about'));
@@ -50,8 +86,15 @@ const About = () => {
     };
   }, [dispatch]);
   
+  // Debug what's happening
+  console.log('Content:', content);
+  console.log('Is HTML?', content?.content ? isHTML(content.content) : 'No content yet');
+  
+
+  const platform = Platform.OS === "ios" ? "pt-12" : "pt-0"
+
   return (
-    <View className='flex-1 items-center mt-10'>
+    <View style={{ flex: 1, backgroundColor: 'white' }} className={`${platform}`}>
       <View className='w-full'>
         <HeaderWithBack
           onPress={() => router.back()}
@@ -61,7 +104,7 @@ const About = () => {
         />
       </View>
       <Text className='font-tajawal text-2xl text-[#F52525] text-center self-center pr-4 mb-6'> 
-        {content?.title === 'security' ? "الأمان" : "معلومات"}
+        {"من نحن"}
       </Text>
       
       {status === 'loading' && (
@@ -73,33 +116,30 @@ const About = () => {
       )}
       
       {status === 'succeeded' && content && (
-        <View className='mt-4 px-4 w-full flex-1'>
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 40 }}
-            className='w-full'
-          >
-            <View className='w-full'>
+        <View style={{ flex: 1 }} className='mx-4'>
+          {isHTML(content.content) ? (
+            <WebView
+              originWhitelist={['*']}
+              source={{ html: wrapHtml(content.content) }}
+              style={{ flex: 1 }}
+              scalesPageToFit={false}
+              className='font-tajawalregular'
+            />
+          ) : (
+            <ScrollView contentContainerStyle={{ padding: 20 }}>
               {Array.isArray(formatArabicText(content.content)) ? (
                 formatArabicText(content.content).map((paragraph, index) => (
-                  <Text 
-                    key={index} 
-                    className='font-tajawalregular text-[14px] mb-4 text-right w-full leading-6'
-                    style={{ writingDirection: 'rtl', textAlign: 'right' }}
-                  >
+                  <Text key={index} style={{ marginBottom: 15, textAlign: 'right', lineHeight: 24,fontFamily:"Tajawal" }} className='font-tajawalregular'>
                     {paragraph}
                   </Text>
                 ))
               ) : (
-                <Text 
-                  className='font-tajawalregular text-[14px] text-right w-full leading-6'
-                  style={{ writingDirection: 'rtl', textAlign: 'right' }}
-                >
+                <Text style={{ textAlign: 'right', lineHeight: 24, fontFamily:"Tajawal" }} className='font-tajawal'>
                   {content.content}
                 </Text>
               )}
-            </View>
-          </ScrollView>
+            </ScrollView>
+          )}
         </View>
       )}
     </View>

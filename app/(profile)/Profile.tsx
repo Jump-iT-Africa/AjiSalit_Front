@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { 
   View, 
   Text, 
@@ -13,6 +13,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
+  Dimensions,
 } from 'react-native';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
@@ -28,10 +29,20 @@ import regionsAndCitiesData from "@/constants/Cities/Cities.json";
 import CompanyFieldDropDown from '@/components/CompanyRegister/CompanyFieldDropDown';
 import Color from "@/constants/Colors";
 import CustomButton from '@/components/ui/CustomButton';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 
 
 const Profile = () => {
+
+
+  const { width, height } = Dimensions.get('window');
+  const isSmallScreen = height < 700; 
+  
+  const bottomSheetHeight = useMemo(() => {
+      return isSmallScreen ? hp('80%') : hp('62%');
+  }, [isSmallScreen]);
+
     const dispatch = useDispatch();
     const user = useSelector(selectUserData); 
     const [profileImage, setProfileImage] = useState(null);
@@ -71,7 +82,6 @@ const Profile = () => {
         if (user.profileImage) {
           setProfileImage(user.profileImage);
         }
-        
         
         setInitialFname(user.Fname || '');
         setInitialLname(user.Lname || '');
@@ -273,7 +283,7 @@ const Profile = () => {
           >
             <View className="px-4">
               <View className="mx-auto my-2">
-                <Text className="font-bold text-xl text-[#F52525] text-center font-tajawal">معلومات الحساب</Text>
+                <Text className="font-thin text-xl text-[#F52525] text-center font-tajawal">معلومات الحساب</Text>
               </View>
               <View className="items-center justify-center my-4">
                 <TouchableOpacity 
@@ -291,7 +301,7 @@ const Profile = () => {
                     </View>
                   </View>
                 </TouchableOpacity>
-                <Text className="font-bold text-lg mt-2 font-tajawalregular">
+                <Text className="font-thin text-lg mt-2 font-tajawalregular">
                   {Fname} {Lname}
                 </Text>
               </View>
@@ -300,7 +310,7 @@ const Profile = () => {
                 <View style={{ width: '100%' }}>
                   <View>
                     <View className='flex items-end justify-end mb-4'>
-                      <Text className='font-bold text-l text-[#F52525] text-end font-tajawal'>المعلومات الشخصية</Text>
+                      <Text className='font-thin text-l text-[#F52525] text-end font-tajawal'>المعلومات الشخصية</Text>
                     </View>
                     
                       <View>
@@ -500,7 +510,7 @@ const Profile = () => {
                   backgroundColor: 'white',
                   borderTopLeftRadius: 20,
                   borderTopRightRadius: 20,
-                  height: '60%',
+                  height:bottomSheetHeight,
                   padding: 16
                 }}>
                   <View style={{ 
@@ -518,7 +528,7 @@ const Profile = () => {
                       style={{ width: 240, height: 240 }}
                       resizeMode="contain"
                     />
-                    <Text className="text-center text-[#2e752f] text-2xl font-tajawal font-bold" style={styles.FontText}>
+                    <Text className="text-center text-[#2e752f] text-2xl font-tajawal font-thin" style={styles.FontText}>
                       مبروك!
                     </Text>
                     <Text className="text-gray-700 text-base text-center p-2 font-tajawalregular">

@@ -213,7 +213,7 @@ const UpdatePassword = () => {
             <View style={styles.card}>
               <View style={styles.inputContainer}>
                 <View style={styles.labelContainer}>
-                  <Text style={styles.label} className='font-bold'>الكود الحالي</Text>
+                  <Text style={styles.label} >الكود الحالي</Text>
                 </View>
 
                 <Animated.View 
@@ -404,7 +404,7 @@ const UpdatePassword = () => {
                     style={{ width: 240, height: 240 }}
                     resizeMode="contain"
                   />
-                  <Text className="text-center text-[#2e752f] text-2xl font-tajawal font-bold" style={styles.FontText}>
+                  <Text className="text-center text-[#2e752f] text-2xl font-tajawal" style={styles.FontText}>
                     مبروك!
                   </Text>
                   <Text className="text-gray-700 text-base text-center p-2 font-tajawalregular">
@@ -449,7 +449,6 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: '#F52525',
     fontFamily: 'Tajawal',
-    fontWeight: 'bold',
   },
   card: {
     backgroundColor: '#fff',
@@ -478,7 +477,6 @@ const styles = StyleSheet.create({
     marginTop:10,
     color: '#2e752f',
     fontSize: 14,
-    fontWeight: "bold",
     marginRight:5
   },
   inputWrapper: {

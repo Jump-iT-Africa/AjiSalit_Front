@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
-import { View, Text, Image, TouchableOpacity, Modal } from "react-native";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { View, Text, Image, TouchableOpacity, Modal, Dimensions, Platform } from "react-native";
 import Logowhite from "@/assets/images/whiteLogo.png";
 import BottomSheetComponent from "../../ui/BottomSheetComponent";
 import CustomButton from "../../ui/CustomButton";
@@ -10,9 +10,17 @@ import { useSelector, useDispatch } from 'react-redux';
 import { finishButtonPressed, selectOrderButtonState } from '@/store/slices/OrderDetailsSlice';
 import { updateOrderDate, setCurrentOrder, updateToDone } from '@/store/slices/OrdersManagment';
 import successLeon from '@/assets/images/successLeon.png'
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 
 export default function FinishedButton({orderData}) {
+    const { width, height } = Dimensions.get('window');
+    const isSmallScreen = height < 400; 
+    
+    const bottomSheetHeight = useMemo(() => {
+        return isSmallScreen ? hp('60%') : hp('74%');
+    }, [isSmallScreen]);
+
     const actionSheetRef = useRef(null);
     const dispatch = useDispatch();
     const currentOrder = useSelector(state => state.orders.currentOrder || {});
@@ -41,7 +49,7 @@ export default function FinishedButton({orderData}) {
 
             dispatch(updateOrderDate({
                 orderId: orderId,
-                dateData: { isFinished: true }
+                dateData: { isFinished: true}
             }));
             
             dispatch(setCurrentOrder({
@@ -66,7 +74,7 @@ export default function FinishedButton({orderData}) {
                 onPress={handleSubmit}
                 disabled={isFinished}
             >
-                <Text className="text-white text-lg font-bold ml-2 font-tajawalregular pt-2 pr-2">تم الانتهاء</Text>
+                <Text className="text-white text-lg  ml-2 font-tajawalregular pt-0 pr-2">تم الانتهاء</Text>
                 <Image source={Logowhite} resizeMode="contain" className="w-10 h-10 pr-2" />
             </TouchableOpacity>
             
@@ -75,56 +83,76 @@ export default function FinishedButton({orderData}) {
                 transparent={true}
                 animationType="slide"
                 onRequestClose={closeBottomSheet}
-                >
-                
+                statusBarTranslucent={true}
+            >  
                 <TouchableOpacity 
-                style={{ flex: 1, backgroundColor: 'rgba(47, 117, 47, 0.48)' }}
-                activeOpacity={1}
-                onPress={closeBottomSheet}
-                >
-                <TouchableOpacity 
-                    activeOpacity={1}
-                    style={{
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    backgroundColor: 'white',
-                    borderTopLeftRadius: 20,
-                    borderTopRightRadius: 20,
-                    height: '55%',
-                    padding: 16
+                    style={{ 
+                        flex: 1, 
+                        backgroundColor: 'rgba(47, 117, 47, 0.48)',
+                        justifyContent: 'flex-end',
+                        width: width,
+                        height: height,
                     }}
+                    activeOpacity={1}
+                    onPress={closeBottomSheet}
                 >
-                <View className="flex-1 items-center justify-left h-full">
-                    <View >
-                        <Image
-                            source={successLeon}
-                            resizeMode="contain"
-                            className=""
+                    <TouchableOpacity 
+                        activeOpacity={1}
+                        style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            backgroundColor: 'white',
+                            borderTopLeftRadius: 20,
+                            borderTopRightRadius: 20,
+                            height: bottomSheetHeight,
+                            marginBottom: Platform.OS === "android" ? "-30" : "0",
+                        }}
+                        onPress={(e) => e.stopPropagation()}
+                    >
+                        {/* Top handle */}
+                        <View 
+                            style={{ 
+                                width: 60, 
+                                height: 5, 
+                                backgroundColor: Colors.green, 
+                                borderRadius: 5, 
+                                alignSelf: 'center',
+                                marginTop: 10,
+                                marginBottom: 10
+                            }} 
                         />
-                    </View>
-                    <View>
-                        <Text className="text-center text-[#2F752F] text-4xl font-tajawal pt-3 mt-0">مبروك!</Text>
-                        <Text className="text-black text-2xl text-center p-4 font-tajawalregular">
-                            تم إكمال الطلب بنجاح
-                        </Text>
-                    </View>
-                    <View className="w-full mt-4">
-                        <CustomButton
-                            onPress={() => {
-                                actionSheetRef.current?.hide();
-                                router.replace('/(home)');
-                            }}
-                            title="انتقل للصفحة الرئيسية"
-                            textStyles="text-sm font-tajawal pt-2 py-0 text-white"
-                            containerStyles="w-[90%] m-auto bg-[#F52525] pt-2"
-                        />
-                    </View>
-                </View>
-            </TouchableOpacity>
-        </TouchableOpacity>
-      </Modal>
+
+                        <View className="flex-1 items-center justify-left h-full px-4">
+                            <View>
+                                <Image
+                                    source={successLeon}
+                                    resizeMode="contain"
+                                    className=""
+                                />
+                            </View>
+                            <View>
+                                <Text className="text-center text-[#2F752F] text-4xl font-tajawal pt-3 mt-0">مبروك!</Text>
+                                <Text className="text-black text-2xl text-center p-4 font-tajawalregular">
+                                    تم إكمال الطلب بنجاح
+                                </Text>
+                            </View>
+                            <View className="w-full mt-4">
+                                <CustomButton
+                                    onPress={() => {
+                                        actionSheetRef.current?.hide();
+                                        router.replace('/(home)');
+                                    }}
+                                    title="انتقل للصفحة الرئيسية"
+                                    textStyles="text-sm font-tajawal pt-2 py-0 text-white"
+                                    containerStyles="w-[90%] m-auto bg-[#F52525] pt-2"
+                                />
+                            </View>
+                        </View>
+                    </TouchableOpacity>
+                </TouchableOpacity>
+            </Modal>
         </>
     );
 }

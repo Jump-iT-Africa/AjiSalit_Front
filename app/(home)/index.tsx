@@ -14,6 +14,8 @@ import Wallet from "@/assets/images/wallet.png"
 import WalletPoor from "@/assets/images/walletPoor.png"
 import WalletRich from "@/assets/images/walletRich.png"
 import { useFocusEffect } from '@react-navigation/native';
+import OrdersTabs from '@/components/TabsComponent/OrdersTabs'
+import {setTabFilter} from "@/store/slices/OrdersSlice.js"
 
 const Home = () => {
   const dispatch = useDispatch();
@@ -72,21 +74,21 @@ const Home = () => {
   };
   
   const getWalletColorAndMessage = () => {
-    if (userPocket >= 250) {
+    if (userPocket >= 54) {
       return {
         amountColor: '#295f2b', 
         messageColor: '#295f2b',
         message: 'رصيد ديالك كافي للطلبات الجديدة',
         walletImage: WalletRich
       };
-    } else if (userPocket >= 50 && userPocket < 250) {
+    } else if (userPocket >= 25 && userPocket < 54) {
       return {
         amountColor: '#FFA30E', 
         messageColor: '#FFA30E',
         message: 'رصيد ديالك قرب يسالي',
         walletImage: Wallet
       };
-    } else if (userPocket > 0 && userPocket < 50) {
+    } else if (userPocket > 0 && userPocket < 24) {
       return {
         amountColor: '#F52525', 
         messageColor: '#F52525',
@@ -108,6 +110,11 @@ const Home = () => {
   console.log('User role:', role);
   console.log('User pocket displayed in Home:', userPocket);
 
+
+  const handleTabChange = (tabFilter) => {
+    console.log('Tab changed to:', tabFilter);
+    dispatch(setTabFilter(tabFilter));
+  };
   return (
     <SafeAreaView className='flex'>
       <View className='px-0'>
@@ -123,7 +130,7 @@ const Home = () => {
             </View>
           ) : (
             <View className='mt-4 w-full flex items-end'>
-              <View className='bg-white w-[100%] p-2 rounded-xl mx-auto mb-4 flex-row justify-between items-center'>
+              {/* <View className='bg-white w-[100%] p-2 rounded-xl mx-auto mb-4 flex-row justify-between items-center'>
                 <View>
                   <Image
                     source={walletImage}
@@ -140,12 +147,23 @@ const Home = () => {
                     {message}
                   </Text>
                 </View>
-              </View>
+              </View> */}
+
+
               <Text className='text-end text-xl font-tajawal'>الطلبات المتوفرة</Text>
             </View>
           )}
         </View>
       </View>
+      
+      {role === 'company' && (
+        <OrdersTabs 
+          onTabChange={handleTabChange}
+          activeTab="all"
+        />
+      )}
+
+
       <View className='w-full h-full px-2 mt-4 '>
         {role === 'client' && <OrdersManagment 
           SearchCode={searchCode} 

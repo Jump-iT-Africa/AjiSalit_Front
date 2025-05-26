@@ -2,7 +2,9 @@ import React, { forwardRef, useImperativeHandle, useRef, useCallback, useMemo, u
 import { View, StyleSheet, Dimensions, BackHandler, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { BottomSheetModal, BottomSheetModalProvider, BottomSheetScrollView, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import { useFocusEffect } from '@react-navigation/native';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import Color from '@/constants/Colors';
+
 export interface BottomSheetComponentProps {
   children: React.ReactNode;
   containerStyle?: any;
@@ -27,24 +29,31 @@ const BottomSheetComponent = forwardRef<BottomSheetComponentRef, BottomSheetComp
     closeOnTouchBackdrop = true, 
     closeOnPressBack = true, 
     gestureEnabled = true, 
-    customHeight,
+    customHeight="90%",
     scrollable = true
   }, ref) => {
+
+
+    
+    const { width, height } = Dimensions.get('window');
+    const isSmallScreen = height < 700; 
+    
+    const bottomSheetHeight = useMemo(() => {
+        return isSmallScreen ? hp('85%') : hp('80%');
+    }, [isSmallScreen]);
+
+
+  const isAndroidAndSmall = Platform.OS === "android"  &&  isSmallScreen;
+
+
+
     const bottomSheetModalRef = useRef<BottomSheetModal>(null);
-    const windowHeight = Dimensions.get('window').height;
     const [isOpen, setIsOpen] = useState(false);
     
     
     const snapPoints = useMemo(() => {
-      let height;
+      let height = isAndroidAndSmall  ? "90" : "80";
 
-      if (!customHeight) {
-        height = '70%';
-      } else {
-        height = customHeight;
-      }
-
-      
       if (typeof height === 'string' && height.includes('%')) {
         const percentage = parseInt(height.replace('%', ''), 10);
         return [`${percentage}%`];
@@ -125,6 +134,7 @@ const BottomSheetComponent = forwardRef<BottomSheetComponentRef, BottomSheetComp
             enableHandlePanningGesture={gestureEnabled}
             enableOverDrag={false}
             enableContentPanningGesture={gestureEnabled}
+            
           >
             <ContentComponent
               style={[styles.contentContainer, contentStyle]}
@@ -143,23 +153,20 @@ const BottomSheetComponent = forwardRef<BottomSheetComponentRef, BottomSheetComp
 const styles = StyleSheet.create({
   container: {
     backgroundColor: Color.green,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: wp('5%'),
+    borderTopRightRadius: wp('5%'),
   },
   indicator: {
     backgroundColor: Color.green,
-    width: 60,
-    height: 5,
-    
+    width: wp('15%'),
+    height: hp('0.6%'),
   },
   contentContainer: {
     flex: 1,
-   
   },
   scrollContent: {
     flexGrow: 1,
-    padding: 20,
-   
+    padding: wp('5%'),
   }
 });
 

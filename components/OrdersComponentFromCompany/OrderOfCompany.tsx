@@ -10,8 +10,11 @@ import {
   Image,
   Pressable,
   Modal,
-  StyleSheet
+  StyleSheet,
+  Dimensions,
+  Platform
 } from 'react-native';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import NoOrdersExists from '../NoOrderExists/NoOrdersExists';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { FlashList } from "@shopify/flash-list";
@@ -34,7 +37,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { updateOrderDate } from '@/store/slices/OrdersManagment';
 import NoSearchResult from '@/assets/images/NoSearchResult.png'
 
-
+// Get screen dimensions
+const { width, height } = Dimensions.get('window');
+const isSmallScreen = height < 700;
 
 const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
   const router = useRouter();
@@ -51,9 +56,6 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
   const isPickedUp = pickupButtonClicked;
   const allOrders = useSelector(state => state.orders.orders);
   const searchTerm = useSelector(state => state.orders.searchTerm);
- 
-  console.log('search code', SearchCode);
-  
 
   useEffect(() => {
     if (SearchCode !== undefined && SearchCode !== null) {
@@ -115,15 +117,8 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
 
 
   const OrderItem = ({ item }) => {
-
-
-    
-
-    // console.log('this is item', item);
-    
     const [localFinished, setLocalFinished] = useState(item.isFinished);
     const [showModal, setShowModal] = useState(false);
-
 
     const getStatusColor = (type) => {
       switch (type) {
@@ -161,9 +156,54 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
       }, 500);
     };
 
-    const borderStyle = item.isToday 
-    ? "bg-white rounded-3xl p-4 mb-3 border-2 border-[#FD8900] flex-row-reverse justify-between items-center border" 
-    : "bg-white rounded-3xl p-4 mb-3 border border-[#295f2b] flex-row-reverse justify-between items-center ";
+    const containerStyle = {
+      backgroundColor: 'white',
+      borderRadius: wp('7%'),
+      padding: wp('4%'),
+      marginBottom: hp('1.5%'),
+      flexDirection: 'row-reverse',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      borderWidth: item.isToday ? 1 : 1,
+      borderColor: '#295f2b'
+    };
+
+    const textBaseStyle = {
+      fontFamily: 'TajawalRegular',
+      fontSize: wp('3.5%')
+    };
+
+    const labelTextStyle = {
+      ...textBaseStyle,
+      color: 'black',
+      marginRight: wp('2%'),
+      fontFamily: 'TajawalRegular',
+      fontSize: wp('3.4%')
+    };
+
+    const valueTextStyle = {
+      ...textBaseStyle,
+      color: '#295f2b'
+    };
+
+    const statusStyle = {
+      paddingHorizontal: wp('2%'),
+      paddingVertical: hp('0.3%'),
+      borderRadius: wp('10%'),
+      flexDirection: 'row'
+    };
+
+    const statusTextStyle = {
+      color: 'white',
+      fontSize: wp('2.2%'),
+      fontFamily: 'TajawalRegular'
+    };
+
+    const dateTextStyle = {
+      ...textBaseStyle,
+      color: 'black',
+      fontSize: wp('2.6%')
+    };
 
     return (
       <View>
@@ -171,55 +211,55 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
           activeOpacity={0.7}
           onPress={() => handleItemPress(item)}
           style={{ width: '100%' }}>
-          <View className={borderStyle}>
-            <View>
-              <View className="flex flex-row-reverse justify-between items-center mb-1">
-                <View className="flex flex-row-reverse items-center">
-                  <Text className="text-black mr-2 font-tajawalregular text-[14px]">رمز الطلب:</Text>
-                  <Text className="font-bold text-[#295f2b]">{item.orderCode}</Text>
+          <View style={containerStyle}>
+            <View style={{ flex: 1 }}>
+              <View style={{ flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', marginBottom: hp('0.5%') }}>
+                <View style={{ flexDirection: 'row-reverse', alignItems: 'center' }}>
+                  <Text style={labelTextStyle}>رمز الطلب:</Text>
+                  <Text style={valueTextStyle}>{item.orderCode}</Text>
                 </View>
               </View>
-              <View className='w-full flex-row-reverse items-center mb-1'>
-                <Text className="text-black mr-2 font-tajawalregular text-[14px] ml-1">المبلغ:</Text>
-                <View className={`px-2 py-0 rounded-full w-auto text-start flex flex-row ${getStatusColor(item.type)}`}>
+              <View style={{ width: '100%', flexDirection: 'row-reverse', alignItems: 'center', marginBottom: hp('0.5%') }}>
+                <Text style={labelTextStyle}>الحالة:</Text>
+                <View style={[statusStyle, { backgroundColor: item.type === 'paid' ? '#10b981' : item.type === 'unpaid' ? '#ef4444' : item.type === 'installment' ? '#f97316' : '#6b7280' }]}>
                   {item.value !== null && (
-                    <Text className="font-bold text-white font-tajawalregular text-[9px] flex flex-row-reverse">
-                      {item.advancedAmount} {item.currency}
+                    <Text style={[statusTextStyle, ]}>
+                      {item.advancedAmount} {item.currency} 
                     </Text>
                   )}
-                  <Text className="text-white text-[9px] font-medium font-tajawalregular">
+                  <Text style={statusTextStyle}>
                     {item.label}
                   </Text>
                 </View>
               </View>
-              <View className="flex flex-row-reverse justify-between">
-                <View className="flex flex-col items-end">
-                  <View className='flex-row-reverse mb-1 gap-1'>
-                    <Text className="text-black mr-2 font-tajawalregular text-[14px]">صاحب(ة) الطلب:</Text>
-                    <Text className="text-gray-900 font-tajawalregular text-[#295f2b]">{item.clientId.Fname}</Text>
+              <View style={{ flexDirection: 'row-reverse', justifyContent: 'space-between' }}>
+                <View style={{ flexDirection: 'column', alignItems: 'flex-end', justifyContent:'center'}}>
+                  <View style={{ flexDirection: 'row-reverse', marginBottom: hp('0.5%'), gap: wp('0.5%') }}>
+                    <Text style={labelTextStyle}>صاحب(ة) الطلب:</Text>
+                    <Text style={[valueTextStyle, { color: '#295f2b' }]}>{item.clientId.Fname} </Text>
                   </View>
-                  <View className='flex flex-row gap-1 mr-2'>
-                    <Text className="text-black">{item.newDate === 'غير محدد' ? item.date : item.newDate}</Text>
-                    <AntDesign name="calendar" size={15} color="#F52525" />
+                  <View style={{ flexDirection: 'row', gap: wp('0.5%'), marginRight: wp('2%') , justifyContent:'center', alignItems:'center'}}>
+                    <Text style={dateTextStyle}>{item.newDate === 'غير محدد' ? item.date : item.newDate}</Text>
+                    <AntDesign name="calendar" size={wp('3.5%')} color="#F52525" />
                   </View>
                 </View>
               </View>
             </View>
             <Pressable 
-            onPress={() => !localFinished && setShowModal(true)}
-            disabled={localFinished}
-          >
-            <Image 
-              source={AjiSalit}
-              style={{
-                width: 30,
-                height: 30,
-                // Use localFinished for immediate visual feedback
-                tintColor: localFinished ? undefined : 'gray',
-              }}
-              resizeMode='contain'
-            />
-          </Pressable>
+              onPress={() => !localFinished && setShowModal(true)}
+              disabled={localFinished}
+              style={{ paddingLeft: wp('2%') }}
+            >
+              <Image 
+                source={AjiSalit}
+                style={{
+                  width: wp('7%'),
+                  height: wp('7%'),
+                  tintColor: localFinished ? undefined : 'gray',
+                }}
+                resizeMode='contain'
+              />
+            </Pressable>
           </View>
         </TouchableOpacity> 
 
@@ -231,20 +271,20 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
         >
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
-              <Text style={styles.modalText} className='font-tajawalregular'>واش متأكد بغي تأكد الطلب ؟</Text>
+              <Text style={[styles.modalText, { fontFamily: 'TajawalRegular' }]}>واش متأكد بغي تأكد الطلب ؟</Text>
               <View style={styles.buttonContainer}>
                 <Pressable
                   style={[styles.button, styles.buttonConfirm]}
                   onPress={handleConfirm}
                 >
-                  <Text style={styles.textStyle} className='font-tajawal'>نعم</Text>
+                  <Text style={[styles.textStyle, { fontFamily: 'Tajawal' }]}>نعم</Text>
                 </Pressable>
                 
                 <Pressable
                   style={[styles.button, styles.buttonCancel]}
                   onPress={() => setShowModal(false)}
                 >
-                  <Text style={styles.textStyle} className='font-tajawal'>إلغاء</Text>
+                  <Text style={[styles.textStyle, { fontFamily: 'Tajawal' }]}>إلغاء</Text>
                 </Pressable>
               </View>
             </View>
@@ -260,16 +300,18 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
 
   if (loading && !refreshing && !ordersLoaded) {
     return (
-      <View className='flex-1'>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" color="#2e752f" />
-        <Text className="text-center p-4 font-tajawalregular">جاري تحميل الطلبات...</Text>
+        <Text style={{ textAlign: 'center', padding: wp('4%'), fontFamily: 'TajawalRegular', fontSize: wp('4%') }}>
+          جاري تحميل الطلبات...
+        </Text>
       </View>
     );
   }
 
   if (error && !refreshing) {
     return (
-      <SafeAreaView className="flex-1 bg-gray-100 ">
+      <SafeAreaView >
         <NoOrdersExists />
       </SafeAreaView>
     );
@@ -277,25 +319,33 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
   
   if (Array.isArray(filteredOrders) && filteredOrders.length === 0) {
     return (
-      <SafeAreaView className="flex-1 bg-gray-100 ">
+      <SafeAreaView >
         <NoOrdersExists />
       </SafeAreaView>
     );
   }
 
+
+
   return (
-    <SafeAreaView className="flex-1 bg-gray-100 p-4 pb-10">
+    <SafeAreaView style={{ 
+      flex: 1, 
+      backgroundColor: '#f3f4f6', 
+      padding: wp('0%'),
+      paddingBottom: hp('5%')
+      
+    }}>
       <FlashList
-        data={filteredOrders || []}
+        data={filteredOrders || []} 
         renderItem={renderOrder}
-        estimatedItemSize={200}
+        estimatedItemSize={wp('50%')}
         extraData={filteredOrders.map(order => order.isFinished).join(',')}
         keyExtractor={item => `${item.id}-${item.isFinished ? 'finished' : 'unfinished'}`}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         showsVerticalScrollIndicator={false}
-        ListFooterComponent={<View style={{ height: 800 }} />}
+        ListFooterComponent={<View style={{ height: hp('100%') }} />}
       />
     </SafeAreaView>
   );
@@ -309,10 +359,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)'
   },
   modalView: {
-    margin: 20,
+    margin: wp('5%'),
     backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 35,
+    borderRadius: wp('5%'),
+    padding: wp('9%'),
     alignItems: 'center',
     shadowColor: 'red',
     shadowOffset: {
@@ -325,14 +375,14 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: 'row',
-    gap: 10,
-    marginTop: 20
+    gap: wp('2.5%'),
+    marginTop: hp('2.5%')
   },
   button: {
-    borderRadius: 10,
-    padding: 10,
+    borderRadius: wp('2.5%'),
+    padding: wp('2.5%'),
     elevation: 2,
-    minWidth: 80,
+    minWidth: wp('20%'),
     alignItems: 'center'
   },
   buttonConfirm: {
@@ -343,13 +393,13 @@ const styles = StyleSheet.create({
   },
   textStyle: {
     color: 'white',
-    fontWeight: 'bold',
-    textAlign: 'center'
+    textAlign: 'center',
+    fontSize: wp('3.8%')
   },
   modalText: {  
-    marginBottom: 15,
+    marginBottom: hp('2%'),
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: wp('4.2%'),
   }
 });
 

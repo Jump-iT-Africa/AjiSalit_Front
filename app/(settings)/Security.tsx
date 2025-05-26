@@ -1,4 +1,4 @@
-import { View, Text, ActivityIndicator, ScrollView, I18nManager, Dimensions } from 'react-native';
+import { View, Text, ActivityIndicator, ScrollView, I18nManager, Dimensions, Platform } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchSiteInfo, resetSiteInfo } from '@/store/slices/siteInfoReducer.js';
@@ -51,8 +51,11 @@ const Security = () => {
     };
   }, [dispatch]);
   
+  const platform = Platform.OS === "ios" ? "pt-12" : "pt-0"
+
+
   return (
-    <View style={{ flex: 1, backgroundColor: 'white' }} className='pt-12'>
+    <View style={{ flex: 1, backgroundColor: 'white' }} className={`${platform}`}>
       <HeaderWithBack
         onPress={() => router.back()}
         tooltipVisible={tooltipVisible}
@@ -60,7 +63,7 @@ const Security = () => {
         content="فهاد الصفحة غدي تختار واش نتا شركة ولا شخص عادي"
       />
       
-      <Text style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', margin: 10 }} className='font-tajawal text-[#F52525]'>
+      <Text style={{ fontSize: 24,  textAlign: 'center', margin: 10 }} className='font-tajawal text-[#F52525]'>
         {content?.title === 'security' ? "الأمان" : "معلومات"}
       </Text>
       
@@ -85,7 +88,6 @@ const Security = () => {
               className='font-tajawalregular'
             />
           ) : (
-            // Render plain text with your existing formatting function
             <ScrollView contentContainerStyle={{ padding: 20 }}>
               {Array.isArray(formatArabicText(content.content)) ? (
                 formatArabicText(content.content).map((paragraph, index) => (

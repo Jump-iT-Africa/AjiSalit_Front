@@ -1,7 +1,20 @@
 // @ts-nocheck
 
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform, Modal, TextInput,TouchableWithoutFeedback } from 'react-native';
+import { 
+  View, 
+  Text, 
+  TouchableOpacity, 
+  StyleSheet, 
+  Platform, 
+  Modal, 
+  TextInput, 
+  TouchableWithoutFeedback,
+  Image,
+  ScrollView,
+  Dimensions,
+  FlatList
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Feather from '@expo/vector-icons/Feather';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -17,7 +30,8 @@ const OrderDetailsCard = ({
   newDate,
   currency = "درهم",
   situation,
-  orderId, 
+  orderId,
+  images = [], 
   onDateChange = (newDate, reason) => {}
 }) => {
 
@@ -37,7 +51,7 @@ const OrderDetailsCard = ({
     if (typeof dateValue === 'string' && dateValue) {
       try {
         const dateObj = new Date(dateValue);
-        if (!isNaN(dateObj.getTime())) { // Check if valid date
+        if (!isNaN(dateObj.getTime())) {
           return `${dateObj.getDate()}/${dateObj.getMonth() + 1}/${dateObj.getFullYear()}`;
         }
       } catch (error) {
@@ -89,27 +103,22 @@ const OrderDetailsCard = ({
   };
   
   const saveChanges = async () => {
-    // Get formatted date - use current date if no date is selected
     let formattedForAPI;
     
     if (!selectedDate) {
-      // No date selected, use current date
       const today = new Date();
       const year = today.getFullYear();
       const month = String(today.getMonth() + 1).padStart(2, '0');
       const day = String(today.getDate()).padStart(2, '0');
       formattedForAPI = `${year}-${month}-${day}`;
     } else {
-      // Format the selected date to ensure YYYY-MM-DD format
       const dateParts = selectedDate.split('/');
       if (dateParts.length === 3) {
-        // Convert from DD/MM/YYYY to YYYY-MM-DD
         const day = dateParts[0].padStart(2, '0');
         const month = dateParts[1].padStart(2, '0');
         const year = dateParts[2];
         formattedForAPI = `${year}-${month}-${day}`;
       } else {
-        // If the date is already in another format, try to parse it correctly
         try {
           const dateObj = new Date(selectedDate);
           if (!isNaN(dateObj.getTime())) {
@@ -122,7 +131,6 @@ const OrderDetailsCard = ({
           }
         } catch (error) {
           console.log("Date parsing error:", error);
-          // Fallback to current date if parsing fails
           const today = new Date();
           const year = today.getFullYear();
           const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -148,9 +156,8 @@ const OrderDetailsCard = ({
       
       console.log('Date updated successfully:', result);
       setUpdateStatus('تم تحديث التاريخ بنجاح');
-      console.log('Date sent to API:', formattedForAPI); // Debug log to verify format
+      console.log('Date sent to API:', formattedForAPI);
       
-      // Use the correct date format for the callback
       const displayDate = selectedDate || formatDateForDisplay(new Date());
       onDateChange(displayDate, reason);
       
@@ -193,27 +200,27 @@ const OrderDetailsCard = ({
   return (
     <View className=" border-l-0 border-r-0 border-b-0 rounded-lg p-4 bg-white my-3 w-[95%] mx-auto" style={styles.detailscontainer}>
       <View className="flex-row-reverse justify-between items-center border-b border-gray-200 pb-2 mb-4">
-        <Text className="font-bold text-[#F52525] text-right font-tajawalregular text-smt">تفاصيل الطلب:</Text>
+        <Text className="font-thin text-[#F52525] text-right font-tajawalregular text-smt">تفاصيل الطلب:</Text>
         <TouchableOpacity style={{ backgroundColor: currentColor, paddingHorizontal: 20, paddingVertical: 8, borderRadius: 50 }}>
-          <Text className=" font-bold text-center font-tajawalregular text-xs text-white pt-1">{situation}</Text>
+          <Text className=" font-thin text-center font-tajawalregular text-xs text-white pt-1">{situation}</Text>
         </TouchableOpacity>
       </View>
       <View className="flex-row-reverse justify-between  mb-4 overflow-hidden gap-2">
         <View className="flex-1 p-3 items-center bg-gray-100 border border-gray-200 rounded-lg">
-          <Text className="mb-1.5 text-center font-bold font-tajawalregular text-[10px]">المبلغ الإجمالي</Text>
-          <Text className="font-bold text-center text-green-700 font-tajawalregular text-xs">
+          <Text className="mb-1.5 text-center font-thin font-tajawalregular text-[10px]">المبلغ الإجمالي</Text>
+          <Text className="font-thin text-center text-green-700 font-tajawalregular text-xs">
             {totalAmount} {currency}
           </Text>
         </View>
         <View className="flex-1 p-3 items-center bg-green-700 border border-green-700 rounded-lg">
-          <Text className="mb-1.5 text-center font-bold text-white font-tajawalregular text-[10px]">التسبيق</Text>
-          <Text className="font-bold text-center text-yellow-400 font-tajawalregular text-xs">
+          <Text className="mb-1.5 text-center font-thin text-white font-tajawalregular text-[10px]">التسبيق</Text>
+          <Text className="font-thin text-center text-yellow-400 font-tajawalregular text-xs">
             {paidAmount} {currency}
           </Text>
         </View>
         <View className="flex-1 p-3 items-center bg-gray-100 border border-gray-200 rounded-lg">
-          <Text className="mb-1.5 text-center font-bold font-tajawalregular text-[10px]">الباقي</Text>
-          <Text className="font-bold text-center text-green-700 font-tajawalregular text-xs">
+          <Text className="mb-1.5 text-center font-thin font-tajawalregular text-[10px]">الباقي</Text>
+          <Text className="font-thin text-center text-green-700 font-tajawalregular text-xs">
             {remainingAmount} {currency}
           </Text>
         </View>
@@ -224,14 +231,14 @@ const OrderDetailsCard = ({
         </View>
         <View className="flex-1 mx-3 items-end justify-between">
           <Text className="text-gray-800 text-right font-tajawalregular text-xs">تاريخ التسليم:</Text>
-          <Text className="font-bold text-green-700 text-right font-tajawalregular text-xs">
+          <Text className="font-thin text-green-700 text-right font-tajawalregular text-xs">
             {formatDate(newDate) || formatDate(deliveryDate)}
           </Text>
         </View>
         <TouchableOpacity className="ml-2" onPress={() => setModalVisible(true)}>
           <Feather name="edit" size={21} color="#2e752f"/>
         </TouchableOpacity>
-      </View>
+      </View>      
            
       <Modal
         animationType="slide"
@@ -349,7 +356,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: 'TajawalRegular',
     color: '#2e752f',
-    fontWeight: 'bold',
     textAlign: 'right',
     marginBottom: 15,
   },
@@ -413,7 +419,6 @@ const styles = StyleSheet.create({
   buttonSaveText: {
     color: 'white',
     fontFamily: 'TajawalRegular',
-    fontWeight: 'bold',
     textAlign: 'center',
   },
   buttonCancelText: {

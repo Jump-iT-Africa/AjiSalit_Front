@@ -1,5 +1,3 @@
-
-
 import React, { useState, useRef, useEffect } from "react";
 import {
   View,
@@ -21,6 +19,7 @@ import { StatusBar } from "expo-status-bar";
 import { Feather } from "@expo/vector-icons";
 import RegisterBackImage from "@/assets/images/register2.jpg";
 import RegisterFocusBackImage from "@/assets/images/register3.jpeg";
+import AdrarImage from "@/assets/images/adrar.png"; // Import the new background image
 import AppGradient from "../../components/ui/AppGradient";
 import HeaderWithBack from "@/components/ui/HeaderWithToolTipAndback";
 import { useDispatch, useSelector } from 'react-redux';
@@ -41,11 +40,13 @@ const Register: React.FC = () => {
   const [phone, setPhone] = useState('+212 ');
   const [inputFocused, setInputFocused] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [showLoadingBackground, setShowLoadingBackground] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const dispatch = useDispatch();
   const isVerifying = useSelector(selectVerificationLoading);
   const verificationSuccess = useSelector(selectVerificationSuccess);
   const error = useSelector(selectError);
+  const backgroundTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -54,6 +55,26 @@ const Register: React.FC = () => {
       useNativeDriver: true,
     }).start();
   }, [inputFocused, fadeAnim]);
+  
+  useEffect(() => {
+    if (isVerifying) {
+      setShowLoadingBackground(true);
+      if (backgroundTimeoutRef.current) {
+        clearTimeout(backgroundTimeoutRef.current);
+      }
+    } else if (showLoadingBackground) {
+      backgroundTimeoutRef.current = setTimeout(() => {
+        setShowLoadingBackground(false);
+      }, 1500); // Minimum display time of 1.5 seconds
+    }
+    
+    // Cleanup timeout on component unmount
+    return () => {
+      if (backgroundTimeoutRef.current) {
+        clearTimeout(backgroundTimeoutRef.current);
+      }
+    };
+  }, [isVerifying, showLoadingBackground]);
   
   const formatPhoneNumber = (text: string) => {
     let cleaned = text.replace(/[^\d+]/g, '');
@@ -68,7 +89,6 @@ const Register: React.FC = () => {
     if (!cleaned.startsWith('+212')) {
       cleaned = '+212' + cleaned.slice(1);
     }
-  
     
     let remainder = '';
     if (cleaned.length > 4) {
@@ -155,29 +175,38 @@ const Register: React.FC = () => {
     
     console.log('Submitting phone number with format:', phone);
     
+    // Set a minimum display time for the processing background
+    setShowLoadingBackground(true);
+    
     dispatch(verifyPhoneNumber(phone))
       .unwrap()
       .then((response) => {
         console.log('Verification response:', response);
         
-        if (response.statusCode === 409 && response.isExist === false) {
-          console.log('User exists, redirecting to password screen');
-
-          router.navigate({
-            pathname: '/interPassword',
-            params: { 
-              phoneNumber: phone, 
-              userName: response.UserName
-            }
-          });
-        } else {
-          console.log('Phone verification successful');
-          router.navigate('/CreatePIN');
-        }
+        // Add delay before navigation to ensure smooth background transition
+        backgroundTimeoutRef.current = setTimeout(() => {
+          if (response.statusCode === 409 && response.isExist === false) {
+            console.log('User exists, redirecting to password screen');
+            router.navigate({
+              pathname: '/interPassword',
+              params: { 
+                phoneNumber: phone, 
+                userName: response.UserName
+              }
+            });
+          } else {
+            console.log('Phone verification successful');
+            router.navigate('/CreatePIN');
+          }
+        }, 1000); // Add a small delay for smoother transition
       })
       .catch((err) => {
         console.log('Failed to verify phone:', err);
         setErrorMessage(err.message || "حدث خطأ ما");
+        // Keep loading background for minimum time even on error
+        backgroundTimeoutRef.current = setTimeout(() => {
+          setShowLoadingBackground(false);
+        }, 1500);
       });
   };
 
@@ -193,20 +222,29 @@ const Register: React.FC = () => {
     if (error) {
       console.log(error);
       if (error.message === "Phone number already exists") {
-        setTimeout(() => {
+        // Add delay before navigation for smooth transition
+        backgroundTimeoutRef.current = setTimeout(() => {
           router.navigate({
             pathname: '/InterPassword',
             params: {
               userName: error.UserName,
               phoneNumber: phone
             }
-          })
-        }, 500);
+          });
+        }, 1500); // Use minimum display time for the background
       } else {
         setErrorMessage(error.message || "حدث خطأ ما");
+        // Keep loading background for minimum time even on error
+        backgroundTimeoutRef.current = setTimeout(() => {
+          setShowLoadingBackground(false);
+        }, 1500);
       }
     }
   }, [error]);
+
+  // Determine which background image to show
+  const backgroundImage = showLoadingBackground ? AdrarImage : RegisterBackImage;
+  const focusBackgroundImage = showLoadingBackground ? AdrarImage : RegisterFocusBackImage;
 
   return (
     <KeyboardAvoidingView className="flex-1">
@@ -218,7 +256,7 @@ const Register: React.FC = () => {
         <View className="flex-1">
           <View className="absolute w-full h-full">
             <ImageBackground
-              source={RegisterBackImage}
+              source={backgroundImage}
               resizeMode="cover"
               className="flex-1"
             />
@@ -232,7 +270,7 @@ const Register: React.FC = () => {
           
           <Animated.View className="absolute w-full h-full" style={{ opacity: fadeAnim }}>
           <ImageBackground
-            source={RegisterFocusBackImage}
+            source={focusBackgroundImage}
             resizeMode="cover"
             className="flex-1"
           />
@@ -253,6 +291,7 @@ const Register: React.FC = () => {
         </Animated.View>
           <View className="flex-1">
             <AppGradient colors={["rgba(0,0,0,0.4)", "rgba(0,0,0,0.0)"]}>
+            <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
               <SafeAreaView className="flex-1">
                 <HeaderWithBack 
                   tooltipVisible={tooltipVisible} 
@@ -311,8 +350,15 @@ const Register: React.FC = () => {
                       {errorMessage}
                     </Text>
                   )}
+                  
+                  {showLoadingBackground && (
+                    <Text className="text-white text-center text-[16px] mt-4 font-tajawal">
+                      جاري التحقق من رقم الهاتف...
+                    </Text>
+                  )}
                 </View>
               </SafeAreaView>
+              </KeyboardAvoidingView>
             </AppGradient>
           </View>
           <StatusBar style="light" />

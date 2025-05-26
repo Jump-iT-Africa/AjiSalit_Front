@@ -1,8 +1,8 @@
 {
   "expo": {
     "name": "Aji Salit",
-    "slug": "ajisalit",
-    "version": "1.0.0",
+    "slug": "aji-salit",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "aji-salit",
@@ -22,7 +22,11 @@
       "bundleIdentifier": "app.ajisalit.com",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "NSCameraUsageDescription": "This app uses the camera to scan QR codes"
+        "NSCameraUsageDescription": "This app uses the camera to scan QR codes",
+        "UIBackgroundModes": [
+          "fetch",
+          "remote-notification"
+        ]
       }
     },
     "android": {
@@ -33,9 +37,14 @@
         "userInterfaceStyle": "light"
       },
       "package": "app.ajisalit.com",
+      "useNextNotificationsApi": true,
       "permissions": [
         "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "RECEIVE_BOOT_COMPLETED",
+        "NOTIFICATIONS",
+        "SCHEDULE_EXACT_ALARM",
+        "ACCESS_NOTIFICATION_POLICY"
       ]
     },
     "plugins": [
@@ -65,9 +74,9 @@
         "origin": false
       },
       "eas": {
-        "projectId": "58578925-3025-4070-823b-d44a161b2c53"
+        "projectId": "8cf790a2-ae23-491c-8e4d-1ed1a5d3260d"
       }
     },
-    "owner": "expobiling"
+    "owner": "powerfull"
   }
 }

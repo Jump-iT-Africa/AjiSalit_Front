@@ -1,9 +1,9 @@
-import { Stack, router } from "expo-router";
+import { Stack, router , } from "expo-router";
 import React, { useState, useEffect } from "react";
 import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { View } from 'react-native';
+import { View,SafeAreaView, StyleSheet, Platform } from 'react-native';
 import { Provider } from 'react-redux';
 import store from '@/store/actions/Store';
 import AuthCheck from "@/services/CheckIfUserAuth";
@@ -13,6 +13,11 @@ import HandleNotification from "./(home)/HandleNotification";
 import NavigationHandler from "@/services/NavigationHandler";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import OrderResetManager from "./OrderResetManager.js"
+import DeliveryReminderService from "@/components/Notifications/NotificationReminder";
+import BackgroundNotificationService from "@/services/BackgroundNotificationService.js"
+import GlobalStyle from "@/constants/GlobalStyle"
+import { NavigationProvider } from "@/context/NavigationContext";
+
 
 SplashScreen.preventAutoHideAsync()
   .catch(console.warn);
@@ -94,16 +99,27 @@ export default function RootLayout() {
       <Provider store={store}>
         <AuthCheck />
         <HandleNotification />
-        <NavigationHandler firstLaunch={isAppFirstLaunched} />
-        {/* <OrderResetManager /> */}
-        <Stack>
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="(home)" options={{ headerShown: false }} />
-          <Stack.Screen name="(settings)" options={{ headerShown: false }} />
-          <Stack.Screen name="(profile)" options={{ headerShown: false }} />
-        </Stack>
+        <NavigationHandler firstLaunch={false} />
+        <NavigationProvider>
+          <Stack>
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="(home)" options={{ headerShown: false }} />
+            <Stack.Screen name="(settings)" options={{ headerShown: false }} />
+            <Stack.Screen name="(profile)" options={{ headerShown: false }} />
+          </Stack>
+        </NavigationProvider>
       </Provider>
     </NotificationProvider>
   );
 }
+
+
+
+const styles = StyleSheet.create({
+  androidSafeArea: {
+    flex:1,
+    backgroundColor: "#f2f2f2",
+    paddingTop: Platform.OS === "android" ? 25 : 0,
+  },
+});

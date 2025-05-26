@@ -1,4 +1,4 @@
-import React, { forwardRef, useState, useRef, useImperativeHandle, useEffect } from 'react';
+import React, { forwardRef, useState, useRef, useImperativeHandle, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,9 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Image,
-  ActivityIndicator
+  ActivityIndicator,
+  Alert,
+  Dimensions
 } from 'react-native';
 
 import { router } from 'expo-router';
@@ -28,9 +30,22 @@ import Noimages from "@/assets/images/noImages.png"
 import UniqueIdModal from '../QrCodeGeneration/GenerateQrCode';
 import PaymentStatus from './PaymenStatus';
 import OrderVerificationBottomSheet from './OrderVerificationBottomSheet';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import * as FileSystem from 'expo-file-system';
+import CalculatorModal from '../Calculator/CalculatorModal';
 
 
 const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) => {
+
+  const { width, height } = Dimensions.get('window');
+  const isSmallScreen = height < 700; 
+  
+  const bottomSheetHeight = useMemo(() => {
+      return isSmallScreen ? hp('80%') : hp('62%');
+  }, [isSmallScreen]);
+
+  const isAndroidAndSmall = Platform.OS === "android" &&  isSmallScreen;
+
   const actionSheetRef = useRef(null);
   const dispatch = useDispatch();
   const verificationSheetRef = useRef(null);
@@ -58,19 +73,20 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
   
   
   const [isDatePickerEnabled, setIsDatePickerEnabled] = useState(false);
-  
   const [step, setStep] = useState(1);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
-
   const step1Animation = useRef(new Animated.Value(1)).current;
   const step2Animation = useRef(new Animated.Value(0)).current;
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [uniqueId, setUniqueId] = useState('');
   const [showIdModal, setShowIdModal] = useState(false);
   const [photoCounter, setPhotoCounter] = useState(1);
+  const [showCalculator, setShowCalculator] = useState(false);
 
-
+  const handleCalculatorConfirm = (calculatedValue) => {
+    setFormData({ ...formData, price: calculatedValue });
+  };
 
   useImperativeHandle(ref, () => ({
     show: () => {
@@ -84,6 +100,8 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
 
   const [uploadedImages, setUploadedImages] = useState([]);
 
+
+  console.log('this is array of uploaded Images' , uploadedImages);
   
   useEffect(() => {
     return () => {
@@ -91,30 +109,73 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
     };
   }, [dispatch]);
 
-  const takePhoto = async () => {
+
+
+  const prepareImagesForUpload = (images) => {
+    if (!images || images.length === 0) return [];
+    
+    return images.map((image, index) => {
+      // Ensure we have the correct file extension in the name
+      let fileName = image.name;
+      if (!fileName || !fileName.includes('.')) {
+        // Extract extension from type or default to jpg
+        const extension = image.type ? image.type.split('/')[1] : 'jpeg';
+        fileName = `image_${index}.${extension}`;
+      }
+      
+      return {
+        uri: image.uri,
+        type: image.type || 'image/jpeg',
+        name: fileName,
+        // Don't include size as it's not needed for upload and might cause issues
+      };
+    });
+  };
+
+const takePhoto = async () => {
   try {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
-      alert(' يرجى تمكينها في إعدادات جهازك لاستخدام الكاميرا!');
+      alert('يرجى تمكينها في إعدادات جهازك لاستخدام الكاميرا!');
       return;
     }
     
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       aspect: [4, 3],
-      quality: 1,
+      quality: 0.5, 
     });
 
-    if (!result.canceled) {
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const uri = result.assets[0].uri;
+      
+      // Get file extension
+      const fileExtension = uri.split('.').pop().toLowerCase();
+      const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
+      
+      // Calculate size if possible
+      let fileSizeKB = 0;
+      try {
+        const fileInfo = await FileSystem.getInfoAsync(uri);
+        fileSizeKB = Math.round(fileInfo.size / 1024);
+        console.log(`Image size: ${fileSizeKB} KB`);
+      } catch (error) {
+        console.error('Error getting file info:', error);
+      }
+      
+      // Create image object (matches expected format for FormData)
       const newImage = {
         id: Date.now(), 
-        uri: result.assets[0].uri,
-        name: `photo_${photoCounter}.jpg`,
-        size: `${Math.round(result.assets[0].fileSize / 1024)}kb`,
+        uri: uri,
+        name: `photo_${photoCounter}.${fileExtension}`,
+        type: mimeType,
+        size: `${fileSizeKB}kb`,
       };
       
-      setUploadedImages([...uploadedImages, newImage]);
+      console.log('New image captured:', newImage.name);
       
+      // Add to state
+      setUploadedImages([...uploadedImages, newImage]);
       setPhotoCounter(prevCounter => prevCounter + 1);
     }
   } catch (error) {
@@ -122,8 +183,62 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
   }
 };
 
+// Add function to pick image from gallery
+const pickImage = async () => {
+  try {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      alert('يرجى تمكينها في إعدادات جهازك للوصول إلى معرض الصور!');
+      return;
+    }
+    
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.5,
+    });
+
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const uri = result.assets[0].uri;
+      
+      // Get file extension
+      const fileExtension = uri.split('.').pop().toLowerCase();
+      const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
+      
+      // Calculate size if possible
+      let fileSizeKB = 0;
+      try {
+        const fileInfo = await FileSystem.getInfoAsync(uri);
+        fileSizeKB = Math.round(fileInfo.size / 1024);
+        console.log(`Image size: ${fileSizeKB} KB`);
+      } catch (error) {
+        console.error('Error getting file info:', error);
+      }
+      
+      // Create image object
+      const newImage = {
+        id: Date.now(), 
+        uri: uri,
+        name: `gallery_${photoCounter}.${fileExtension}`,
+        type: mimeType,
+        size: `${fileSizeKB}kb`,
+      };
+      
+      console.log('New image picked from gallery:', newImage.name);
+      
+      // Add to state
+      setUploadedImages([...uploadedImages, newImage]);
+      setPhotoCounter(prevCounter => prevCounter + 1);
+    }
+  } catch (error) {
+    console.log('Error picking image:', error);
+  }
+};
+
   const removeImage = (id) => {
     const newImages = uploadedImages.filter(img => img.id !== id);
+
     setUploadedImages(newImages);
   };
 
@@ -193,17 +308,41 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
   const validateStep1 = () => {
     let valid = true;
     let newErrors = { ...errors };
-
+  
     if (!formData.price.trim()) {
       newErrors.price = 'المبلغ مطلوب ';
       valid = false;
-    } else {
+    } else if (!/\d/.test(formData.price)) {
+      newErrors.price = 'الرجاء إدخال مبلغ صالح';
+      valid = false;
+    }else {
       newErrors.price = '';
     }
-
     
+    
+    if (!formData.situation || formData.situation.trim() === '') {
+      newErrors.status = 'الحالة مطلوبة';
+      valid = false;
+    } else {
+      newErrors.status = '';
+      
+      
+      if (formData.situation === 'تسبيق') {
+        if (!formData.advancedAmount || formData.advancedAmount.trim() === '') {
+          newErrors.advancedAmount = 'مبلغ التسبيق مطلوب';
+          valid = false;
+        } else if (parseFloat(formData.advancedAmount) >= parseFloat(formData.price)) {
+          newErrors.advancedAmount = 'مبلغ التسبيق لا يمكن أن يتجاوز المبلغ الإجمالي';
+          valid = false;
+        }
+         else {
+          newErrors.advancedAmount = '';
+        }
+      }
+    }
+  
     newErrors.RecieveDate = '';
-
+  
     setErrors(newErrors);
     return valid;
   };
@@ -315,21 +454,49 @@ const formatDateToYYYYMMDD = (date) => {
 };
 
 
+
 const processOrderSubmission = () => {
   const newUniqueId = generateUniqueId(12);
   setUniqueId(newUniqueId);
   
   const today = new Date();
   
-  
   const deliveryDate = isDatePickerEnabled ? (formData.RecieveDate || selectedDate) : today;
   const formattedDeliveryDate = formatDateToYYYYMMDD(deliveryDate);
-  
   
   const pickupDateObj = new Date(deliveryDate);
   pickupDateObj.setDate(pickupDateObj.getDate() + 2);
   const formattedPickupDate = formatDateToYYYYMMDD(pickupDateObj);
   
+  // Prepare images for upload - make sure to format them correctly for your backend
+  // Your backend expects to receive the file itself, not a URL or path
+  let processedImages = [];
+  
+  if (uploadedImages && uploadedImages.length > 0) {
+    console.log(`Preparing ${uploadedImages.length} images for upload`);
+    
+    // Map uploaded images to the format expected by the Redux action
+    processedImages = uploadedImages.map((image, index) => {
+      // Make sure we have all required properties
+      const fileName = image.name || `image_${index}.jpg`;
+      // Remove spaces from filename
+      const sanitizedFileName = fileName.replace(/\s+/g, '_');
+      
+      // Ensure type is properly formatted
+      let fileType = image.type || 'image/jpeg';
+      if (!fileType.includes('/')) {
+        fileType = sanitizedFileName.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+      }
+      
+      console.log(`Processing image ${index}: URI=${image.uri.substring(0, 30)}... Type=${fileType} Name=${sanitizedFileName}`);
+      
+      return {
+        uri: image.uri,
+        name: sanitizedFileName,
+        type: fileType
+      };
+    });
+  }
   
   const orderData = {
     price: parseFloat(formData.price),
@@ -339,12 +506,10 @@ const processOrderSubmission = () => {
     deliveryDate: formattedDeliveryDate, 
     pickupDate: formattedPickupDate,     
     qrCode: newUniqueId,
-    isFinished: false,
-    isPickUp: false
+    images: processedImages
   };
   
   console.log("Component - Order data before dispatch:", JSON.stringify(orderData));
-  
   
   if (!formattedDeliveryDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
     alert('خطأ في تنسيق التاريخ. يرجى التأكد من أن التاريخ بتنسيق YYYY-MM-DD');
@@ -354,6 +519,8 @@ const processOrderSubmission = () => {
   dispatch(createOrder(orderData));
   setShowIdModal(true);
 };
+
+
 
   const handleModalClose = () => {
     setShowIdModal(false);
@@ -423,8 +590,7 @@ const processOrderSubmission = () => {
   };
   
   const Step1Form = (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false} >
-    <KeyboardAvoidingView >
+    <View>
       <Animated.View
         style={{
           opacity: step1Animation,
@@ -439,32 +605,54 @@ const processOrderSubmission = () => {
           zIndex: 9,
         }}
       >
-        <Text className="text-center text-[#F52525] text-xl font-bold mb-6 font-tajawal">
+        <Text className="text-center text-[#F52525] text-xl  mb-6 font-tajawal">
           معلومات الطلب
         </Text>
-
+  
         <View>
           <View>
           <View className="mb-4 mt-6">
             <Text className="text-right text-gray-700 mb-2 font-tajawal text-[12px]" style={{ color: Color.green }}>
               المبلغ (بالدرهم): <Text className="text-red-500">*</Text>
             </Text>
-            <TextInput
-              placeholder="يرجى إدخال المبلغ"
-              placeholderTextColor="#888"
-              value={formData.price}
-              keyboardType='number-pad'
-              onChangeText={(text) => setFormData({ ...formData, price: text })}
-              className={`border ${errors.price ? 'border-red-500' : 'border-[#2e752f]'} rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}
-            />
+            
+
+            <View className="relative">
+              <TextInput
+                placeholder="يرجى إدخال المبلغ"
+                placeholderTextColor="#888"
+                value={formData.price}
+                keyboardType='number-pad'
+                onChangeText={(text) => setFormData({ ...formData, price: text })}
+                className={`border-[0.9px] ${errors.price ? 'border-red-500' : 'border-[#398d3a]'}  rounded-lg p-3 text-black text-right bg-white font-tajawalregular`}
+                style={{ paddingRight: 50 }} 
+              />
+              
+              <TouchableOpacity
+                onPress={() => setShowCalculator(true)}
+                style={{
+                  position: 'absolute',
+                  right: 12,
+                  top: 12,
+                  backgroundColor: Color.green,
+                  borderRadius: 6,
+                  padding: 6,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+                activeOpacity={0.8}
+              >
+                <AntDesign name="calculator" size={18} color="white" />
+              </TouchableOpacity>
+            </View>
             {errors.price ? <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[13px]">{errors.price}</Text> : null}
           </View> 
-
+  
           <View className="mb-0 mt-2">
             <Text className="text-right text-gray-700 mb-2 font-tajawal text-[12px]" style={{ color: Color.green }}>
               الحالة: <Text className="text-red-500">*</Text>
             </Text>
-
+  
             <PaymentStatus 
               onStatusChange={(status, advancedAmount) => {
                 console.log("PaymentStatus callback with:", status, advancedAmount);
@@ -476,14 +664,14 @@ const processOrderSubmission = () => {
               }} 
               currentPrice={formData.price}
             />
-
+  
             {errors.status ? (
               <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[13px]">
                 {errors.status}
               </Text>
             ) : null}
           </View>
-
+  
           <View className="mb-0 mt-8">
             <TouchableOpacity 
               onPress={() => setIsDatePickerEnabled(!isDatePickerEnabled)}
@@ -492,13 +680,13 @@ const processOrderSubmission = () => {
                <View className={`w-5 h-5 border rounded ${isDatePickerEnabled ? 'bg-[#2e752f] border-[#2e752f]' : 'bg-white border-[#2e752f]'} justify-center items-center ml-2`}>
                 {isDatePickerEnabled && <AntDesign name="check" size={14} color="white" />}
               </View>
-
+  
               <Text className="text-right text-gray-700 mr-2 font-tajawal text-[14px]" style={{ color: Color.green }}>
                 تاريخ التسليم
               </Text>
             </TouchableOpacity>
           </View>
-
+  
           <View className="mt-2 mb-6">
             <TouchableOpacity
               onPress={() => isDatePickerEnabled && setShowCalendar(true)}
@@ -512,7 +700,7 @@ const processOrderSubmission = () => {
                   : (isDatePickerEnabled ? formatDateForDisplay(selectedDate) : 'يرجى إدخال تاريخ التسليم')}
               </Text>
             </TouchableOpacity>
-
+  
             {Platform.OS === 'ios' ? (
               <Modal
                 transparent={true}
@@ -555,15 +743,15 @@ const processOrderSubmission = () => {
                 />
               )
             )}
-
+  
             {errors.RecieveDate ?
               <Text className="text-red-500 text-right mt-1 font-tajawalregular text-[13px]">{errors.RecieveDate}</Text> :
               null
             }
           </View>
           </View>
-
-          <View className='mt-2'>
+  
+          <View className='mt-2 mb-40'>
             <View className="mt-0 ">
               <CustomButton
                 title="التالي"
@@ -578,12 +766,15 @@ const processOrderSubmission = () => {
             </View>
           </View>
         </View> 
-
+        <CalculatorModal
+        visible={showCalculator}
+        onClose={() => setShowCalculator(false)}
+        onConfirm={handleCalculatorConfirm}
+      />
       </Animated.View>
-    </KeyboardAvoidingView>
-    
-    </TouchableWithoutFeedback>
+    </View>
   );
+  
 
   const Step2Form = (
     <KeyboardAvoidingView>
@@ -600,83 +791,192 @@ const processOrderSubmission = () => {
           width: '100%',
         }}
       >
-        <Text className="text-center text-[#F52525] text-xl font-bold mb-6 font-tajawal">
+        <Text className="text-center text-[#F52525] text-xl  mb-6 font-tajawal">
           معلومات الطلب
         </Text>
         <Divider />
   
-        <View className="my-2">
-          <Text className="text-right text-gray-700 font-tajawal mb-5" style={{ color: Color.green }}>
+        <View style={{ marginVertical: hp('1%') }}>
+          <Text style={{
+            textAlign: 'right',
+            color: Color.green,
+            fontSize: isSmallScreen ? wp('3.5%') : wp('4%'),
+            marginBottom: hp('2.5%'),
+            fontFamily: 'Tajawal',
+          }}>
             تحميل الصور:
           </Text>
           
-          <View className="border border-dashed border-[#2e752f] rounded-lg p-4 items-center mb-4 ">
-            <AntDesign name="camera" size={32} color="#2e752f" />
-            <Text className="text-center text-gray-500 mt-2 font-tajawalregular">
+          <View style={{
+            borderWidth: 1,
+            borderStyle: 'dashed',
+            borderColor: '#2e752f',
+            borderRadius: wp('3%'),
+            padding: hp('2%'),
+            alignItems: 'center',
+            marginBottom: hp('2%'),
+          }}>
+            <AntDesign name="camera" size={wp('8%')} color="#2e752f" />
+            <Text style={{
+              textAlign: 'center',
+              color: '#6b7280',
+              marginTop: hp('1%'),
+              fontFamily: 'TajawalRegular',
+              fontSize: wp('3.5%'),
+            }}>
               حمل صورك (JPG, PNG)
             </Text>
             
-            <View className="flex-row justify-center space-x-2 mt-3">
+            <View style={{
+              flexDirection: 'row',
+              justifyContent: 'center',
+              marginTop: hp('1.5%'),
+              gap: wp('3%'),
+            }}>
+              {/* Camera Button */}
               <TouchableOpacity 
-                className="border border-[#2e752f] rounded-full px-4 py-2 flex-row items-center"
+                style={{
+                  borderWidth: 1,
+                  borderColor: '#2e752f',
+                  borderRadius: wp('10%'),
+                  paddingVertical: hp('1%'),
+                  paddingHorizontal: wp('3%'),
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                }}
                 onPress={takePhoto}
               >
-                <AntDesign name="camera" size={16} color="#2e752f" style={{ marginRight: 5 }} />
-                <Text className="text-[#2e752f] font-tajawalregular">التقط صورة</Text>
+                <AntDesign name="camera" size={wp('4%')} color="#2e752f" style={{ marginRight: wp('1.2%') }} />
+                <Text style={{
+                  color: '#2e752f',
+                  fontFamily: 'TajawalRegular',
+                  fontSize: wp('3.5%'),
+                }}>التقط صورة</Text>
               </TouchableOpacity>
+              
+              {/* Gallery Button */}
+              {/* <TouchableOpacity 
+                style={{
+                  borderWidth: 1,
+                  borderColor: '#2e752f',
+                  borderRadius: wp('10%'),
+                  paddingVertical: hp('1%'),
+                  paddingHorizontal: wp('3%'),
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                }}
+                onPress={pickImage}
+              >
+                <AntDesign name="picture" size={wp('4%')} color="#2e752f" style={{ marginRight: wp('1.2%') }} />
+                <Text style={{
+                  color: '#2e752f',
+                  fontFamily: 'TajawalRegular',
+                  fontSize: wp('3.5%'),
+                }}>معرض الصور</Text>
+              </TouchableOpacity> */}
             </View>
           </View>
        
           {uploadedImages.length > 0 ? (
-            <View className="  ">
+            <View style={{ marginTop: hp('2%') }}>
+              <Text style={{
+                color: '#2e752f',
+                fontFamily: 'TajawalRegular',
+                fontSize: wp('3.8%'),
+                textAlign: 'right',
+                marginBottom: hp('1%'),
+              }}>الصور المحملة: {uploadedImages.length}</Text>
+              
               {uploadedImages.map((image) => (
-                <View key={image.id} className="flex-row justify-between items-center bg-gray-100 rounded-lg p-3 mb-2">
+                <View key={image.id} style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  backgroundColor: '#f3f4f6',
+                  borderRadius: wp('3%'),
+                  padding: hp('1.5%'),
+                  marginBottom: hp('1%'),
+                }}>
+
                   <TouchableOpacity onPress={() => removeImage(image.id)}>
-                    <View className="w-6 h-6 rounded-full bg-red-500 items-center justify-center">
-                      <AntDesign name="close" size={16} color="white" />
+                    <View style={{
+                      width: wp('6%'),
+                      height: wp('6%'),
+                      borderRadius: wp('3%'),
+                      backgroundColor: '#ef4444',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}>
+                      <AntDesign name="close" size={wp('4%')} color="white" />
                     </View>
                   </TouchableOpacity>
-                  <View className="flex-row items-center flex-1 justify-end">
-                    {/* <Text className="text-gray-500 mr-2 font-tajawalregular">{image.size}</Text> */}
-                    <Text className="text-black font-tajawalregular" numberOfLines={1} ellipsizeMode="middle" style={{ maxWidth: 180 }}>
-                      {image.name}
-                    </Text>
-                    <View className="h-10 w-10 bg-gray-300 rounded ml-2 overflow-hidden">
-                      {image.uri ? (
-                        <Image 
-                          source={{ uri: image.uri }} 
-                          style={{ width: '100%', height: '100%' }} 
-                          resizeMode="cover"
-                        />
-                      ) : (
-                        <View className="h-full w-full items-center justify-center">
-                          <AntDesign name="picture" size={20} color="#666" />
-                        </View>
-                      )}
-                    </View>  
+
+
+                  <View   style={{flexDirection:'row-reverse', gap:10, alignItems:'center'}}>
+                    <Image
+                      source={{ uri: image.uri }}
+                      style={{
+                        width: wp('12%'),
+                        height: wp('12%'),
+                        borderRadius: wp('1%'),
+                        marginRight: wp('2%'),
+                      }}
+                    />
+                    <View>
+                      <Text style={{
+                        fontSize: wp('3.5%'),
+                        fontFamily: 'TajawalRegular',
+                        color: '#4b5563',
+                        textAlign: 'right',
+                      }}>{image.name}</Text>
+                      {/* <Text style={{
+                        fontSize: wp('2.8%'),
+                        fontFamily: 'TajawalRegular',
+                        color: '#9ca3af',
+                        textAlign: 'right',
+                      }}>{image.size || ''}</Text> */}
+                    </View>
+                    
                   </View>
+                  
                 </View>
               ))}
             </View>
           ) : (
-            <View className='w-full  flex-1 items-center mt-1'>
+            <View style={{
+              width: '100%',
+              flex: 1,
+              alignItems: 'center',
+              marginTop: hp('1%'),
+            }}>
               <Image
                 source={Noimages}
                 resizeMode='contain'
-                className=' w-40 h-40 '
+                style={{
+                  width: isSmallScreen ? wp('30%') : wp('30%'),
+                  height: isSmallScreen ? wp('30%') : wp('30%'),
+                }}
               />
-              <Text className='font-tajawal text-[#2e752f] mt-2 text-xl'>
-              لا يوجد صور 
+              <Text style={{
+                fontFamily: 'Tajawal',
+                color: '#2e752f',
+                marginTop: hp('1%'),
+                fontSize: isSmallScreen ? wp('4%') : wp('4%'),
+              }}>
+                لا يوجد صور 
               </Text>
-              <Text className='font-tajawalregular'>
-              قم بتحميل صورك الآن
+              <Text style={{
+                fontFamily: 'TajawalRegular',
+                fontSize: wp('3%'),
+              }}>
+                قم بتحميل صورك الآن
               </Text>
             </View>
           )}
         </View>
   
   
-        <View className="mt-12 flex-row justify-between ">
+        <View className="mt- flex-row justify-between ">
           <CustomButton
             title="رجوع"
             onPress={animateToPreviousStep}
@@ -732,7 +1032,7 @@ const processOrderSubmission = () => {
           </View>
           <View>
             <Text className="text-center text-white text-6xl font-tajawal pt-7 mt-4">مبروك!</Text>
-            <Text className="text-white text-lg font-bold text-center p-4 font-tajawalregular">
+            <Text className="text-white text-lg  text-center p-4 font-tajawalregular">
               تم إنشاء الطلب بنجاح.
             </Text>
           </View>
@@ -755,12 +1055,12 @@ const processOrderSubmission = () => {
 
   return (
     <>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={true}>
         <BottomSheetComponent 
           ref={actionSheetRef} 
-          containerStyle={{ backgroundColor: 'white' }} 
+          containerStyle={{ backgroundColor: 'white', }} 
           onClose={handleClose}
-          customHeight="80%" 
+          customHeight="50%"
         >
           {formSubmitted && success ? (
             SuccessView
@@ -779,16 +1079,16 @@ const processOrderSubmission = () => {
         </BottomSheetComponent>
       </TouchableWithoutFeedback>
       
+      <View>
       <OrderVerificationBottomSheet
-        ref={verificationSheetRef}
-        formData={formData}
-        uploadedImages={uploadedImages}
-        loading={loading}
-        onConfirm={processOrderSubmission}
-        onEdit={() => {
-          
-        }}
-      />
+          ref={verificationSheetRef}
+          formData={formData}
+          uploadedImages={uploadedImages}
+          loading={loading}
+          onConfirm={processOrderSubmission}
+        />
+      </View>
+    
     </>
   );
 });

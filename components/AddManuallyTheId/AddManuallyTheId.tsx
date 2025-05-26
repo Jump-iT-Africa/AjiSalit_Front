@@ -16,6 +16,7 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import {fetchOrderByQrCodeOrId,selectCurrentOrder} from '@/store/slices/OrdersManagment';
 import { useDispatch, useSelector } from "react-redux";
 import { router } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 
 
@@ -33,7 +34,7 @@ export default function AddManuallyTheId({
   const [error, setError] = useState('');
   const currentOrder = useSelector(selectCurrentOrder);
 
-  console.log(idValue);
+  console.log("this is idValue ==>", idValue);
 
   const dispatch = useDispatch();
   
@@ -42,19 +43,33 @@ export default function AddManuallyTheId({
       if (idValue.trim()) {
         if(idValue.length === 12 || idValue.length === 11)
           {
+            console.log("idValue ",idValue);
+            
             const response = await dispatch(fetchOrderByQrCodeOrId(idValue))
             console.log('this is response',response.payload)
-            
+
+
+
+            try {
+              await AsyncStorage.setItem('REFRESH_ORDERS_ON_RETURN', 'true');
+            } catch (storageError) {
+              console.log("Error setting refresh flag:", storageError);
+            }
+
             if(response)
             {
               onClose()
-              router.push('/DetailsPage')
+              
+              router.push({
+                pathname: '/DetailsPage',
+                
+              });
             }
 
             setError('')
           }
           else{
-            setError('الكود مكملش 😢')
+            setError('الكود مصحيحش 😢')
           }
       }
     }catch (error) {

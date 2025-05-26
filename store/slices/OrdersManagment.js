@@ -227,7 +227,6 @@ export const updateClientPickUp = createAsyncThunk(
 );
 
 
-
 export const updateToDone = createAsyncThunk(
   'orders/updateToDone',
   async ({ orderId, dateData }, { rejectWithValue, dispatch }) => {
@@ -261,6 +260,41 @@ export const updateToDone = createAsyncThunk(
         console.log('Error response status:', error.response.status);
       }
       return rejectWithValue(error.response?.data || 'Failed to update order date');
+    }
+  }
+);
+
+
+export const sendDeliveryReminder = createAsyncThunk(
+  'orders/sendDeliveryReminder',
+  async (_,{ rejectWithValue }) => {
+    try {
+      console.log('im here');
+      const token = await AsyncStorage.getItem('token');
+      console.log('this is the tokennn', token);
+      if (!token) {
+        return rejectWithValue('No authentication token available');
+      }
+      const response = await axios.post(
+        `${API_BASE_URL}/notifications/reminder`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+      
+      console.log('Reminder notification sent:', response.data);
+      return response.data;
+
+    } catch (error) {
+      console.log('Failed to send reminder notification:', error.message);
+      if (error.response) {
+        console.log('Error response data:', error.response.data);
+        console.log('Error response status:', error.response.status);
+      }
+      return rejectWithValue(error.response?.data?.message || error.message || 'Failed to send reminder notification');
     }
   }
 );
@@ -429,8 +463,22 @@ const ordersSlice = createSlice({
         state.error = action.payload;
         state.success = false;
       })
+      .addCase(sendDeliveryReminder.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(sendDeliveryReminder.fulfilled, (state, action) => {
+        state.loading = false;
+        state.success = true;
+        })
+      .addCase(sendDeliveryReminder.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
     },
 });
+
+
 
 export const { resetOrderState, setCurrentOrder, setQrCodeSearchTerm, clearCurrentOrder } = ordersSlice.actions;
 

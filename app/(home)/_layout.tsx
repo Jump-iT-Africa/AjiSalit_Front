@@ -8,6 +8,8 @@ import {
   View,
   Text,
   Dimensions,
+  SafeAreaView,
+  Platform
 } from 'react-native';
 import { CurvedBottomBarExpo } from 'react-native-curved-bottom-bar';
 import AntDesign from '@expo/vector-icons/AntDesign';
@@ -24,10 +26,12 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { selectUserRole, selectUserData, fetchCurrentUserData } from "@/store/slices/userSlice";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
-
 import { Stack } from "expo-router";
 import { createStackNavigator } from '@react-navigation/stack';
+import Colors from '@/constants/Colors';
 const AppStack = createStackNavigator();
+
+
 
 function MainTabs() {
   const dispatch = useDispatch();
@@ -38,7 +42,6 @@ function MainTabs() {
   const [isSheetVisible, setIsSheetVisible] = useState(false);
   const [pocketValue, setPocketValue] = useState(0);
   
-  // Function to get the latest pocket value directly from AsyncStorage
   const getLatestPocketValue = async () => {
     try {
       const userDataStr = await AsyncStorage.getItem('user');
@@ -51,7 +54,6 @@ function MainTabs() {
         }
       }
       
-      // If no value found in AsyncStorage, use value from Redux
       if (userData && userData.pocket !== undefined) {
         console.log("Using pocket value from Redux:", userData.pocket);
         setPocketValue(userData.pocket);
@@ -84,7 +86,6 @@ function MainTabs() {
   
   useFocusEffect(
     React.useCallback(() => {
-      // Get fresh data on focus
       const refreshData = async () => {
         await getLatestPocketValue();
         dispatch(fetchCurrentUserData());
@@ -145,15 +146,12 @@ function MainTabs() {
   const handleCloseActionSheet = async () => {
     setIsSheetVisible(false);
     
-    // Refresh user data and pocket value after closing the sheet
     await getLatestPocketValue();
     dispatch(fetchCurrentUserData());
   };
 
-  // Log the current pocket value for debugging
   console.log("Current pocket value in MainTabs:", pocketValue);
   
-  // Check if button should be disabled
   const isButtonDisabled = role === 'company' && pocketValue <= 0;
 
   return (
@@ -170,10 +168,13 @@ function MainTabs() {
           headerShown: false
         }}
         renderCircle={({ selectedTab, navigate }) => (
+          // <Animated.View style={[
+          //   styles.btnCircleUp,
+          //   isButtonDisabled ? styles.disabledButton : {}
+          // ]}>
           <Animated.View style={[
             styles.btnCircleUp,
-            isButtonDisabled ? styles.disabledButton : {}
-          ]}>
+            ]}>
             <TouchableOpacity
               style={styles.button}
               onPress={async () => {
@@ -236,15 +237,23 @@ function IndexWithBottomNav({ navigation, route }) {
     <MainTabs initialRouteName="الرئيسية" />
   );
 }
+const Container = Platform.OS === 'android' 
+    ? props => <SafeAreaView style={styles.androidSafeArea} edges={['top']} {...props} />
+    : props => <View style={{flex: 1}} {...props} />;
+
 
 export default function HomeLayouts() {
   return (
-    <AppStack.Navigator screenOptions={{ headerShown: false, animation: 'fade' }}>
-      <AppStack.Screen name="MainTabs" component={MainTabs} />
-      <AppStack.Screen name="Scanner" component={ScannerPage} />
-      <AppStack.Screen name="DetailsPage" component={DetailsPage} />
-      <AppStack.Screen name="index" component={IndexWithBottomNav} />
-    </AppStack.Navigator>
+    <Container>
+      <AppStack.Navigator screenOptions={{ headerShown: false, animation: 'fade' }}>
+        <AppStack.Screen name="MainTabs" component={MainTabs} />
+        <AppStack.Screen name="Scanner" component={ScannerPage} />
+        <AppStack.Screen name="DetailsPage" component={DetailsPage} />
+        <AppStack.Screen name="index" component={IndexWithBottomNav} />
+      </AppStack.Navigator>
+
+    </Container>
+
   );
 }
 
@@ -257,6 +266,7 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 1,
     shadowRadius: 5,
+    
   },
   button: {
     flex: 1,
@@ -270,7 +280,8 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 0,
     borderTopRightRadius: 0,
     overflow: 'hidden',
-    borderRadius: 0
+    borderRadius: 0,
+    
   },
   btnCircleUp: {
     width: 65,
@@ -286,14 +297,17 @@ const styles = StyleSheet.create({
     shadowOffset: {
       width: 0,
       height: 2,
+      
     },
     shadowOpacity: 0.3,
     shadowRadius: 3,
     elevation: 4,
+    
   },
   disabledButton: {
     backgroundColor: '#999999',  // Gray color to indicate disabled state
     opacity: 0.7,
+    
   },
   tabbarItem: {
     flex: 1,
@@ -309,5 +323,11 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontWeight: '500',
     textAlign: 'center',
-  }
+  },
+  androidSafeArea: {
+    flex:1,
+    backgroundColor: Colors.AppGray,
+    paddingTop: Platform.OS === "android" ? 25 : 0,
+    paddingBottom: Platform.OS === "android" ? 30 : -0,
+  },
 });

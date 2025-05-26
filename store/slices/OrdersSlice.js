@@ -3,7 +3,6 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const API_URL = 'https://api.ajisalit.com';
-// const API_URL = 'http://192.168.1.66:3000';
 
 export const fetchOrders = createAsyncThunk(
   'orders/fetchOrders',
@@ -27,8 +26,6 @@ export const fetchOrders = createAsyncThunk(
 
       console.log('role is', role.role);
 
-
-
       const response = await axios.get(`${API_URL}/order`, {
         headers: {
           Authorization: `Bearer ${token}`
@@ -41,7 +38,7 @@ export const fetchOrders = createAsyncThunk(
 
       let items = response.data;
       let result = items.filter(items => !(items.isFinished === true && items.isPickUp === true));
-      // console.log("reponse of the client or  company", response.data);
+      
       return response.data;
       
     } catch (error) {
@@ -80,6 +77,8 @@ const transformOrderData = (apiOrders) => {
     isFinished: order.isFinished,
     isPickUp: order.isPickUp,
     isToday: isToday(order.deliveryDate),
+    isTomorrow: isTomorrow(order.deliveryDate),
+    isExpired: isExpired(order.deliveryDate),
     newDate: formatDate(order.newDate),
     isDateChanged: order.isDateChanged,
     IsConfirmedByClient: order.IsConfirmedByClient,
@@ -88,10 +87,9 @@ const transformOrderData = (apiOrders) => {
     companyId:{
       companyName: order.companyId.companyName,
       field: order.companyId.field
-    }
-
+    },
+    images: order.images
   }));
-  
 };
 
 const getAmountType = (situation) => {
@@ -107,13 +105,42 @@ const getAmountType = (situation) => {
   }
 };
 
+// Helper function to check if date is today
 const isToday = (dateString) => {
   if (!dateString) return false;
   const today = new Date();
   const date = new Date(dateString);
-  return date.getDate() === today.getDate() &&
-         date.getMonth() === today.getMonth() &&
-         date.getFullYear() === today.getFullYear();
+  
+  // Reset time to compare only dates
+  today.setHours(0, 0, 0, 0);
+  date.setHours(0, 0, 0, 0);
+  
+  return date.getTime() === today.getTime();
+};
+
+// Helper function to check if date is tomorrow or later
+const isTomorrow = (dateString) => {
+  if (!dateString) return false;
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(0, 0, 0, 0);
+  
+  const date = new Date(dateString);
+  date.setHours(0, 0, 0, 0);
+  
+  return date.getTime() >= tomorrow.getTime();
+};
+
+// Helper function to check if date is expired (yesterday or before)
+const isExpired = (dateString) => {
+  if (!dateString) return false;
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  yesterday.setHours(23, 59, 59, 999); // End of yesterday
+  
+  const date = new Date(dateString);
+  
+  return date.getTime() <= yesterday.getTime();
 };
 
 const formatDate = (dateString) => {
@@ -130,7 +157,8 @@ const ordersSlice = createSlice({
     error: null,
     searchTerm: '',
     statusFilter: null,
-    dateFilter: null
+    dateFilter: null,
+    tabFilter: 'all' 
   },
   reducers: {
     setSearchTerm: (state, action) => {
@@ -141,6 +169,9 @@ const ordersSlice = createSlice({
     },
     setDateFilter: (state, action) => {
       state.dateFilter = action.payload;
+    },
+    setTabFilter: (state, action) => {
+      state.tabFilter = action.payload;
     },
     markOrderFinished: (state, action) => {
       const orderIndex = state.items.findIndex(order => order.id === action.payload);
@@ -167,8 +198,11 @@ const ordersSlice = createSlice({
       })
       .addCase(fetchOrders.fulfilled, (state, action) => {
         state.loading = false;
-        // console.log('Fetch orders fulfilled:', action.payload);
+        
         state.items = transformOrderData(action.payload);
+
+        AsyncStorage.setItem('cachedOrders', JSON.stringify(transformOrderData(action.payload)));
+        AsyncStorage.setItem('lastOrdersFetchTime', new Date().toISOString());
       })
       .addCase(fetchOrders.rejected, (state, action) => {
         state.loading = false;
@@ -178,8 +212,7 @@ const ordersSlice = createSlice({
   }
 });
 
-export const { setSearchTerm, setStatusFilter, setDateFilter, markOrderFinished, resetOrdersState } = ordersSlice.actions;
-
+export const { setSearchTerm, setStatusFilter, setDateFilter, markOrderFinished, resetOrdersState,setTabFilter } = ordersSlice.actions;
 
 export const selectAllOrders = state => state?.orders?.items || [];
 export const selectOrdersLoading = state => state?.orders?.loading || false;
@@ -187,20 +220,44 @@ export const selectOrdersError = state => state?.orders?.error || null;
 export const selectSearchTerm = state => state?.orders?.searchTerm || '';
 export const selectStatusFilter = state => state?.orders?.statusFilter || null;
 export const selectDateFilter = state => state?.orders?.dateFilter || null;
+export const selectTabFilter = state => state?.orders?.tabFilter || 'all';
+
 const getOrderItems = state => state?.orders?.items || [];
 const getSearchTerm = state => state?.orders?.searchTerm || '';
 const getStatusFilter = state => state?.orders?.statusFilter || null;
 const getDateFilter = state => state?.orders?.dateFilter || null;
+const getTabFilter = state => state?.orders?.tabFilter || 'all';
 
 export const selectFilteredOrders = createSelector(
-  [getOrderItems, getSearchTerm, getStatusFilter, getDateFilter],
-  (items, searchTerm, statusFilter, dateFilter) => {
+  [getOrderItems, getSearchTerm, getStatusFilter, getDateFilter, getTabFilter],
+  (items, searchTerm, statusFilter, dateFilter, tabFilter) => {
     if (!items || !Array.isArray(items)) {
       return [];
     }
     
-    let result = items.filter(order => !(order.isFinished === true && (order.IsConfirmedByClient === true )) );
+    let result = [];
     
+    switch (tabFilter) {
+      case 'all': // الطلبات القادمة - Tomorrow and beyond
+        result = items.filter(order => 
+          order.isTomorrow && !(order.isFinished === true && order.isPickUp === true)
+        );
+        break;
+      case 'today': // طلبات اليوم - Today only
+        result = items.filter(order => 
+          order.isToday && !(order.isFinished === true && order.isPickUp === true)
+        );
+        break;
+      case 'completed': // الطلبات المتأخرة - Expired orders (yesterday and before)
+        result = items.filter(order => 
+          order.isExpired && !(order.isFinished === true && order.isPickUp === true)
+        );
+        break;
+      default:
+        result = items.filter(order => !(order.isFinished === true && order.isPickUp === true));
+    }
+    
+    // Apply search filter
     if (searchTerm) {
       result = result.filter(order => 
         order.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -208,6 +265,7 @@ export const selectFilteredOrders = createSelector(
       );
     }
     
+    // Apply status filter
     if (statusFilter) {
       let typeToFilter;
       
@@ -230,6 +288,7 @@ export const selectFilteredOrders = createSelector(
       }
     }
     
+    // Apply date filter
     if (dateFilter) {
       const filterDate = new Date(dateFilter);
       
@@ -243,25 +302,33 @@ export const selectFilteredOrders = createSelector(
       });
     }
 
-    // Sort by today's orders first, then by date
-    result.sort((a, b) => {
-      if (a.isToday && !b.isToday) return -1;
-      if (!a.isToday && b.isToday) return 1;
-      
-      if (a.rawDeliveryDate && b.rawDeliveryDate) {
-        return new Date(a.rawDeliveryDate) - new Date(b.rawDeliveryDate);
-      }
-      
-      if (!a.rawDeliveryDate && b.rawDeliveryDate) return 1;
-      if (a.rawDeliveryDate && !b.rawDeliveryDate) return -1;
-      
-      return 0;
-    });
+    // Sort results
+    if (tabFilter === 'completed') {
+      // Sort expired orders by date (oldest first)
+      result.sort((a, b) => {
+        if (a.rawDeliveryDate && b.rawDeliveryDate) {
+          return new Date(a.rawDeliveryDate) - new Date(b.rawDeliveryDate);
+        }
+        return 0;
+      });
+    } else {
+      // Sort other tabs by delivery date (earliest first)
+      result.sort((a, b) => {
+        if (a.rawDeliveryDate && b.rawDeliveryDate) {
+          return new Date(a.rawDeliveryDate) - new Date(b.rawDeliveryDate);
+        }
+        
+        if (!a.rawDeliveryDate && b.rawDeliveryDate) return 1;
+        if (a.rawDeliveryDate && !b.rawDeliveryDate) return -1;
+        
+        return 0;
+      });
+    }
     
+    console.log(`Filtered orders for tab "${tabFilter}":`, result.length);
     return result;
   }
 );
-
 
 export const HistoryOrders = createSelector(
   [getOrderItems, getSearchTerm, getStatusFilter, getDateFilter],
@@ -270,9 +337,10 @@ export const HistoryOrders = createSelector(
       return [];
     }
     
-    // hna knbayed li isfinished and is pick are both true
-    let result = items.filter(order => (order.isFinished === true && order.IsConfirmedByClient === true));
+    // Only show completed orders (finished and picked up)
+    let result = items.filter(order => (order.isFinished === true && order.isPickUp === true));
     console.log('this is filtered data', result);
+    
     if (searchTerm) {
       result = result.filter(order => 
         order.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -318,9 +386,5 @@ export const HistoryOrders = createSelector(
     return result;
   }
 );
-
-
-
-
 
 export default ordersSlice.reducer;

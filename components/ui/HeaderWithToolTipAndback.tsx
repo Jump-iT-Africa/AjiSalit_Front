@@ -21,7 +21,7 @@ const HeaderWithBack: React.FC<HeaderWithBackProps> = ({
 
   const containerClassName = Platform.OS === 'ios' 
     ? "flex-row justify-between mx-5 mt-4" 
-    : "flex-row justify-between mx-0 mt-14";
+    : "flex-row justify-between mx-4 mt-14";
 
   return (
     <View className={containerClassName}>

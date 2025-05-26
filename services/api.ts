@@ -77,12 +77,12 @@ export const loginUser = async (credentials) => {
     console.log('Login attempt with this info:', credentials);
     console.log('Password length:', credentials.password?.length || 0);
         
+
     const response = await axios.post(`${API_BASE_URL}/user/login`, credentials);
     
     if (response.data) {
       await AsyncStorage.setItem("user", JSON.stringify(response.data.user));
-      console.log('this is id of user', JSON.stringify(response.data.user.id));
-      
+      await AsyncStorage.setItem('token', response.data.token)      
       await AsyncStorage.setItem("userId", JSON.stringify(response.data.user.id));
       console.log('Setting auth state after login');
       await AsyncStorage.setItem("isAuthenticated", "true");
@@ -102,15 +102,10 @@ export const loginUser = async (credentials) => {
 
 export const verifyNumber = async (phoneData) => {
   try {
-    const token = await AsyncStorage.getItem('token');
-    const config = {
-      headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
-        'Content-Type': 'application/json'
-      }
-    };
+   
+        console.log('this is number to be verified', phoneData);
         
-    const response = await axios.post(`${API_BASE_URL}/user/verifyNumber`, phoneData, config);
+    const response = await axios.post(`${API_BASE_URL}/user/verifyNumber`, phoneData);
     
     if (response.data.isExist === false && response.data.statusCode === 409) {
       throw {
@@ -119,6 +114,8 @@ export const verifyNumber = async (phoneData) => {
         }
       };
     }
+    
+    console.log('this is response data',response.data);
     
     return response.data;
   } catch(error) {
@@ -159,8 +156,7 @@ export const updateUser = async (UserId, credentials) => {
 export const GetUserCommands = async () => {
   try{
     const response = await axios.get(`${API_BASE_URL}/order`);
-    console.log(response);
-    console.log(response.data);
+
 
     return response.data
   }catch(err)

@@ -61,7 +61,7 @@ export default function OrderDetailsScreen() {
     return (
       <SafeAreaView style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#0000ff" />
-        <Text style={styles.loadingText}>جاري تحميل تفاصيل الطلب...</Text>
+        <Text style={styles.loadingText} className="font-tajawalregular">جاري تحميل تفاصيل الطلب...</Text>
       </SafeAreaView>
     );
   }

@@ -1,16 +1,24 @@
-import { View, StyleSheet, TouchableOpacity,Text } from "react-native";
+import { View, StyleSheet, TouchableOpacity,Text, Dimensions, Platform } from "react-native";
 import Divider from "../ui/Devider";
 import QRCode from "react-native-qrcode-svg";
 import Colors from "@/constants/Colors";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Clipboard from 'expo-clipboard';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
+const { width, height } = Dimensions.get('window');
+  const isSmallScreen = height < 700; 
+
+
+  const  size   = isSmallScreen ? "65"  : "68"
 
 
 export default function QrCodeInfo({uniqueId})
 {
 
     
+
+
 
     console.log(uniqueId);
 
@@ -62,17 +70,18 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.20,
         shadowRadius: 1.41,
         elevation: 2,
-        
     },
     qrStyling:{
-        padding: 15,
+        padding:Platform.OS === "android" ? "10" :"15",  
         backgroundColor: 'white',
         borderWidth: 1.5,
         borderColor: Colors.green,
         borderRadius: 10,
         marginBottom: 20,
-       marginRight:85,
-       marginLeft:85
+        width:wp("55%"),
+        margin: "auto"
+        // marginRight:size,
+        //  marginLeft:size
     },
     divider: {
         height: 1,

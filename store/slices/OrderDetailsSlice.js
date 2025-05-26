@@ -1,5 +1,4 @@
-
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createSelector } from '@reduxjs/toolkit';
 
 interface OrderButtonsState {
   [orderId: string]: {
@@ -34,9 +33,7 @@ const orderDetailsSlice = createSlice({
     },
     
     pickupButtonPressed: (state, action) => {
-      
       state.pickupButtonClicked = true;
-      
       
       const orderId = action.payload?.orderId;
       if (orderId) {
@@ -51,13 +48,11 @@ const orderDetailsSlice = createSlice({
     },
     
     resetButtons: (state) => {
-      
       state.finishButtonClicked = false;
       state.pickupButtonClicked = false;
     },
     
     resetOrderButtons: (state, action) => {
-      
       const orderId = action.payload?.orderId;
       if (orderId && state.orderButtons[orderId]) {
         state.orderButtons[orderId] = {
@@ -68,19 +63,61 @@ const orderDetailsSlice = createSlice({
     },
     
     clearAllOrderButtons: (state) => {
-      
       state.orderButtons = {};
     }
   }
 });
 
+// ✅ FIXED: Memoized selectors that won't cause unnecessary re-renders
 
-export const selectOrderButtonState = (state, orderId) => {
-  return state.buttons.orderButtons[orderId] || {
-    finishButtonClicked: false,
-    pickupButtonClicked: false
-  };
+// Base selectors
+const selectButtonsState = (state) => state.buttons;
+const selectOrderButtons = (state) => state.buttons.orderButtons;
+
+// Default button state (reuse the same object reference)
+const defaultButtonState = {
+  finishButtonClicked: false,
+  pickupButtonClicked: false
 };
+
+// ✅ Memoized selector for specific order button state
+export const selectOrderButtonState = createSelector(
+  [selectOrderButtons, (state, orderId) => orderId],
+  (orderButtons, orderId) => {
+    return orderButtons[orderId] || defaultButtonState;
+  }
+);
+
+// ✅ Additional memoized selectors for global button states
+export const selectGlobalButtonStates = createSelector(
+  [selectButtonsState],
+  (buttonsState) => ({
+    finishButtonClicked: buttonsState.finishButtonClicked,
+    pickupButtonClicked: buttonsState.pickupButtonClicked
+  })
+);
+
+// ✅ Memoized selector for finish button state
+export const selectFinishButtonClicked = createSelector(
+  [selectButtonsState],
+  (buttonsState) => buttonsState.finishButtonClicked
+);
+
+// ✅ Memoized selector for pickup button state  
+export const selectPickupButtonClicked = createSelector(
+  [selectButtonsState],
+  (buttonsState) => buttonsState.pickupButtonClicked
+);
+
+// ✅ Memoized selector to check if any order has clicked buttons
+export const selectHasAnyOrderButtonClicked = createSelector(
+  [selectOrderButtons],
+  (orderButtons) => {
+    return Object.values(orderButtons).some(
+      buttonState => buttonState.finishButtonClicked || buttonState.pickupButtonClicked
+    );
+  }
+);
 
 export const { 
   finishButtonPressed, 

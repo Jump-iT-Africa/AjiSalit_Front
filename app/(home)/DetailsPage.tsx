@@ -20,24 +20,19 @@ import { selectCurrentOrder, selectUserOrders, setCurrentOrder, fetchORderById }
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSearchParams } from "expo-router/build/hooks";
 
-
-
 export default function DetailsPage() {
-
   const [remaining, setRemaining] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [orderData, setOrderData] = useState(null);
-  const router = useRouter();
   
+  const router = useRouter();
   const currentOrder = useSelector(selectCurrentOrder);
   const userOrders = useSelector(selectUserOrders);
-
-  console.log('order to be fetched', orderData);
+  const hasSetRefreshFlag = useRef(false);
   
   const ViewShotRef = useRef();
   const dispatch = useDispatch();
   const [role, setRole] = useState(null);
-
 
   useEffect(() => {
     const loadRole = async () => {
@@ -59,16 +54,13 @@ export default function DetailsPage() {
   const {ItemID} = useLocalSearchParams();
   console.log('this is the id of the command from details', ItemID);
   
-
   const params = useLocalSearchParams();
+  const shouldRefreshOnReturn = params.shouldRefreshOnReturn === 'true';
   console.log('All params:', params);
-
-
 
   useEffect(() => {
     console.log('Current order updated:', currentOrder);
   }, [currentOrder]);
-  
   
   useEffect(() => {
     const loadOrderData = async () => {
@@ -81,10 +73,8 @@ export default function DetailsPage() {
           return;
         }
         
-
-
         // this block of code is not working you should fine a solution to the item id its null
-          if (ItemID) {
+        if (ItemID) {
           console.log("Looking for order with ID:", ItemID);
           
           const foundOrder = userOrders.find(order => 
@@ -100,7 +90,7 @@ export default function DetailsPage() {
           }
           
           try {
-            const result = await dispatch(fetchORderById(ItemID)).unwrap();
+            const result = await dispatch(fetchORderById(ItemID));
             console.log('this is result from details page', result);
             
             if (result) {
@@ -113,7 +103,6 @@ export default function DetailsPage() {
             console.log("Error fetching order:", fetchError);
           }
         }
-        
         
         try {
           const storedOrder = await AsyncStorage.getItem('lastScannedOrder');
@@ -139,9 +128,11 @@ export default function DetailsPage() {
     loadOrderData();
   }, [currentOrder, ItemID, dispatch, userOrders]);
   
-  
   useEffect(() => {
     if (!orderData) return;
+    
+    // Add this console log here, after orderData is set
+    console.log("Image URLs to display:", orderData.images);
     
     if (orderData.situation === 'خالص' || orderData.label === 'خالص') {
       setRemaining(0);
@@ -150,19 +141,19 @@ export default function DetailsPage() {
     }
   }, [orderData]);
 
-    const handleDateChange = async (newDate, reason) => {
-      console.log('New delivery date:', newDate);
-      console.log('Reason for change:', reason);
-      
-      if (orderData?.id) {
-        try {
-          await dispatch(fetchORderById(orderData.id));
-          console.log('Order data refreshed after date change');
-        } catch (error) {
-          console.log('Failed to refresh order data:', error);
-        }
+  const handleDateChange = async (newDate, reason) => {
+    console.log('New delivery date:', newDate);
+    console.log('Reason for change:', reason);
+    
+    if (orderData?.id) {
+      try {
+        await dispatch(fetchORderById(orderData.id));
+        console.log('Order data refreshed after date change');
+      } catch (error) {
+        console.log('Failed to refresh order data:', error);
       }
-    };
+    }
+  };
 
   const handleShare = async () => {
     try {
@@ -177,30 +168,38 @@ export default function DetailsPage() {
     }
   };
 
-
+  const handleGoBack = async () => {
+    if (shouldRefreshOnReturn && !hasSetRefreshFlag.current) {
+      try {
+        await AsyncStorage.setItem('REFRESH_ORDERS_ON_RETURN', 'true');
+        console.log("Set refresh flag on back navigation");
+        hasSetRefreshFlag.current = true;
+      } catch (error) {
+        console.log("Error setting refresh flag:", error);
+      }
+    }
+    router.back();
+  };
  
-
   const [tooltipVisible, setTooltipVisible] = useState(false);
   
   const containerClassName = Platform.OS === 'ios'
     ? "flex-row justify-between mx-5 mt-16"
     : "flex-row justify-between mx-0 mt-14";
 
-  
   if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" color="#295f2b" />
-        <Text style={{ marginTop: 10 }}>جاري تحميل بيانات الطلب...</Text>
+        <Text style={{ marginTop: 10 }} className="font-tajawalregular">جاري تحميل بيانات الطلب...</Text>
       </View>
     );
   }
-
   
   if (!orderData) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-        <Text style={{ fontSize: 18, textAlign: 'center', marginBottom: 20 }}>
+        <Text style={{ fontSize: 18, textAlign: 'center', marginBottom: 20 }} className="font-tajawalregular">
           لم يتم العثور على بيانات الطلب
         </Text>
         <TouchableOpacity 
@@ -212,25 +211,32 @@ export default function DetailsPage() {
             borderRadius: 8 
           }}
         >
-          <Text style={{ color: 'white', fontSize: 16 }}>العودة</Text>
+          <Text style={{ color: 'white', fontSize: 16 }} className="font-tajawalregular">العودة</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
+  const platform = Platform.OS === 'android'? "0" : "mt-10";
+  
+  const orderImages = orderData.images || [];
+  console.log("Rendering with images:", orderImages);
+
   return (
     <>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View className={containerClassName}>
-          <TouchableOpacity onPress={() => router.replace('(home)')}>
-            <View className="bg-[#959393b3] rounded-full w-8 h-8 flex justify-center items-center">
-              <Feather name="chevron-left" size={22} color="white" />
-            </View>
-          </TouchableOpacity>
-         
+        <View className={`${platform}`}> 
+          <HeaderWithBack
+              onPress={handleGoBack}
+              tooltipVisible={tooltipVisible}
+              setTooltipVisible={setTooltipVisible}
+              content="فهاد الصفحة غدي تختار واش نتا شركة ولا شخص عادي"
+          />
         </View>
 
-        {!orderData.images || orderData.images.length === 0 ? (
+        {Array.isArray(orderImages) && orderImages.length > 0 ? (
+          <ImagesSlider images={orderImages} />
+        ) : (
           <View className="w-80 h-80 m-auto">
             <Image
               source={DetailsOrdersNoImages}
@@ -238,8 +244,6 @@ export default function DetailsPage() {
               resizeMode="contain"
             />
           </View>
-        ) : (
-          <ImagesSlider images={orderData.images} />
         )}
 
         <Viewshot ref={ViewShotRef} options={{ format: "jpg", quality: 1 }}>
@@ -254,7 +258,7 @@ export default function DetailsPage() {
               newDate={orderData?.newDate}
               currency="درهم"
               situation={orderData?.label || orderData?.situation}
-              images={orderData?.images || []}
+              images={orderImages}
               onDateChange={handleDateChange}
               orderId={orderData?.id}
             />
@@ -269,7 +273,7 @@ export default function DetailsPage() {
                 className={` w-[48%] h-14 rounded-full flex-row justify-center items-center bg-[#F52525]`}
                 onPress={handleShare}
               >
-                <Text className="text-white text-lg font-bold ml-2 font-tajawalregular pt-1 pr-2">مشاركة</Text>
+                <Text className="text-white text-lg  ml-2 font-tajawalregular pt-1 pr-2">مشاركة</Text>
                 <Feather name="share-2" size={24} color="white" />
               </TouchableOpacity>
               <ClientPikUpButton orderData={orderData} />

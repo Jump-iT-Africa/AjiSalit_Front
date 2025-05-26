@@ -95,7 +95,7 @@ const OrderCard = ({ item }) => {
           <View className='flex-row-reverse items-center justify-between w-full'>
             <View className='flex-row items-end justify-end space-x-2'>
               <View className="flex items-end">
-                <Text className={`text-lg font-bold text-[#000] font-tajawal`}>{item.companyId.field}</Text>
+                <Text className={`text-lg font-thin text-[#000] font-tajawal`}>{item.companyId.field}</Text>
                 <Text className="text-[#6f706f] text-sm">#{item.orderCode}</Text>
               </View>
               {icons.filter(icon => icon.name === item.companyId.field).map((icon) => (
@@ -123,7 +123,7 @@ const OrderCard = ({ item }) => {
           <View className="flex-1">
             <View className="bg-gray-100 rounded-lg mx-1 p-2 items-center border border-gray-300 border-1">
               <Text className="text-gray-600 mb-1 font-tajawalregular ">الحالة</Text>
-              <Text className={`text-base font-bold font-tajawal text-[12px] ${item.label ==='غير خالص'  ? "text-[#F52525]" : "text-[#2e752f]" } `}>
+              <Text className={`text-base font-thin font-tajawal text-[12px] ${item.label ==='غير خالص'  ? "text-[#F52525]" : "text-[#2e752f]" } `}>
                 {item.label || "جاهزة للتسليم"}
               </Text>
             </View>
@@ -132,7 +132,7 @@ const OrderCard = ({ item }) => {
           <View className="flex-1">
             <View className="bg-gray-100 rounded-lg mx-1 p-2 items-center border border-gray-300 border-1">
               <Text className="text-[#000] mb-1 font-tajawalregular font-[13px] ">التسبيق</Text>
-              <Text className="text-base font-bold font-tajawal text-[12px] text-[#FFA30E]">
+              <Text className="text-base font-thin font-tajawal text-[12px] text-[#FFA30E]">
                 {item.advancedAmount || ' 0'} درهم
               </Text>
             </View>
@@ -141,7 +141,7 @@ const OrderCard = ({ item }) => {
           <View className="flex-1">
             <View className="bg-gray-100 rounded-lg mx-1 p-2 items-center border border-gray-300 border-1">
               <Text className="text-gray-600 mb-1 font-tajawalregular text-[14px]">الإجمالي</Text>
-              <Text className="text-base font-bold font-tajawal text-[13px] text-[#2e752f]">
+              <Text className="text-base font-thin font-tajawal text-[13px] text-[#2e752f]">
                 {item.price ? `${item.price} درهم` : '-'}
 
               </Text>

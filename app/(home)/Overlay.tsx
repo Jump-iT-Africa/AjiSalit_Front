@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Dimensions, Text, Image, TouchableOpacity } from 'react-native';
+import { View, Dimensions, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import Colors from "@/constants/Colors";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import CustomButton from '@/components/ui/CustomButton';
@@ -8,12 +9,18 @@ import { router } from 'expo-router';
 import AddManuallyTheId from '@/components/AddManuallyTheId/AddManuallyTheId';
 
 const { width, height } = Dimensions.get("window");
-const innerDimension = 300;
+const isSmallScreen = height < 700;
 
-const topMargin = 230;
+// Calculate dynamic dimensions based on screen size
+const innerDimension = Math.min(wp('80%'), hp('40%'));
+const cornerSize = Math.min(wp('3%'), hp('1.5%'));
+const cornerLength = Math.min(wp('12%'), hp('6%'));
+
+// Calculate top margin and bottom space dynamically
+const topMargin = hp('30%');
 const bottomSpace = height - innerDimension - topMargin;
 
-export const Overlay = ({ flashEnabled, toggleFlash, hasFlashPermission, onManualIdSubmit }:any) => {
+export const Overlay = ({ flashEnabled, toggleFlash, hasFlashPermission, onManualIdSubmit, cameraReady }:any) => {
   const [modalVisible, setModalVisible] = useState(false);
 
   const handleOpenModal = () => {
@@ -32,96 +39,200 @@ export const Overlay = ({ flashEnabled, toggleFlash, hasFlashPermission, onManua
   };
 
   return (
-    <View className="absolute inset-0">
-      <View className="absolute z-20 w-full flex-row items-center h-40 px-3 pt-8">
-        <Ionicons name="chevron-back-outline" size={24} color="white" onPress={() => router.back()}/>
-        <View className="flex-1 items-center">
-          <Text className="text-white text-xl font-tajawal">مسح QR</Text>
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Ionicons 
+          name="chevron-back-outline" 
+          size={wp('6%')} 
+          color="white" 
+          onPress={() => router.back()}
+        />
+        <View style={{ flex: 1, alignItems: 'center' }}>
+          <Text style={styles.headerTitle}>مسح QR</Text>
         </View>
         <TouchableOpacity
           onPress={toggleFlash}
-          className="p-2"
+          style={styles.flashButton}
           disabled={!hasFlashPermission}
         >
           {flashEnabled ? (
-            <Ionicons name="flash" size={24} color="white" />
+            <Ionicons name="flash" size={wp('6%')} color="white" />
           ) : (
-            <Ionicons name="flash-outline" size={24} color="white" />
+            <Ionicons name="flash-outline" size={wp('6%')} color="white" />
           )}
         </TouchableOpacity>
       </View>
       
-      <View style={{
-        backgroundColor: Colors.green,
-        width: '100%',
-        height: topMargin,
-      }} />
+      {/* Top green area */}
+      <View style={[styles.greenBackground, { height: topMargin }]} />
       
-      <View className="flex-row" style={{ height: innerDimension }}>
-        <View style={{
-          backgroundColor: Colors.green,
-          width: (width - innerDimension) / 2,
-        }} />
-        <View className="relative" style={{ width: innerDimension, height: innerDimension }}>
-          <View className="absolute inset-0 border-2 border-transparent" />
-          <View className="absolute -top-4 -left-4 w-6 h-6 rounded-full">
-            <View className="absolute top-0 left-0 w-12 h-2 bg-white rounded-full" />
-            <View className="absolute top-0 left-0 w-2 h-12 bg-white rounded-full" />
+      {/* Scanner area with corners */}
+      <View style={{ flexDirection: 'row', height: innerDimension }}>
+        <View style={[
+          styles.greenBackground, 
+          { width: (width - innerDimension) / 2 }
+        ]} />
+        
+        <View style={[styles.scannerFrame, { width: innerDimension, height: innerDimension }]}>
+          {/* Top Left Corner */}
+          <View style={[styles.cornerPosition, { top: -cornerSize, left: -cornerSize }]}>
+            <View style={[styles.horizontalCorner, { top: 0, left: 0, width: cornerLength }]} />
+            <View style={[styles.verticalCorner, { top: 0, left: 0, height: cornerLength }]} />
           </View>
-          <View className="absolute -top-4 -right-4 w-12 h-12 z-10">
-            <View className="absolute top-0 right-0 w-12 h-2 bg-white rounded-full" />
-            <View className="absolute top-0 right-0 w-2 h-12 bg-white rounded-full" />
+          
+          {/* Top Right Corner */}
+          <View style={[styles.cornerPosition, { top: -cornerSize, right: -cornerSize }]}>
+            <View style={[styles.horizontalCorner, { top: 0, right: 0, width: cornerLength }]} />
+            <View style={[styles.verticalCorner, { top: 0, right: 0, height: cornerLength }]} />
           </View>
-          <View className="absolute -bottom-4 -left-4 w-12 h-12 z-10">
-            <View className="absolute bottom-0 left-0 w-12 h-2 bg-white rounded-full" />
-            <View className="absolute bottom-0 left-0 w-2 h-12 bg-white rounded-full" />
+          
+          {/* Bottom Left Corner */}
+          <View style={[styles.cornerPosition, { bottom: -cornerSize, left: -cornerSize }]}>
+            <View style={[styles.horizontalCorner, { bottom: 0, left: 0, width: cornerLength }]} />
+            <View style={[styles.verticalCorner, { bottom: 0, left: 0, height: cornerLength }]} />
           </View>
-          <View className="absolute -bottom-4 -right-4 w-12 h-12 z-10">
-            <View className="absolute bottom-0 right-0 w-12 h-2 bg-white rounded-full" />
-            <View className="absolute bottom-0 right-0 w-2 h-12 bg-white rounded-full" />
+          
+          {/* Bottom Right Corner */}
+          <View style={[styles.cornerPosition, { bottom: -cornerSize, right: -cornerSize }]}>
+            <View style={[styles.horizontalCorner, { bottom: 0, right: 0, width: cornerLength }]} />
+            <View style={[styles.verticalCorner, { bottom: 0, right: 0, height: cornerLength }]} />
           </View>
         </View>
-        <View style={{
-          backgroundColor: Colors.green,
-          width: (width - innerDimension) / 2,
-        }} />
+        
+        <View style={[
+          styles.greenBackground, 
+          { width: (width - innerDimension) / 2 }
+        ]} />
       </View>
       
-      <View style={{
-        backgroundColor: Colors.green,
-        width: '100%',
-        height: bottomSpace,
-      }} />
+      {/* Bottom green area */}
+      <View style={[styles.greenBackground, { height: bottomSpace }]} />
       
-      <View className="absolute z-20 w-full bottom-44 flex items-center justify-center">
+      {/* Manual add button */}
+      <View style={styles.manualAddButtonContainer}>
         <TouchableOpacity onPress={handleOpenModal}>
-          <View className="flex-row items-center bg-[#F52525] rounded-full px-12 py-0">
+          <View style={styles.manualAddButton}>
             <CustomButton
               title="أضف يدويا"
               containerStyles=""
-              textStyles="text-white font-tajawal"
+              textStyles={`font-tajawalregular`}
               onPress={handleOpenModal}
             />
             <Image
               source={AddIcon}
-              className="w-4 h-4 ml-2"
+              style={styles.addIcon}
               resizeMode="contain"
             />
           </View>
         </TouchableOpacity>
       </View>
-      <View className="absolute z-20 w-full items-center px-10 bottom-24">
-        <Text className="text-white font-tajawalregular text-center">
+      
+      {/* Instructions text */}
+      <View style={styles.instructionsContainer}>
+        <Text style={styles.instructionsText}>
           إلا ما خدمش المسح، دخل رمز الطلب يدويًا بالضغط على الزر أسفله!
         </Text>
       </View>
 
-        <AddManuallyTheId
-          visible={modalVisible}
-          onClose={handleCloseModal}
-          onSubmit={handleIdSubmit}
-          containerStyle="bg-[#2e752f]"
-        />
+      {/* Manual entry modal */}
+      <AddManuallyTheId
+        visible={modalVisible}
+        onClose={handleCloseModal}
+        onSubmit={handleIdSubmit}
+        containerStyle="bg-[#2e752f]"
+      />
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  header: {
+    position: 'absolute',
+    zIndex: 20,
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    height: hp('16%'),
+    paddingHorizontal: wp('3%'),
+    paddingTop: hp('4%'),
+  },
+  headerTitle: {
+    color: 'white',
+    fontSize: wp('5%'),
+    fontFamily: 'Tajawal',
+  },
+  flashButton: {
+    padding: wp('2%'),
+  },
+  greenBackground: {
+    backgroundColor: Colors.green,
+    width: '100%',
+  },
+  scannerFrame: {
+    position: 'relative',
+    
+  },
+  cornerPosition: {
+    position: 'absolute',
+    width: wp('12%'),
+    height: hp('6%'),
+    zIndex: 10,
+  },
+  horizontalCorner: {
+    position: 'absolute',
+    height: cornerSize,
+    backgroundColor: 'white',
+    borderRadius: cornerSize / 10,
+  },
+  verticalCorner: {
+    position: 'absolute',
+    width: cornerSize,
+    backgroundColor: 'white',
+    borderRadius: cornerSize / 10,
+  },
+  manualAddButtonContainer: {
+    position: 'absolute',
+    zIndex: 20,
+    width: '100%',
+    bottom: hp('15%'),
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical:hp('3%')
+  },
+  manualAddButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F52525',
+    borderRadius: wp('10%'),
+    paddingHorizontal: wp('8%'),
+    paddingVertical: hp('0%'),
+  },
+ 
+  addIcon: {
+    width: wp('4%'),
+    height: wp('4%'),
+    marginLeft: wp('2%'),
+  },
+  instructionsContainer: {
+    position: 'absolute',
+    zIndex: 20,
+    width: '100%',
+    alignItems: 'center',
+    paddingHorizontal: wp('10%'),
+    bottom: hp('10%'),
+  },
+  instructionsText: {
+    color: 'white',
+    fontFamily: 'TajawalRegular',
+    textAlign: 'center',
+    fontSize: wp('3.5%'),
+  },
+});

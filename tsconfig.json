@@ -3,8 +3,12 @@
     "compilerOptions": {
         "strict": false,
         "paths": {
-            "@/*": ["./*"]
+            "@/*": ["./*"],
+        "jsx": "react-native",
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
         },
+    
     },
     "include": ["**/*.ts", "**/*.tsx", "app.d.ts", "store/slices/OrderDetailsSlice.js", "store/slices/RoleSlice.js", "store/actions/AuthActions.js", "store/slices/userSlice.js", "app/OrderResetManager.js"]
 }

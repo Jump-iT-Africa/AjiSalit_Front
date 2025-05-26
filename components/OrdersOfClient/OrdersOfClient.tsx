@@ -6,11 +6,12 @@ import OrderCard from './OrderCard';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchOrders, selectFilteredOrders } from '@/store/slices/OrdersSlice';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { useFocusEffect } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const OrdersOfClient = ({ SearchCode }) => {
   const dispatch = useDispatch();
   
-  // Use the selectFilteredOrders selector to get only active orders
   const filteredOrders = useSelector(selectFilteredOrders);
   const loading = useSelector(state => state.orders.loading);
   const error = useSelector(state => state.orders.error);
@@ -28,6 +29,30 @@ const OrdersOfClient = ({ SearchCode }) => {
   console.log('Orders loaded:', ordersLoaded);
   console.log('Last refresh time:', new Date(lastRefreshTime).toLocaleTimeString());
   
+
+
+  useFocusEffect(
+    useCallback(() => {
+      const checkRefreshFlag = async () => {
+        try {
+          const shouldRefresh = await AsyncStorage.getItem('REFRESH_ORDERS_ON_RETURN');
+          if (shouldRefresh === 'true') {
+            console.log("Screen focused with refresh flag, fetching orders...");
+            fetchOrdersData();
+            await AsyncStorage.setItem('REFRESH_ORDERS_ON_RETURN', 'false');
+          }
+        } catch (error) {
+          console.log("Error checking refresh flag:", error);
+        }
+      };
+      checkRefreshFlag();
+      return () => {
+      };
+    }, [])
+  );
+
+
+
   useEffect(() => {
     setSearchTerm(SearchCode);
   }, [SearchCode]);
