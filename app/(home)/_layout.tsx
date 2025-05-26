@@ -168,10 +168,13 @@ function MainTabs() {
           headerShown: false
         }}
         renderCircle={({ selectedTab, navigate }) => (
+          // <Animated.View style={[
+          //   styles.btnCircleUp,
+          //   isButtonDisabled ? styles.disabledButton : {}
+          // ]}>
           <Animated.View style={[
             styles.btnCircleUp,
-            isButtonDisabled ? styles.disabledButton : {}
-          ]}>
+            ]}>
             <TouchableOpacity
               style={styles.button}
               onPress={async () => {
