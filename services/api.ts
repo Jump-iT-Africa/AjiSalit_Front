@@ -13,17 +13,19 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const fetchUserData = async () => {
   try {
+    
     const token = await AsyncStorage.getItem('token');
+    
     const config = {
       headers: {
-        'Authorization': token ? `Bearer ${token}` : '',
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       }
     };
-        
+    
     const response = await axios.get(`${API_BASE_URL}/user/`, config);
-      // console.log('this is updated info of user',  response.data);
-      
+    console.log("sssss",response);
+    
     if (response.data.isExist === false && response.data.statusCode === 409) {
       throw {
         response: {
@@ -108,7 +110,7 @@ export const verifyNumber = async (phoneData) => {
         
     const response = await axios.post(`${API_BASE_URL}/user/verifyNumber`, phoneData);
     
-    if (response.data.isExist === false && response.data.statusCode === 409) {
+    if (response.data.isExist === true && response.data.statusCode === 409) {
       throw {
         response: {
           data: response.data

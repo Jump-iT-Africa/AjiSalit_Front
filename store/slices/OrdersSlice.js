@@ -330,6 +330,81 @@ export const selectFilteredOrders = createSelector(
   }
 );
 
+
+export const selectFilteredExpiredOrdersCount = createSelector(
+  [getOrderItems, getSearchTerm, getStatusFilter, getDateFilter],
+  (items, searchTerm, statusFilter, dateFilter) => {
+    if (!items || !Array.isArray(items)) {
+      return 0;
+    }
+    
+    // Start with expired orders that are not finished and picked up
+    let result = items.filter(order => 
+      order.isExpired && !(order.isFinished === true && order.isPickUp === true)
+    );
+    
+    // Apply search filter
+    if (searchTerm) {
+      result = result.filter(order => 
+        order.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.customerDisplayName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    // Apply status filter
+    if (statusFilter) {
+      let typeToFilter;
+      
+      switch(statusFilter) {
+        case 'خالص':
+          typeToFilter = 'paid';
+          break;
+        case 'غير خالص':
+          typeToFilter = 'unpaid';
+          break;
+        case 'تسبيق':
+          typeToFilter = 'installment';
+          break;
+        default:
+          typeToFilter = null;
+      }
+      
+      if (typeToFilter) {
+        result = result.filter(order => order.type === typeToFilter);
+      }
+    }
+    
+    // Apply date filter
+    if (dateFilter) {
+      const filterDate = new Date(dateFilter);
+      
+      result = result.filter(order => {
+        if (!order.date || order.date === "غير محدد") return false;
+        
+        const [day, month, year] = order.date.split('/').map(Number);
+        const orderDate = new Date(year, month - 1, day);
+        
+        return orderDate.toDateString() === filterDate.toDateString();
+      });
+    }
+    
+    return result.length;
+  }
+);
+
+export const selectExpiredOrders = createSelector(
+  [getOrderItems],
+  (items) => {
+    if (!items || !Array.isArray(items)) {
+      return [];
+    }
+    
+    return items.filter(order => 
+      order.isExpired && !(order.isFinished === true && order.isPickUp === true)
+    );
+  }
+);
+
 export const HistoryOrders = createSelector(
   [getOrderItems, getSearchTerm, getStatusFilter, getDateFilter],
   (items, searchTerm, statusFilter, dateFilter) => {

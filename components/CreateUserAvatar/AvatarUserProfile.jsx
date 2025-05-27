@@ -2,7 +2,8 @@ import { View, Text, SafeAreaView, Image } from 'react-native';
 import React from 'react';
 import Colors from '@/constants/Colors';
 
-export default function InitialsAvatar({ name, size = 48 }){
+export default function InitialsAvatar({ name, size = 48, image }) {
+  
   const getInitials = (name) => {
     if (!name) return '??';
     
@@ -18,7 +19,7 @@ export default function InitialsAvatar({ name, size = 48 }){
     if (!name) return Colors.green;
     
     const colors = [
-      '#F52525','#2e752f'
+      '#F52525', '#2e752f'
     ];
     
     let hash = 0;
@@ -33,26 +34,39 @@ export default function InitialsAvatar({ name, size = 48 }){
   const backgroundColor = getColorFromName(name);
 
   return (
-    <View 
+    <View
       style={{
         width: size,
         height: size,
         borderRadius: size / 2,
-        backgroundColor,
+        backgroundColor: image ? 'transparent' : backgroundColor, 
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        overflow: 'hidden' 
       }}
     >
-      <Text 
-        style={{
-          color: 'white',
-          fontSize: size / 2.5,
-          fontWeight: 'bold',
-          textAlign: 'center'
-        }}
-      >
-        {initials}
-      </Text>
+      {image ? (
+        <Image
+          source={{ uri: image }}
+          style={{
+            width: size,
+            height: size,
+            borderRadius: size / 2 
+          }}
+          resizeMode='cover' 
+        />
+      ) : (
+        <Text
+          style={{
+            color: 'white',
+            fontSize: size / 2.5,
+            fontWeight: 'bold',
+            textAlign: 'center'
+          }}
+        >
+          {initials}
+        </Text>
+      )}
     </View>
   );
 };

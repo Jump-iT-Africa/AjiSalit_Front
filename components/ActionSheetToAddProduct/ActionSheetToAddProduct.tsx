@@ -33,7 +33,7 @@ import OrderVerificationBottomSheet from './OrderVerificationBottomSheet';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import * as FileSystem from 'expo-file-system';
 import CalculatorModal from '../Calculator/CalculatorModal';
-
+import LoadingModal from './LoadingModal';
 
 const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) => {
 
@@ -50,7 +50,8 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
   const dispatch = useDispatch();
   const verificationSheetRef = useRef(null);
 
-  const { loading, error, success, currentOrder } = useSelector((state) => state.order);
+  // Fixed Redux selector - make sure to get the right property name
+  const { loading, error, success, currentOrder, uploadProgress: reduxUploadProgress } = useSelector((state) => state.order);
 
   const [formData, setFormData] = useState({
     price: '',
@@ -83,6 +84,8 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
   const [showIdModal, setShowIdModal] = useState(false);
   const [photoCounter, setPhotoCounter] = useState(1);
   const [showCalculator, setShowCalculator] = useState(false);
+  const [showLoadingModal, setShowLoadingModal] = useState(false);
+  const [uploadProgresses, setUploadProgress] = useState(0);
 
   const handleCalculatorConfirm = (calculatedValue) => {
     setFormData({ ...formData, price: calculatedValue });
@@ -100,16 +103,47 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
 
   const [uploadedImages, setUploadedImages] = useState([]);
 
-
   console.log('this is array of uploaded Images' , uploadedImages);
   
+
+  // Fixed useEffect for upload progress
+  useEffect(() => {
+    if (reduxUploadProgress !== undefined && reduxUploadProgress > 0) {
+      setUploadProgress(reduxUploadProgress);
+    }
+  }, [reduxUploadProgress]);
+
+  // Fixed useEffect for success/error handling
+  useEffect(() => {
+    console.log('Redux state changed:', { success, error, currentOrder, loading });
+    
+    if (success && currentOrder && !loading) {
+      console.log('Order created successfully, showing QR modal');
+      // Hide loading modal first
+      setShowLoadingModal(false);
+      
+      // Set unique ID from current order or generated one
+      const qrCodeId = currentOrder.qrCode || uniqueId;
+      setUniqueId(qrCodeId);
+      
+      // Small delay to ensure loading modal is hidden before showing QR modal
+      setTimeout(() => {
+        setShowIdModal(true);
+      }, 300);
+      
+    } else if (error && !loading) {
+      console.log('Order creation failed:', error);
+      // Hide loading modal on error
+      setShowLoadingModal(false);
+    }
+  }, [success, error, currentOrder, loading]);
+
+  // Cleanup effect
   useEffect(() => {
     return () => {
       dispatch(resetOrderState());
     };
   }, [dispatch]);
-
-
 
   const prepareImagesForUpload = (images) => {
     if (!images || images.length === 0) return [];
@@ -238,7 +272,6 @@ const pickImage = async () => {
 
   const removeImage = (id) => {
     const newImages = uploadedImages.filter(img => img.id !== id);
-
     setUploadedImages(newImages);
   };
 
@@ -254,7 +287,7 @@ const pickImage = async () => {
         status: '',
         situation: '',
         pickupDate: '',
-        isFinished:false,
+        isFinished: false,
         isPickUp: false
       });
       setErrors({
@@ -267,7 +300,16 @@ const pickImage = async () => {
       step2Animation.setValue(0);
       
       setIsDatePickerEnabled(false);
+      setShowLoadingModal(false);
+      setUploadProgress(0);
+      setShowIdModal(false); // Reset QR modal state
+      setUploadedImages([]); // Reset images
+      setPhotoCounter(1); // Reset photo counter
     }, 300);
+    
+    // Reset Redux state
+    dispatch(resetOrderState());
+    
     if (onClose) onClose();
   };
 
@@ -491,18 +533,20 @@ const processOrderSubmission = () => {
         type: fileType
       };
     });
+  } else {
+    console.log('No images to upload - proceeding without images');
   }
   
   const orderData = {
-    price: parseFloat(formData.price), // Ensure it's a number
+    price: parseFloat(formData.price),
     situation: formData.situation || "خالص",
     status: "في طور الانجاز",
     advancedAmount: formData.advancedAmount ? parseFloat(formData.advancedAmount) : null,
     deliveryDate: formattedDeliveryDate, 
     pickupDate: formattedPickupDate,     
     qrCode: newUniqueId,
-    isFinished: false, // Explicit boolean
-    isPickUp: false,   // Explicit boolean
+    isFinished: false,
+    isPickUp: false,
     images: processedImages
   };
   
@@ -513,24 +557,41 @@ const processOrderSubmission = () => {
     return;
   }
   
+  // Show loading modal before dispatching
+  setShowLoadingModal(true);
+  setUploadProgress(0);
+  
+  // Close verification sheet
+  verificationSheetRef.current?.hide();
+  
+  // Dispatch the order creation
   dispatch(createOrder(orderData));
-  setShowIdModal(true);
 };
 
 
 
-  const handleModalClose = () => {
-    setShowIdModal(false);
-    setFormSubmitted(true);
-    
-    if (success) {
-      setTimeout(() => {
-        actionSheetRef.current?.hide();
-        handleClose();
-        router.replace('(home)');
-      }, 1000);
-    }
-  };
+// Fixed handleModalClose to prevent multiple calls
+const handleModalClose = () => {
+  console.log('QR Modal close requested');
+  setShowIdModal(false);
+  setFormSubmitted(true);
+  
+  // Only proceed if order was successful
+  if (success) {
+    setTimeout(() => {
+      actionSheetRef.current?.hide();
+      handleClose();
+      router.replace('(home)');
+    }, 500); // Reduced timeout
+  }
+};
+
+const handleLoadingModalClose = () => {
+  // Only allow closing if there's an error
+  if (error) {
+    setShowLoadingModal(false);
+  }
+};
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showCalendar, setShowCalendar] = useState(false);
@@ -850,9 +911,8 @@ const processOrderSubmission = () => {
                   fontSize: wp('3.5%'),
                 }}>التقط صورة</Text>
               </TouchableOpacity>
-              
               {/* Gallery Button */}
-              <TouchableOpacity 
+              {/* <TouchableOpacity 
                 style={{
                   borderWidth: 1,
                   borderColor: '#2e752f',
@@ -870,10 +930,9 @@ const processOrderSubmission = () => {
                   fontFamily: 'TajawalRegular',
                   fontSize: wp('3.5%'),
                 }}>معرض الصور</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
           </View>
-       
           {uploadedImages.length > 0 ? (
             <View style={{ marginTop: hp('2%') }}>
               <Text style={{
@@ -1018,37 +1077,6 @@ const processOrderSubmission = () => {
     </KeyboardAvoidingView>
   );
 
-  const SuccessView = (
-    <View className="flex-1 items-center justify-center h-full w-full">
-      {loading ? (
-        <ActivityIndicator size="large" color="#2e752f" />
-      ) : (
-        <>
-          <View>
-            <AntDesign name="checkcircleo" size={190} color="white" />
-          </View>
-          <View>
-            <Text className="text-center text-white text-6xl font-tajawal pt-7 mt-4">مبروك!</Text>
-            <Text className="text-white text-lg  text-center p-4 font-tajawalregular">
-              تم إنشاء الطلب بنجاح.
-            </Text>
-          </View>
-          <View className="w-full mt-20">
-            <CustomButton
-              onPress={() => {
-                actionSheetRef.current?.hide();
-                handleClose();
-                router.replace('(home)');
-              }}
-              title="انتقل للصفحة الرئيسية"
-              textStyles="text-sm font-tajawal px-2 py-0 text-[#2e752f]"
-              containerStyles="w-[90%] m-auto bg-white"
-            />
-          </View>
-        </>
-      )}
-    </View>
-  );
 
   return (
     <>
@@ -1059,9 +1087,7 @@ const processOrderSubmission = () => {
           onClose={handleClose}
           customHeight="50%"
         >
-          {formSubmitted && success ? (
-            SuccessView
-          ) : (
+          
             <KeyboardAvoidingView
               behavior={Platform.OS === "ios" ? "padding" : "height"}
               className="flex"
@@ -1072,10 +1098,16 @@ const processOrderSubmission = () => {
                 {Step2Form}
               </View>
             </KeyboardAvoidingView>
-          )}
         </BottomSheetComponent>
       </TouchableWithoutFeedback>
       
+     
+      <LoadingModal
+      visible={showLoadingModal}
+      onClose={handleLoadingModalClose}
+      uploadProgress={uploadProgresses}
+    />
+
       <View>
       <OrderVerificationBottomSheet
           ref={verificationSheetRef}
@@ -1085,6 +1117,14 @@ const processOrderSubmission = () => {
           onConfirm={processOrderSubmission}
         />
       </View>
+
+      {!error && (
+      <UniqueIdModal
+        visible={showIdModal} 
+        onClose={handleModalClose} 
+        uniqueId={uniqueId} 
+      />
+    )}
     
     </>
   );

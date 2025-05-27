@@ -11,18 +11,16 @@ export const fetchCurrentUserData = createAsyncThunk(
      
       const response = await fetchUserData();
 
-      // console.log('here is the response of get users', response);
-      
-      if (response) {
-        // console.log('responsessssss',response);
-        await AsyncStorage.setItem('user',JSON.stringify(response) )
-        return response;
+      console.log('here is the response of get users', response);
 
+      if (response) {
+        await AsyncStorage.setItem('user',JSON.stringify(response))
+        return response;
       }
       
       return rejectWithValue('Failed to fetch user data');
     } catch (error) {
-      console.error('Error fetching current user data:', error);
+      console.log('Error fetching current user data:', error);
       return rejectWithValue(error.response?.data || error.message);
     }
   }
@@ -109,7 +107,7 @@ export const verifyPhoneNumber = createAsyncThunk(
       const response = await verifyNumber(phoneData);
       console.log('Verification response:', response);
       
-      if (response.statusCode === 409 && response.isExist === false) {
+      if (response.statusCode === 409 && response.isExist === true) {
         dispatch(setUserInfo({
           name: response.UserName,
           role: response.role
@@ -212,7 +210,6 @@ const initialState = {
   verificationSuccess: false,
   verificationData: null,
   error: null,
-
 
   passwordUpdateLoading: false,
   passwordUpdateSuccess: false,

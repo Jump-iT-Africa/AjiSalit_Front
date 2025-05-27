@@ -183,9 +183,8 @@ const Register: React.FC = () => {
       .then((response) => {
         console.log('Verification response:', response);
         
-        // Add delay before navigation to ensure smooth background transition
         backgroundTimeoutRef.current = setTimeout(() => {
-          if (response.statusCode === 409 && response.isExist === false) {
+          if (response.statusCode === 409 && response.isExist === true) {
             console.log('User exists, redirecting to password screen');
             router.navigate({
               pathname: '/interPassword',

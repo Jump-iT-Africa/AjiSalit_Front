@@ -183,16 +183,18 @@ function MainTabs() {
                   const currentPocket = await getLatestPocketValue();
                   
                   // Check pocket value before showing action sheet
-                  if (currentPocket <= 0) {
-                    Alert.alert(
-                      "رصيد غير كافي",
-                      "رصيدك 0 درهم، لن تتمكن من إنشاء طلبات جديدة. يرجى شحن الرصيد.",
-                      [{ text: "حسنا", style: "cancel" }]
-                    );
-                  } else {
+                  // if (currentPocket <= 0) {
+                  //   Alert.alert(
+                  //     "رصيد غير كافي",
+                  //     "رصيدك 0 درهم، لن تتمكن من إنشاء طلبات جديدة. يرجى شحن الرصيد.",
+                  //     [{ text: "حسنا", style: "cancel" }]
+                  //   );
+                  // } else {
+
                     setIsSheetVisible(true);
                     actionSheetRef.current?.show();
-                  }
+                    
+                  // }
                 } else {
                   navigate('Scanner');
                 }

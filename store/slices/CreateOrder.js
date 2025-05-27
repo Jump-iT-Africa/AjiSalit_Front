@@ -5,7 +5,7 @@ import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 
 export const createOrder = createAsyncThunk(
   'order/createOrder',
-  async (orderData, { rejectWithValue, getState }) => {
+  async (orderData, { rejectWithValue, getState, dispatch }) => {
     try {
       const state = getState();
       const token = state.user.token;
@@ -49,6 +49,9 @@ export const createOrder = createAsyncThunk(
           }
           
           try {
+            // Dispatch progress update for image compression
+            dispatch(setUploadProgress(Math.round((i / orderData.images.length) * 30))); // 30% for compression
+            
             const compressedUri = await compressImage(image.uri, 0.5);
             
             const originalName = image.name || `image_${i}.jpg`;
@@ -70,10 +73,14 @@ export const createOrder = createAsyncThunk(
             formData.append('imageOrder', i.toString());
           } catch (error) {
             console.error(`Error processing image ${i}:`, error);
+            // Continue with other images even if one fails
           }
         }
         
         formData.append('imageCount', orderData.images.length.toString());
+        
+        // Update progress after compression
+        dispatch(setUploadProgress(40));
       } else {
         console.log('No images to upload');
       }
@@ -93,19 +100,23 @@ export const createOrder = createAsyncThunk(
           'Content-Type': 'multipart/form-data',
           'Accept': 'application/json',
         },
-        timeout: 120000, // Increased timeout to 2 minutes
+        timeout: 180000, // Increased timeout to 3 minutes
         transformRequest: (data) => data,
         
         onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          const percentCompleted = Math.round(40 + (progressEvent.loaded * 60) / progressEvent.total); // 40% base + 60% upload
           console.log(`Upload progress: ${percentCompleted}%`);
+          dispatch(setUploadProgress(percentCompleted));
         },
       });
       
-      console.log('Server response:', response.status, response.statusText);
+      console.log('Server response:', response.status, response.data);
       if (response.data) {
         console.log('Response data:', JSON.stringify(response.data));
       }
+      
+      // Final progress update
+      dispatch(setUploadProgress(100));
       
       console.log('Order created successfully:', response.data);
       return response.data;
@@ -115,14 +126,39 @@ export const createOrder = createAsyncThunk(
       if (error.response) {
         console.error('Server response:', error.response.status, error.response.data);
         
-        if (error.response.data?.message) {
-          return rejectWithValue(error.response.data.message);
+        let errorMessage = 'حدث خطأ في الخادم';
+        
+        if (error.response.status === 400) {
+          errorMessage = 'خطأ في البيانات المرسلة. يرجى التحقق من صحة المعلومات';
+        } else if (error.response.status === 401) {
+          errorMessage = 'انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى';
+        } else if (error.response.status === 413) {
+          errorMessage = 'حجم الصور كبير جداً. يرجى اختيار صور أصغر';
+        } else if (error.response.status === 500) {
+          errorMessage = 'خطأ في الخادم. يرجى المحاولة مرة أخرى';
+        } else if (error.response.status === 503) {
+          errorMessage = 'الخدمة غير متاحة حالياً. يرجى المحاولة لاحقاً';
         }
         
-        return rejectWithValue('Failed to create order: ' + error.response.status);
+        if (error.response.data?.message) {
+          // If server provides Arabic message, use it
+          if (error.response.data.message.includes('arabic') || /[\u0600-\u06FF]/.test(error.response.data.message)) {
+            errorMessage = error.response.data.message;
+          }
+        }
+        
+        return rejectWithValue(errorMessage);
       }
       
-      return rejectWithValue(error.message || 'Network error');
+      if (error.code === 'ECONNABORTED') {
+        return rejectWithValue('انتهت مهلة الاتصال. يرجى التحقق من الاتصال بالإنترنت والمحاولة مرة أخرى');
+      }
+      
+      if (error.message === 'Network Error') {
+        return rejectWithValue('خطأ في الشبكة. يرجى التحقق من الاتصال بالإنترنت');
+      }
+      
+      return rejectWithValue(error.message || 'حدث خطأ غير متوقع');
     }
   }
 );
@@ -166,16 +202,21 @@ const orderSlice = createSlice({
     currentOrder: null,
     loading: false,
     error: null,
-    success: false
+    success: false,
+    uploadProgress: 0
   },
   reducers: {
     resetOrderState: (state) => {
       state.loading = false;
       state.error = null;
       state.success = false;
+      state.uploadProgress = 0;
     },
     setCurrentOrder: (state, action) => {
       state.currentOrder = action.payload;
+    },
+    setUploadProgress: (state, action) => {
+      state.uploadProgress = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -184,20 +225,23 @@ const orderSlice = createSlice({
         state.loading = true;
         state.error = null;
         state.success = false;
+        state.uploadProgress = 0;
       })
       .addCase(createOrder.fulfilled, (state, action) => {
         state.loading = false;
         state.orders.push(action.payload);
         state.currentOrder = action.payload;
         state.success = true;
+        state.uploadProgress = 100;
       })
       .addCase(createOrder.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
         state.success = false;
+        state.uploadProgress = 0;
       });
   },
 });
 
-export const { resetOrderState, setCurrentOrder } = orderSlice.actions;
+export const { resetOrderState, setCurrentOrder, setUploadProgress } = orderSlice.actions;
 export default orderSlice.reducer;
