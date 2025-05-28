@@ -34,6 +34,14 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-nat
 import * as FileSystem from 'expo-file-system';
 import CalculatorModal from '../Calculator/CalculatorModal';
 import LoadingModal from './LoadingModal';
+import LoadingOverlay from './LoadingOverlay'
+
+
+
+
+
+
+
 
 const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) => {
 
@@ -50,7 +58,6 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
   const dispatch = useDispatch();
   const verificationSheetRef = useRef(null);
 
-  // Fixed Redux selector - make sure to get the right property name
   const { loading, error, success, currentOrder, uploadProgress: reduxUploadProgress } = useSelector((state) => state.order);
 
   const [formData, setFormData] = useState({
@@ -113,32 +120,36 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
     }
   }, [reduxUploadProgress]);
 
-  // Fixed useEffect for success/error handling
   useEffect(() => {
     console.log('Redux state changed:', { success, error, currentOrder, loading });
     
     if (success && currentOrder && !loading) {
-      console.log('Order created successfully, showing QR modal');
-      // Hide loading modal first
-      setShowLoadingModal(false);
+      console.log('Order created successfully');
       
-      // Set unique ID from current order or generated one
       const qrCodeId = currentOrder.qrCode || uniqueId;
       setUniqueId(qrCodeId);
       
-      // Small delay to ensure loading modal is hidden before showing QR modal
       setTimeout(() => {
-        setShowIdModal(true);
-      }, 300);
-      
+        console.log('Hiding loading modal');
+        setShowLoadingModal(false);
+        
+        setTimeout(() => {
+          console.log('Attempting to show QR modal with ID:', qrCodeId);
+          setShowIdModal(true);
+          
+          setFormSubmitted(prev => !prev);
+          setTimeout(() => setFormSubmitted(prev => !prev), 100);
+        }, 800);
+      }, 2000);
+
     } else if (error && !loading) {
       console.log('Order creation failed:', error);
-      // Hide loading modal on error
-      setShowLoadingModal(false);
+      setTimeout(() => {
+        setShowLoadingModal(false);
+      }, 1500);
     }
   }, [success, error, currentOrder, loading]);
 
-  // Cleanup effect
   useEffect(() => {
     return () => {
       dispatch(resetOrderState());
@@ -250,7 +261,6 @@ const pickImage = async () => {
         console.error('Error getting file info:', error);
       }
       
-      // Create image object
       const newImage = {
         id: Date.now(), 
         uri: uri,
@@ -1057,21 +1067,12 @@ const handleLoadingModalClose = () => {
         </>
       )}
 
-        {error ?  
-        
-          null
-        
-        :
-          <View>
-
-              <UniqueIdModal
-              visible={showIdModal} 
-              onClose={handleModalClose} 
-              uniqueId={uniqueId} 
-              />
-          </View>
-        
-        }
+       
+          <UniqueIdModal
+          visible={showIdModal} 
+          onClose={handleModalClose} 
+          uniqueId={uniqueId} 
+          />
         
       </Animated.View>
     </KeyboardAvoidingView>
@@ -1102,9 +1103,8 @@ const handleLoadingModalClose = () => {
       </TouchableWithoutFeedback>
       
      
-      <LoadingModal
+      <LoadingOverlay
       visible={showLoadingModal}
-      onClose={handleLoadingModalClose}
       uploadProgress={uploadProgresses}
     />
 
