@@ -1104,8 +1104,11 @@ const handleLoadingModalClose = () => {
       
      
       <LoadingOverlay
-      visible={showLoadingModal}
-      uploadProgress={uploadProgresses}
+       visible={showLoadingModal}
+       uploadProgress={uploadProgresses}
+       success={success}
+       error={error}
+       loading={loading}
     />
 
       <View>
