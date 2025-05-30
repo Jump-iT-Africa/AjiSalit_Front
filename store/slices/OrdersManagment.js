@@ -332,7 +332,7 @@ const ordersSlice = createSlice({
         companyId: action.payload.companyId,
         
         situation: action.payload.situation || 
-          (action.payload.amount?.type === 'paid' ? 'خالص' : 'غير خالص'),
+          (action.payload.amount?.type === 'paid' ? 'paid' : 'unpaid'),
         
         deliveryDate: action.payload.deliveryDate,
         pickupDate: action.payload.pickupDate,

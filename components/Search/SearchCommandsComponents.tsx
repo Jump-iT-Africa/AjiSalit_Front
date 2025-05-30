@@ -77,51 +77,51 @@ const SearchBar = ({ onSearch, onFilter, placeholder = "بحث..." }: SearchBarP
                 <TouchableOpacity
                   style={[
                     styles.filterOption,
-                    selectedStatus === 'خالص' && styles.filterOptionSelected
+                    selectedStatus === 'paid' && styles.filterOptionSelected
                   ]}
-                  onPress={() => setSelectedStatus('خالص')}
+                  onPress={() => setSelectedStatus('paid')}
                 >
                   <Text
                     style={[
                       styles.filterOptionText,
-                      selectedStatus === 'خالص' && styles.filterOptionTextSelected
+                      selectedStatus === 'paid' && styles.filterOptionTextSelected
                     ]}
                   >
-                    خالص
+                    paid
                   </Text>
                 </TouchableOpacity>
                 
                 <TouchableOpacity
                   style={[
                     styles.filterOption,
-                    selectedStatus === 'التسبيق' && styles.filterOptionSelected
+                    selectedStatus === 'الprepayment' && styles.filterOptionSelected
                   ]}
-                  onPress={() => setSelectedStatus('التسبيق')}
+                  onPress={() => setSelectedStatus('الprepayment')}
                 >
                   <Text
                     style={[
                       styles.filterOptionText,
-                      selectedStatus === 'التسبيق' && styles.filterOptionTextSelected
+                      selectedStatus === 'الprepayment' && styles.filterOptionTextSelected
                     ]}
                   >
-                    التسبيق
+                    الprepayment
                   </Text>
                 </TouchableOpacity>
                 
                 <TouchableOpacity
                   style={[
                     styles.filterOption,
-                    selectedStatus === 'غير خالص' && styles.filterOptionSelected
+                    selectedStatus === 'unpaid' && styles.filterOptionSelected
                   ]}
-                  onPress={() => setSelectedStatus('غير خالص')}
+                  onPress={() => setSelectedStatus('unpaid')}
                 >
                   <Text
                     style={[
                       styles.filterOptionText,
-                      selectedStatus === 'غير خالص' && styles.filterOptionTextSelected
+                      selectedStatus === 'unpaid' && styles.filterOptionTextSelected
                     ]}
                   >
-                    غير خالص
+                    غير paid
                   </Text>
                 </TouchableOpacity>
               </View>

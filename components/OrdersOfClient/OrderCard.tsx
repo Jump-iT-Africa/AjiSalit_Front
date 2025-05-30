@@ -123,7 +123,7 @@ const OrderCard = ({ item }) => {
           <View className="flex-1">
             <View className="bg-gray-100 rounded-lg mx-1 p-2 items-center border border-gray-300 border-1">
               <Text className="text-gray-600 mb-1 font-tajawalregular ">الحالة</Text>
-              <Text className={`text-base font-thin font-tajawal text-[12px] ${item.label ==='غير خالص'  ? "text-[#F52525]" : "text-[#2e752f]" } `}>
+              <Text className={`text-base font-thin font-tajawal text-[12px] ${item.label ==='unpaid'  ? "text-[#F52525]" : "text-[#2e752f]" } `}>
                 {item.label || "جاهزة للتسليم"}
               </Text>
             </View>
@@ -131,7 +131,7 @@ const OrderCard = ({ item }) => {
 
           <View className="flex-1">
             <View className="bg-gray-100 rounded-lg mx-1 p-2 items-center border border-gray-300 border-1">
-              <Text className="text-[#000] mb-1 font-tajawalregular font-[13px] ">التسبيق</Text>
+              <Text className="text-[#000] mb-1 font-tajawalregular font-[13px] ">الprepayment</Text>
               <Text className="text-base font-thin font-tajawal text-[12px] text-[#FFA30E]">
                 {item.advancedAmount || ' 0'} درهم
               </Text>

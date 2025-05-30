@@ -134,7 +134,7 @@ export default function DetailsPage() {
     // Add this console log here, after orderData is set
     console.log("Image URLs to display:", orderData.images);
     
-    if (orderData.situation === 'خالص' || orderData.label === 'خالص') {
+    if (orderData.situation === 'paid' || orderData.label === 'paid') {
       setRemaining(0);
     } else {
       setRemaining((orderData.price || 0) - (orderData.advancedAmount || 0));

@@ -35,15 +35,28 @@ import * as FileSystem from 'expo-file-system';
 import CalculatorModal from '../Calculator/CalculatorModal';
 import LoadingModal from './LoadingModal';
 import LoadingOverlay from './LoadingOverlay'
-
-
-
-
+import { prepareOrderDataForBackend } from './statusMappings';
 
 
 
 
 const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) => {
+
+
+  const [isDatePickerEnabled, setIsDatePickerEnabled] = useState(false);
+  const [step, setStep] = useState(1);
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const step1Animation = useRef(new Animated.Value(1)).current;
+  const step2Animation = useRef(new Animated.Value(0)).current;
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const [uniqueId, setUniqueId] = useState('');
+  const [showIdModal, setShowIdModal] = useState(false);
+  const [photoCounter, setPhotoCounter] = useState(1);
+  const [showCalculator, setShowCalculator] = useState(false);
+  const [showLoadingModal, setShowLoadingModal] = useState(false);
+  const [uploadProgresses, setUploadProgress] = useState(0);
+
 
   const { width, height } = Dimensions.get('window');
   const isSmallScreen = height < 700; 
@@ -64,11 +77,11 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
     price: '',
     RecieveDate: '',
     fieldOfCompany: '',
-    status:"في طور الانجاز",
-    situation: '',
+    status: "قيد التنفيذ", // Arabic default
+    situation: 'خالص', // Arabic default 
     advancedAmount: '', 
     pickupDate: '',
-    isFinished:false,
+    isFinished: false,
     isPickUp: false
   });
 
@@ -78,21 +91,7 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
     fieldOfCompany: '',
     advancedAmount: '', 
   });
-  
-  
-  const [isDatePickerEnabled, setIsDatePickerEnabled] = useState(false);
-  const [step, setStep] = useState(1);
-  const [formSubmitted, setFormSubmitted] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const step1Animation = useRef(new Animated.Value(1)).current;
-  const step2Animation = useRef(new Animated.Value(0)).current;
-  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
-  const [uniqueId, setUniqueId] = useState('');
-  const [showIdModal, setShowIdModal] = useState(false);
-  const [photoCounter, setPhotoCounter] = useState(1);
-  const [showCalculator, setShowCalculator] = useState(false);
-  const [showLoadingModal, setShowLoadingModal] = useState(false);
-  const [uploadProgresses, setUploadProgress] = useState(0);
+
 
   const handleCalculatorConfirm = (calculatedValue) => {
     setFormData({ ...formData, price: calculatedValue });
@@ -294,8 +293,8 @@ const pickImage = async () => {
         RecieveDate: '',
         fieldOfCompany: '',
         advancedAmount: '',
-        status: '',
-        situation: '',
+        status: 'قيد التنفيذ',  
+        situation: 'خالص',    
         pickupDate: '',
         isFinished: false,
         isPickUp: false
@@ -312,9 +311,9 @@ const pickImage = async () => {
       setIsDatePickerEnabled(false);
       setShowLoadingModal(false);
       setUploadProgress(0);
-      setShowIdModal(false); // Reset QR modal state
-      setUploadedImages([]); // Reset images
-      setPhotoCounter(1); // Reset photo counter
+      setShowIdModal(false); 
+      setUploadedImages([]); 
+      setPhotoCounter(1); 
     }, 300);
     
     // Reset Redux state
@@ -379,15 +378,14 @@ const pickImage = async () => {
       newErrors.status = '';
       
       
-      if (formData.situation === 'تسبيق') {
+      if (formData.situation === 'تسبيق') { // Check for Arabic value
         if (!formData.advancedAmount || formData.advancedAmount.trim() === '') {
-          newErrors.advancedAmount = 'مبلغ التسبيق مطلوب';
+          newErrors.advancedAmount = 'مبلغ الدفعة المقدمة مطلوب';
           valid = false;
         } else if (parseFloat(formData.advancedAmount) >= parseFloat(formData.price)) {
-          newErrors.advancedAmount = 'مبلغ التسبيق لا يمكن أن يتجاوز المبلغ الإجمالي';
+          newErrors.advancedAmount = 'مبلغ الدفعة المقدمة لا يمكن أن يتجاوز المبلغ الإجمالي';
           valid = false;
-        }
-         else {
+        } else {
           newErrors.advancedAmount = '';
         }
       }
@@ -535,8 +533,6 @@ const processOrderSubmission = () => {
         fileType = sanitizedFileName.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
       }
       
-      console.log(`Processing image ${index}: URI=${image.uri.substring(0, 30)}... Type=${fileType} Name=${sanitizedFileName}`);
-      
       return {
         uri: image.uri,
         name: sanitizedFileName,
@@ -547,20 +543,67 @@ const processOrderSubmission = () => {
     console.log('No images to upload - proceeding without images');
   }
   
+  // DIRECT CONVERSION - bypassing the helper function completely
+  console.log('=== DIRECT CONVERSION DEBUG ===');
+  console.log('Original situation value:', JSON.stringify(formData.situation));
+  console.log('Original situation length:', formData.situation?.length);
+  console.log('Original situation char codes:', formData.situation?.split('').map(c => c.charCodeAt(0)));
+  
+  // Direct mapping object - defined inline to avoid import issues
+  const situationMap = {
+    'خالص': 'paid',
+    'غير مدفوع': 'unpaid',
+    'تسبيق': 'prepayment'
+  };
+  
+  console.log('Available keys in situationMap:', Object.keys(situationMap));
+  console.log('Direct lookup result:', situationMap[formData.situation]);
+  
+  // Use direct mapping
+  let convertedSituation = situationMap[formData.situation];
+  
+  if (!convertedSituation) {
+    console.error('DIRECT MAPPING FAILED for:', formData.situation);
+    // Fallback logic
+    if (formData.situation === 'خالص') {
+      convertedSituation = 'paid';
+    } else if (formData.situation === 'غير مدفوع') {
+      convertedSituation = 'unpaid';
+    } else if (formData.situation === 'تسبيق') {
+      convertedSituation = 'prepayment';
+    } else {
+      console.error('Unknown situation value, using fallback');
+      convertedSituation = 'paid'; // Safe fallback
+    }
+  }
+  
+  console.log('Final converted situation:', convertedSituation);
+  
+  // Create orderData with DIRECTLY CONVERTED values
   const orderData = {
     price: parseFloat(formData.price),
-    situation: formData.situation || "خالص",
-    status: "في طور الانجاز",
+    situation: convertedSituation, // Use directly converted value
+    status: "inProgress", 
     advancedAmount: formData.advancedAmount ? parseFloat(formData.advancedAmount) : null,
-    deliveryDate: formattedDeliveryDate, 
-    pickupDate: formattedPickupDate,     
+    deliveryDate: formattedDeliveryDate,
+    pickupDate: formattedPickupDate,
     qrCode: newUniqueId,
     isFinished: false,
     isPickUp: false,
     images: processedImages
   };
   
-  console.log("Component - Order data before dispatch:", JSON.stringify(orderData));
+  console.log("Final orderData being sent to Redux:", JSON.stringify(orderData, null, 2));
+  
+  // Validate the converted data
+  const validSituations = ['paid', 'unpaid', 'prepayment'];
+  if (!validSituations.includes(orderData.situation)) {
+    console.error('ERROR: Invalid situation value after conversion:', orderData.situation);
+    alert(`خطأ في التحويل: ${orderData.situation}`);
+    return;
+  }
+  
+  console.log('✅ Validation passed, situation is valid:', orderData.situation);
   
   if (!formattedDeliveryDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
     alert('خطأ في تنسيق التاريخ. يرجى التأكد من أن التاريخ بتنسيق YYYY-MM-DD');
@@ -574,7 +617,7 @@ const processOrderSubmission = () => {
   // Close verification sheet
   verificationSheetRef.current?.hide();
   
-  // Dispatch the order creation
+  // Dispatch the order creation with CONVERTED data
   dispatch(createOrder(orderData));
 };
 
@@ -644,18 +687,19 @@ const handleLoadingModalClose = () => {
     
     const processedAmount = advancedAmount ? advancedAmount : '';
     
-    console.log("Setting formData with:", status, processedAmount);
-    
     setFormData(prevData => {
       const newData = {
         ...prevData,
         situation: status,
-        advancedAmount: status === 'تسبيق' ? processedAmount : ''
+        advancedAmount: status === 'تسبيق' ? processedAmount : '' 
       };
       console.log("New formData:", newData);
       return newData;
     });
   };
+
+
+  
   
   const Step1Form = (
     <View>

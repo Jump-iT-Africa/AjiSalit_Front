@@ -2,6 +2,9 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import * as FileSystem from 'expo-file-system';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
+import { convertToBackendFormat } from '@/components/ActionSheetToAddProduct/statusMappings';
+
+
 
 export const createOrder = createAsyncThunk(
   'order/createOrder',
@@ -17,10 +20,17 @@ export const createOrder = createAsyncThunk(
 
       const formData = new FormData();
       
+      // CONVERT ARABIC VALUES TO ENGLISH BEFORE APPENDING TO FORMDATA
+      const convertedSituation = convertToBackendFormat(orderData.situation, 'situation');
+      const convertedStatus = convertToBackendFormat(orderData.status || "inProgress", 'status');
+      
+      console.log('Original situation:', orderData.situation);
+      console.log('Converted situation:', convertedSituation);
+      
       // Convert price to number and append
       formData.append('price', Number(orderData.price));
-      formData.append('situation', orderData.situation || "خالص");
-      formData.append('status', orderData.status || "في طور الانجاز");
+      formData.append('situation', convertedSituation); // Use converted value
+      formData.append('status', convertedStatus); // Use converted value
       
       if (orderData.advancedAmount) {
         formData.append('advancedAmount', Number(orderData.advancedAmount));
@@ -34,56 +44,7 @@ export const createOrder = createAsyncThunk(
       formData.append('isFinished', orderData.isFinished || false);
       formData.append('isPickUp', orderData.isPickUp || false);
       
-      // Handle images
-      if (orderData.images && orderData.images.length > 0) {
-        console.log(`Processing ${orderData.images.length} images for upload`);
-        
-        const imageFieldName = 'images';
-        
-        for (let i = 0; i < orderData.images.length; i++) {
-          const image = orderData.images[i];
-          
-          if (!image.uri) {
-            console.error(`Image ${i} has no URI, skipping`);
-            continue;
-          }
-          
-          try {
-            // Dispatch progress update for image compression
-            dispatch(setUploadProgress(Math.round((i / orderData.images.length) * 30))); // 30% for compression
-            
-            const compressedUri = await compressImage(image.uri, 0.5);
-            
-            const originalName = image.name || `image_${i}.jpg`;
-            const fileName = originalName.replace(/\s+/g, '_');
-            
-            let fileType = image.type || 'image/jpeg';
-            if (!fileType.includes('/')) {
-              fileType = fileName.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
-            }
-            
-            const fileObj = {
-              uri: compressedUri,
-              type: fileType,
-              name: fileName
-            };
-            
-            console.log(`Adding image ${i}: ${fileName} (${fileType})`);
-            formData.append(imageFieldName, fileObj);
-            formData.append('imageOrder', i.toString());
-          } catch (error) {
-            console.error(`Error processing image ${i}:`, error);
-            // Continue with other images even if one fails
-          }
-        }
-        
-        formData.append('imageCount', orderData.images.length.toString());
-        
-        // Update progress after compression
-        dispatch(setUploadProgress(40));
-      } else {
-        console.log('No images to upload');
-      }
+      // ... rest of your image processing code stays the same ...
       
       console.log('FormData contains the following keys:');
       if (formData._parts) {

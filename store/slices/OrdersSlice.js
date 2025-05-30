@@ -2,6 +2,9 @@ import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit'
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+
+
+
 const API_URL = 'https://api.ajisalit.com';
 
 export const fetchOrders = createAsyncThunk(
@@ -94,11 +97,11 @@ const transformOrderData = (apiOrders) => {
 
 const getAmountType = (situation) => {
   switch (situation) {
-    case 'خالص':
+    case 'paid':
       return 'paid';
-    case 'غير خالص':
+    case 'unpaid':
       return 'unpaid';
-    case 'تسبيق':
+    case 'prepayment':
       return 'installment';
     default:
       return 'unknown';
@@ -270,13 +273,13 @@ export const selectFilteredOrders = createSelector(
       let typeToFilter;
       
       switch(statusFilter) {
-        case 'خالص':
+        case 'paid':
           typeToFilter = 'paid';
           break;
-        case 'غير خالص':
+        case 'unpaid':
           typeToFilter = 'unpaid';
           break;
-        case 'تسبيق':
+        case 'prepayment':
           typeToFilter = 'installment';
           break;
         default:
@@ -356,13 +359,13 @@ export const selectFilteredExpiredOrdersCount = createSelector(
       let typeToFilter;
       
       switch(statusFilter) {
-        case 'خالص':
+        case 'paid':
           typeToFilter = 'paid';
           break;
-        case 'غير خالص':
+        case 'unpaid':
           typeToFilter = 'unpaid';
           break;
-        case 'تسبيق':
+        case 'prepayment':
           typeToFilter = 'installment';
           break;
         default:
@@ -427,13 +430,13 @@ export const HistoryOrders = createSelector(
       let typeToFilter;
       
       switch(statusFilter) {
-        case 'خالص':
+        case 'paid':
           typeToFilter = 'paid';
           break;
-        case 'غير خالص':
+        case 'unpaid':
           typeToFilter = 'unpaid';
           break;
-        case 'تسبيق':
+        case 'prepayment':
           typeToFilter = 'installment';
           break;
         default:

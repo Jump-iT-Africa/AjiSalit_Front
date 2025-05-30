@@ -188,9 +188,9 @@ const OrderDetailsCard = ({
   console.log("this is situation", situation);
 
   useEffect(() => {
-    if (situation === "تسبيق") {
+    if (situation === "prepayment") {
       setCurrentColor("#FAD513");
-    } else if (situation === "غير خالص") {
+    } else if (situation === "غير paid") {
       setCurrentColor("#F52525");
     } else {
       setCurrentColor("#2F752F");
@@ -213,7 +213,7 @@ const OrderDetailsCard = ({
           </Text>
         </View>
         <View className="flex-1 p-3 items-center bg-green-700 border border-green-700 rounded-lg">
-          <Text className="mb-1.5 text-center font-thin text-white font-tajawalregular text-[10px]">التسبيق</Text>
+          <Text className="mb-1.5 text-center font-thin text-white font-tajawalregular text-[10px]">الprepayment</Text>
           <Text className="font-thin text-center text-yellow-400 font-tajawalregular text-xs">
             {paidAmount} {currency}
           </Text>

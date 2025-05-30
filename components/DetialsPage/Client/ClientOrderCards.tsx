@@ -72,7 +72,7 @@ const ClientOrderCards = ({ item, orderId }) => {
   useEffect(() => {
     if (!item) return;
     
-    if (item.situation === 'خالص' || item.label === 'خالص') {
+    if (item.situation === 'paid' || item.label === 'paid') {
       setRemaining(0);
     } else {
       setRemaining((item.price || 0) - (item.advancedAmount || 0));
@@ -103,11 +103,11 @@ const ClientOrderCards = ({ item, orderId }) => {
 
   useEffect(()=>
     {
-      if(orderStatus === "تسبيق")
+      if(orderStatus === "prepayment")
       {
         setCurrentColor("#FAD513")
       }
-      else if(orderStatus === "غير خالص")
+      else if(orderStatus === "غير paid")
       {
         setCurrentColor("#F52525")
       }else
@@ -228,7 +228,7 @@ const ClientOrderCards = ({ item, orderId }) => {
 
         <View className="flex-1">
           <View className="bg-[#2F752F] rounded-lg mx-1 p-2 items-center border border-gray-300 border-1">
-            <Text className=" text-[#fff] mb-1 font-tajawalregular font-[12px]">التسبيق</Text>
+            <Text className=" text-[#fff] mb-1 font-tajawalregular font-[12px]">الprepayment</Text>
             <Text className="text-base font-thin font-tajawal text-[13px] text-[#FAD513]">{paidAmount} درهم</Text>
           </View>
         </View>
