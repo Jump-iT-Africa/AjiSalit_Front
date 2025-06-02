@@ -94,17 +94,17 @@ const SearchBar = ({ onSearch, onFilter, placeholder = "بحث..." }: SearchBarP
                 <TouchableOpacity
                   style={[
                     styles.filterOption,
-                    selectedStatus === 'الprepayment' && styles.filterOptionSelected
+                    selectedStatus === 'تسبيق' && styles.filterOptionSelected
                   ]}
-                  onPress={() => setSelectedStatus('الprepayment')}
+                  onPress={() => setSelectedStatus('تسبيق')}
                 >
                   <Text
                     style={[
                       styles.filterOptionText,
-                      selectedStatus === 'الprepayment' && styles.filterOptionTextSelected
+                      selectedStatus === 'تسبيق' && styles.filterOptionTextSelected
                     ]}
                   >
-                    الprepayment
+                    تسبيق
                   </Text>
                 </TouchableOpacity>
                 

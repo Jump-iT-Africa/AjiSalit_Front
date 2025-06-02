@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useEffect, useCallback } from 'react';
 import { 
   View, 
@@ -35,9 +34,9 @@ import { finishButtonPressed } from '@/store/slices/OrderDetailsSlice';
 import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { updateOrderDate } from '@/store/slices/OrdersManagment';
-import NoSearchResult from '@/assets/images/NoSearchResult.png'
+import NoSearchResult from '@/assets/images/NoSearchResult.png';
+import { convertToFrontendFormat } from '@/components/ActionSheetToAddProduct/statusMappings';
 
-// Get screen dimensions
 const { width, height } = Dimensions.get('window');
 const isSmallScreen = height < 700;
 
@@ -57,19 +56,57 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
   const allOrders = useSelector(state => state.orders.orders);
   const searchTerm = useSelector(state => state.orders.searchTerm);
 
+  // Helper function to convert status and situation to Arabic
+  const getDisplayText = (value, type) => {
+    if (!value) return value;
+    
+    // Convert English backend values to Arabic display
+    const arabicValue = convertToFrontendFormat(value, type);
+    console.log(`Converting ${type}: ${value} -> ${arabicValue}`);
+    return arabicValue || value; // Fallback to original if no conversion found
+  };
+
+  // Helper function to get status color based on situation
+  const getStatusColor = (situation) => {
+    switch (situation) {
+      case 'paid':
+      case 'خالص':
+        return '#10b981'; // Green
+      case 'unpaid':
+      case 'غير مدفوع':
+        return '#ef4444'; // Red  
+      case 'prepayment':
+      case 'تسبيق':
+        return '#f97316'; // Orange
+      default:
+        return '#6b7280'; // Gray
+    }
+  };
+
+  // Helper function to get status display text
+  const getStatusDisplayText = (item) => {
+    // Convert situation to Arabic
+    const arabicSituation = getDisplayText(item.situation, 'situation');
+    
+    // If there's an advanced amount and it's a prepayment, show the amount
+    if (item.advancedAmount && (item.situation === 'prepayment' || item.situation === 'تسبيق')) {
+      return `${item.advancedAmount} ${item.currency || 'درهم'} - ${arabicSituation}`;
+    }
+    
+    return arabicSituation;
+  };
+
   useEffect(() => {
     if (SearchCode !== undefined && SearchCode !== null) {
       dispatch(setSearchTerm(SearchCode));
     }
   }, [SearchCode, dispatch]);
 
-
   useEffect(() => {
     if (statusFilter !== undefined && statusFilter !== null) {
       dispatch(setStatusFilter(statusFilter));
     }
   }, [statusFilter, dispatch]);
-
 
   useEffect(() => {
     if (isAuthenticated && token) {
@@ -87,7 +124,6 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
     }
   }, [dispatch, isAuthenticated, token]);
 
-
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     dispatch(fetchOrders())
@@ -101,37 +137,20 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
       });
   }, [dispatch]);
 
-  
   const handleItemPress = async (item) => {
     console.log('items pressed',item);
     try {
       const saved = await AsyncStorage.setItem('lastScannedOrder', JSON.stringify(item));
       console.log('this is saved data', saved);
-      
     } catch (storageError) {
       console.log("Failed to store order in AsyncStorage:", storageError);
     }
-    // dispatch(setCurrentOrder(item));
     router.push('/DetailsPage');
   };
-
 
   const OrderItem = ({ item }) => {
     const [localFinished, setLocalFinished] = useState(item.isFinished);
     const [showModal, setShowModal] = useState(false);
-
-    const getStatusColor = (type) => {
-      switch (type) {
-        case 'paid':
-          return 'bg-green-500';
-        case 'unpaid':
-          return 'bg-red-500';
-        case 'installment':
-          return 'bg-orange-500';
-        default:
-          return 'bg-gray-500';
-      }
-    };
 
     useEffect(() => {
       setLocalFinished(item.isFinished);
@@ -155,6 +174,9 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
         dispatch(fetchOrders());
       }, 500);
     };
+
+    // Get Arabic translation for situation only
+    const arabicSituation = getDisplayText(item.label, 'situation');
 
     const containerStyle = {
       backgroundColor: 'white',
@@ -216,19 +238,20 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
               <View style={{ flexDirection: 'row-reverse', justifyContent: 'space-between', alignItems: 'center', marginBottom: hp('0.5%') }}>
                 <View style={{ flexDirection: 'row-reverse', alignItems: 'center' }}>
                   <Text style={labelTextStyle}>رمز الطلب:</Text>
-                  <Text style={valueTextStyle}>{item.orderCode}</Text>
+                  <Text style={valueTextStyle}>{item.qrCode || item.orderCode}</Text>
                 </View>
               </View>
               <View style={{ width: '100%', flexDirection: 'row-reverse', alignItems: 'center', marginBottom: hp('0.5%') }}>
                 <Text style={labelTextStyle}>الحالة:</Text>
-                <View style={[statusStyle, { backgroundColor: item.type === 'paid' ? '#10b981' : item.type === 'unpaid' ? '#ef4444' : item.type === 'installment' ? '#f97316' : '#6b7280' }]}>
-                  {item.value !== null && (
+                <View className='flex space-x-1' style={[statusStyle, { backgroundColor: item.type === 'paid' ? '#10b981' : item.type === 'unpaid' ? '#ef4444' : item.type === 'installment' ? '#f97316' : '#6b7280' }]}>
+                  {item.advancedAmount && (
                     <Text style={[statusTextStyle, ]}>
-                      {item.advancedAmount} {item.currency} 
+                      {item.advancedAmount} {item.currency || 'درهم'} 
                     </Text>
                   )}
+
                   <Text style={statusTextStyle}>
-                    {item.label}
+                    {arabicSituation || item.situation || 'غير محدد'}
                   </Text>
                 </View>
               </View>
@@ -236,10 +259,14 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
                 <View style={{ flexDirection: 'column', alignItems: 'flex-end', justifyContent:'center'}}>
                   <View style={{ flexDirection: 'row-reverse', marginBottom: hp('0.5%'), gap: wp('0.5%') }}>
                     <Text style={labelTextStyle}>صاحب(ة) الطلب:</Text>
-                    <Text style={[valueTextStyle, { color: '#295f2b' }]}>{item.clientId.Fname} </Text>
+                    <Text style={[valueTextStyle, { color: '#295f2b' }]}>
+                      {item.clientId?.Fname || 'عميل غير معروف'}
+                    </Text>
                   </View>
                   <View style={{ flexDirection: 'row', gap: wp('0.5%'), marginRight: wp('2%') , justifyContent:'center', alignItems:'center'}}>
-                    <Text style={dateTextStyle}>{item.newDate === 'غير محدد' ? item.date : item.newDate}</Text>
+                    <Text style={dateTextStyle}>
+                      {item.newDate === 'غير محدد' ? item.deliveryDate || item.date : item.newDate}
+                    </Text>
                     <AntDesign name="calendar" size={wp('3.5%')} color="#F52525" />
                   </View>
                 </View>
@@ -271,7 +298,9 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
         >
           <View style={styles.centeredView}>
             <View style={styles.modalView}>
-              <Text style={[styles.modalText, { fontFamily: 'TajawalRegular' }]}>واش متأكد بغي تأكد الطلب ؟</Text>
+              <Text style={[styles.modalText, { fontFamily: 'TajawalRegular' }]}>
+                هل أنت متأكد من أنك تريد تأكيد اكتمال هذا الطلب؟
+              </Text>
               <View style={styles.buttonContainer}>
                 <Pressable
                   style={[styles.button, styles.buttonConfirm]}
@@ -325,15 +354,12 @@ const OrdersOfCompany = ({ SearchCode, statusFilter = null }) => {
     );
   }
 
-
-
   return (
     <SafeAreaView style={{ 
       flex: 1, 
       backgroundColor: '#f3f4f6', 
       padding: wp('0%'),
       paddingBottom: hp('5%')
-      
     }}>
       <FlashList
         data={filteredOrders || []} 

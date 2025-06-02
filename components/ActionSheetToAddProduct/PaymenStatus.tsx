@@ -52,14 +52,13 @@ const PaymentStatus: React.FC<PaymentStatusProps> = ({ onStatusChange, currentPr
   ];
 
   const handleStatusSelect = (optionValue: string, optionLabel: string) => {
-    setSelectedStatus(optionLabel); // Store Arabic label for UI state
-    setShowAdvanceInput(optionValue === 'prepayment'); // Use English value for logic
+    setSelectedStatus(optionLabel);
+    setShowAdvanceInput(optionValue === 'prepayment'); 
     
     if (optionValue !== 'prepayment') {
       setAdvancedAmount('');
     }
     
-    // Send Arabic label to parent component (for frontend state)
     onStatusChange(optionLabel, optionValue === 'prepayment' ? advancedAmount : undefined);
   };
 
@@ -72,16 +71,14 @@ const PaymentStatus: React.FC<PaymentStatusProps> = ({ onStatusChange, currentPr
     if (totalPrice === 0 || !currentPrice) {
       setAdvanceError('يرجى إدخال المبلغ الإجمالي أولاً');
     } else if (advanceValue > totalPrice) {
-      setAdvanceError('مبلغ الدفعة المقدمة لا يمكن أن يتجاوز المبلغ الإجمالي');
+      setAdvanceError('  التسبيق لا يمكن أن يتجاوز المبلغ الإجمالي');
     } else {
       setAdvanceError('');
     }
     
-    // Send Arabic label to maintain consistency
     onStatusChange(selectedStatus, text);
   };
 
-  // Update the advance amount if the current price changes
   useEffect(() => {
     if (selectedStatus === 'تسبيق' && advancedAmount) { // Check for Arabic value
       const advanceValue = parseFloat(advancedAmount) || 0;
@@ -154,10 +151,10 @@ const PaymentStatus: React.FC<PaymentStatusProps> = ({ onStatusChange, currentPr
             marginTop: 10,
             fontSize: 14
           }}>
-            مبلغ الدفعة المقدمة (بالدرهم): <Text style={{ color: 'red' }}>*</Text>
+              التسبيق (بالدرهم): <Text style={{ color: 'red' }}>*</Text>
           </Text>
           <TextInput
-            placeholder="يرجى إدخال مبلغ الدفعة المقدمة"
+            placeholder="التسبيق"
             placeholderTextColor="#888"
             value={advancedAmount}
             keyboardType="numeric"

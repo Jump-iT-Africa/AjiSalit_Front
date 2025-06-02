@@ -5,6 +5,8 @@ import { useSelector, useDispatch } from 'react-redux'
 import { fetchOrderByQrCodeOrId,selectCurrentOrder } from '@/store/slices/OrdersManagment' 
 import { fetchOrders } from '@/store/slices/OrdersSlice'
 
+// Import the conversion function
+import { convertToFrontendFormat } from '@/components/ActionSheetToAddProduct/statusMappings';
 
 const EditHistoryModal = ({ visible, onClose, orderCode, reason,newDate }) => {
 
@@ -62,7 +64,13 @@ const ClientOrderCards = ({ item, orderId }) => {
   const [currentColor,setCurrentColor] = useState('#FAD513');
   const orderData = item || currentOrder;
 
-  
+  // Helper function to convert situation to Arabic
+  const getDisplayText = (value, type) => {
+    if (!value) return value;
+    const arabicValue = convertToFrontendFormat(value, type);
+    return arabicValue || value; // Fallback to original if no conversion found
+  };
+
   useEffect(() => {
     if (orderId && !orderData) {
       dispatch(fetchOrderByQrCodeOrId(orderId));
@@ -72,12 +80,13 @@ const ClientOrderCards = ({ item, orderId }) => {
   useEffect(() => {
     if (!item) return;
     
-    if (item.situation === 'paid' || item.label === 'paid') {
+    // Use rawOrderStatus for consistent logic
+    if (rawOrderStatus === 'paid' || rawOrderStatus === 'خالص') {
       setRemaining(0);
     } else {
       setRemaining((item.price || 0) - (item.advancedAmount || 0));
     }
-  }, [item]);
+  }, [item, rawOrderStatus]);
   
   if (!item) {
     return (
@@ -98,23 +107,25 @@ const ClientOrderCards = ({ item, orderId }) => {
   const paidAmount = item?.advancedAmount || 0;
   const remainingAmount = remaining;
   
-
-  let orderStatus = item?.label || item?.situation;
+  // Convert the order status to Arabic
+  const rawOrderStatus = item?.label || item?.situation;
+  const orderStatus = getDisplayText(rawOrderStatus, 'situation');
 
   useEffect(()=>
     {
-      if(orderStatus === "prepayment")
+      // Use the original English values for color logic
+      if(rawOrderStatus === "prepayment" || rawOrderStatus === "تسبيق")
       {
         setCurrentColor("#FAD513")
       }
-      else if(orderStatus === "غير paid")
+      else if(rawOrderStatus === "unpaid" || rawOrderStatus === "غير مدفوع")
       {
         setCurrentColor("#F52525")
       }else
       {
         setCurrentColor("#2F752F")
       }
-    },[])
+    },[rawOrderStatus])
   
   
   let formattedPickupDate = "08/03/2025";
@@ -228,7 +239,7 @@ const ClientOrderCards = ({ item, orderId }) => {
 
         <View className="flex-1">
           <View className="bg-[#2F752F] rounded-lg mx-1 p-2 items-center border border-gray-300 border-1">
-            <Text className=" text-[#fff] mb-1 font-tajawalregular font-[12px]">الprepayment</Text>
+            <Text className=" text-[#fff] mb-1 font-tajawalregular font-[12px]">تسبيق</Text>
             <Text className="text-base font-thin font-tajawal text-[13px] text-[#FAD513]">{paidAmount} درهم</Text>
           </View>
         </View>

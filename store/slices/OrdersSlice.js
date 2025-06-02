@@ -241,17 +241,17 @@ export const selectFilteredOrders = createSelector(
     let result = [];
     
     switch (tabFilter) {
-      case 'all': // الطلبات القادمة - Tomorrow and beyond
+      case 'all': 
         result = items.filter(order => 
           order.isTomorrow && !(order.isFinished === true && order.isPickUp === true)
         );
         break;
-      case 'today': // طلبات اليوم - Today only
+      case 'today':
         result = items.filter(order => 
           order.isToday && !(order.isFinished === true && order.isPickUp === true)
         );
         break;
-      case 'completed': // الطلبات المتأخرة - Expired orders (yesterday and before)
+      case 'completed':
         result = items.filter(order => 
           order.isExpired && !(order.isFinished === true && order.isPickUp === true)
         );
@@ -333,7 +333,6 @@ export const selectFilteredOrders = createSelector(
   }
 );
 
-
 export const selectFilteredExpiredOrdersCount = createSelector(
   [getOrderItems, getSearchTerm, getStatusFilter, getDateFilter],
   (items, searchTerm, statusFilter, dateFilter) => {
@@ -405,6 +404,70 @@ export const selectExpiredOrders = createSelector(
     return items.filter(order => 
       order.isExpired && !(order.isFinished === true && order.isPickUp === true)
     );
+  }
+);
+
+export const selectClientOrders = createSelector(
+  [getOrderItems, getSearchTerm, getStatusFilter],
+  (items, searchTerm, statusFilter) => {
+    if (!items || !Array.isArray(items)) {
+      return [];
+    }
+    
+    console.log('CLIENT SELECTOR - Raw items count:', items.length);
+    
+
+    let result = items.filter(order => 
+      !(order.isFinished === true && order.isPickUp === true)
+    );
+    
+    console.log('CLIENT SELECTOR - After basic filter:', result.length);
+    
+    if (searchTerm) {
+      result = result.filter(order => 
+        order.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.customerDisplayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (order.companyId?.companyName && order.companyId.companyName.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+      console.log('CLIENT SELECTOR - After search filter:', result.length);
+    }
+    
+    if (statusFilter) {
+      let typeToFilter;
+      
+      switch(statusFilter) {
+        case 'paid':
+          typeToFilter = 'paid';
+          break;
+        case 'unpaid':
+          typeToFilter = 'unpaid';
+          break;
+        case 'prepayment':
+          typeToFilter = 'installment';
+          break;
+        default:
+          typeToFilter = null;
+      }
+      
+      if (typeToFilter) {
+        result = result.filter(order => order.type === typeToFilter);
+        console.log('CLIENT SELECTOR - After status filter:', result.length);
+      }
+    }
+    
+    result.sort((a, b) => {
+      if (a.rawDeliveryDate && b.rawDeliveryDate) {
+        return new Date(a.rawDeliveryDate) - new Date(b.rawDeliveryDate);
+      }
+      
+      if (!a.rawDeliveryDate && b.rawDeliveryDate) return 1;
+      if (a.rawDeliveryDate && !b.rawDeliveryDate) return -1;
+      
+      return 0;
+    });
+    
+    console.log('CLIENT SELECTOR - Final result count:', result.length);
+    return result;
   }
 );
 

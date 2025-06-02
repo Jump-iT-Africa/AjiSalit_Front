@@ -29,6 +29,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Stack } from "expo-router";
 import { createStackNavigator } from '@react-navigation/stack';
 import Colors from '@/constants/Colors';
+import CreateOrder from './CreateOrder';
+
 const AppStack = createStackNavigator();
 
 
@@ -193,7 +195,7 @@ function MainTabs() {
 
                     setIsSheetVisible(true);
                     actionSheetRef.current?.show();
-                    
+                    // router.push('CreateOrder')
                   // }
                 } else {
                   navigate('Scanner');
@@ -252,6 +254,7 @@ export default function HomeLayouts() {
         <AppStack.Screen name="Scanner" component={ScannerPage} />
         <AppStack.Screen name="DetailsPage" component={DetailsPage} />
         <AppStack.Screen name="index" component={IndexWithBottomNav} />
+        <AppStack.Screen name="CreateOrder" component={CreateOrder} />
       </AppStack.Navigator>
 
     </Container>

@@ -19,6 +19,7 @@ import DetailsOrdersNoImages from "@/assets/images/noImages.png";
 import { selectCurrentOrder, selectUserOrders, setCurrentOrder, fetchORderById } from "@/store/slices/OrdersManagment";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSearchParams } from "expo-router/build/hooks";
+import { convertToFrontendFormat } from "@/components/ActionSheetToAddProduct/statusMappings";
 
 export default function DetailsPage() {
   const [remaining, setRemaining] = useState(0);
@@ -33,6 +34,16 @@ export default function DetailsPage() {
   const ViewShotRef = useRef();
   const dispatch = useDispatch();
   const [role, setRole] = useState(null);
+
+  const getDisplayText = (value, type) => {
+    if (!value) return value;
+    
+    const arabicValue = convertToFrontendFormat(value, type);
+    console.log(`Converting ${type}: ${value} -> ${arabicValue}`);
+    return arabicValue || value; 
+  };
+
+
 
   useEffect(() => {
     const loadRole = async () => {
@@ -257,7 +268,7 @@ export default function DetailsPage() {
               deliveryDate={orderData?.deliveryDate || orderData?.newDate} 
               newDate={orderData?.newDate}
               currency="درهم"
-              situation={orderData?.label || orderData?.situation}
+              situation={getDisplayText(orderData?.label, 'situation') || getDisplayText(orderData?.situation, 'situation')}
               images={orderImages}
               onDateChange={handleDateChange}
               orderId={orderData?.id}

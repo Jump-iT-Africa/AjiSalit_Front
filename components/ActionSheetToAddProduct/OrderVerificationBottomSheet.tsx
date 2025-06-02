@@ -215,7 +215,7 @@ const OrderVerificationBottomSheet = forwardRef(({
                 <View style={{ flexDirection: 'row-reverse', alignItems: 'center', width: '100%' }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8 }}>
                     <Text style={{ color: '#000', fontSize: 12, fontFamily: 'Tajawal', marginRight: 8 }}>
-                      مبلغ الprepayment :
+                      مبلغ تسبيق :
                     </Text>
                   </View>
                   <Text style={{ color: '#2F752F', fontSize: 12,  fontFamily: 'Tajawal' }}>

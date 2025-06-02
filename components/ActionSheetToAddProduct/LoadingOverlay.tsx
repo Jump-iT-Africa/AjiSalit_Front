@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -23,11 +23,37 @@ const SmoothLoadingOverlay = ({
   const progressAnim = useRef(new Animated.Value(0)).current;
   const iconScaleAnim = useRef(new Animated.Value(0)).current;
   const successPulseAnim = useRef(new Animated.Value(1)).current;
+  
+  // Add state to control the 2000ms delay
+  const [showingSuccess, setShowingSuccess] = useState(false);
+  const [allowHide, setAllowHide] = useState(true);
 
   // Determine current state
   const isLoading = loading && !success && !error;
-  const isSuccess = success && !loading;
-  const isError = error && !loading;
+  const isSuccess = (success && !loading) || showingSuccess;
+  const isError = error && !loading && !showingSuccess;
+
+  // Handle success delay
+  useEffect(() => {
+    if (success && !loading && !showingSuccess) {
+      setShowingSuccess(true);
+      setAllowHide(false);
+      
+      // Set 2000ms delay before allowing hide
+      setTimeout(() => {
+        setAllowHide(true);
+        setShowingSuccess(false);
+      }, 2000);
+    }
+  }, [success, loading]);
+
+  // Reset states when component is hidden
+  useEffect(() => {
+    if (!visible && allowHide) {
+      setShowingSuccess(false);
+      setAllowHide(true);
+    }
+  }, [visible, allowHide]);
 
   useEffect(() => {
     if (visible) {
@@ -52,8 +78,8 @@ const SmoothLoadingOverlay = ({
           useNativeDriver: false,
         }),
       ]).start();
-    } else {
-      // Hide animation - smooth exit
+    } else if (allowHide) {
+      // Hide animation - smooth exit (only if allowed)
       Animated.parallel([
         Animated.timing(fadeAnim, {
           toValue: 0,
@@ -75,7 +101,7 @@ const SmoothLoadingOverlay = ({
         }),
       ]).start();
     }
-  }, [visible]);
+  }, [visible, allowHide]);
 
   // Animate progress bar smoothly
   useEffect(() => {
@@ -123,7 +149,13 @@ const SmoothLoadingOverlay = ({
     }
   }, [isSuccess, isError]);
 
-  if (!visible && fadeAnim._value === 0) return null;
+  // Don't render if not visible and allowed to hide
+  if (!visible && fadeAnim._value === 0 && allowHide) return null;
+  
+  // Keep visible during success delay even if visible prop is false
+  if (!visible && showingSuccess && !allowHide) {
+    // Override visible behavior during success delay
+  }
 
   return (
     <Animated.View style={{

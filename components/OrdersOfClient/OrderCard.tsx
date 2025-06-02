@@ -1,7 +1,6 @@
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import { Ionicons, FontAwesome5, MaterialIcons } from '@expo/vector-icons';
-// import AjiSalit from "@/assets/images/logo.png";
 import { useRouter } from 'expo-router';
 import { useDispatch } from 'react-redux';
 import { setCurrentOrder } from "@/store/slices/OrdersManagment";
@@ -11,16 +10,29 @@ import Entypo from '@expo/vector-icons/Entypo';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
+// Import the conversion function
+import { convertToFrontendFormat } from '@/components/ActionSheetToAddProduct/statusMappings';
 
 const OrderCard = ({ item }) => {
   
   const [localFinished, setLocalFinished] = useState(item.isFinished);
 
+  // Helper function to convert situation to Arabic
+  const getDisplayText = (value, type) => {
+    if (!value) return value;
+    const arabicValue = convertToFrontendFormat(value, type);
+    return arabicValue || value; // Fallback to original if no conversion found
+  };
+
+  // Get the raw status value and convert to Arabic
+  const rawOrderStatus = item?.situation || item?.label;
+  const orderStatus = getDisplayText(rawOrderStatus, 'situation');
+
+  console.log('OrderCard - Raw status:', rawOrderStatus, 'Converted to:', orderStatus);
 
   useEffect(() => {
     setLocalFinished(item.isFinished);
   }, [item.isFinished]);
-
 
   console.log('item here', item);
   
@@ -52,13 +64,9 @@ const OrderCard = ({ item }) => {
     },
   ];
 
-
-
- 
   const dispatch = useDispatch();
   const router = useRouter();
 
-  
   if (!item) {
     return null;
   }
@@ -83,7 +91,7 @@ const OrderCard = ({ item }) => {
       });
   };
 
-  const customerDisplay = item.customerName || "كليان";
+  const customerDisplay = item.label;
 
   return (
     <View className={`bg-white rounded-xl mb-4 overflow-hidden shadow-sm w-[100%]`}>
@@ -123,15 +131,15 @@ const OrderCard = ({ item }) => {
           <View className="flex-1">
             <View className="bg-gray-100 rounded-lg mx-1 p-2 items-center border border-gray-300 border-1">
               <Text className="text-gray-600 mb-1 font-tajawalregular ">الحالة</Text>
-              <Text className={`text-base font-thin font-tajawal text-[12px] ${item.label ==='unpaid'  ? "text-[#F52525]" : "text-[#2e752f]" } `}>
-                {item.label || "جاهزة للتسليم"}
+              <Text className={`text-base font-thin font-tajawal text-[12px] ${rawOrderStatus === 'unpaid' ? "text-[#F52525]" : "text-[#2e752f]" } `}>
+                {orderStatus || "جاهزة للتسليم"}
               </Text>
             </View>
           </View>
 
           <View className="flex-1">
             <View className="bg-gray-100 rounded-lg mx-1 p-2 items-center border border-gray-300 border-1">
-              <Text className="text-[#000] mb-1 font-tajawalregular font-[13px] ">الprepayment</Text>
+              <Text className="text-[#000] mb-1 font-tajawalregular font-[13px] ">تسبيق</Text>
               <Text className="text-base font-thin font-tajawal text-[12px] text-[#FFA30E]">
                 {item.advancedAmount || ' 0'} درهم
               </Text>
@@ -152,7 +160,7 @@ const OrderCard = ({ item }) => {
         <View className="flex-row justify-between items-center p-3 mt-1 mx-2 bg-gray-100 border border-gray-300 border-1 rounded-lg mb-2">
           <View className="flex-row items-center space-x-2">
             <Text className="text-[#000] mr-1 font-tajawalregular text-[10px] mt-0">
-              {/* {item.deliveryDate ? `استلام: ${item.deliveryDate}` : ''} */}
+              {item.deliveryDate ? `استلام: ${item.deliveryDate}` : ''}
             </Text>
           </View>
 
