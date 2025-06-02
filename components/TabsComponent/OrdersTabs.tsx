@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { selectFilteredExpiredOrdersCount, setTabFilter } from '@/store/slices/OrdersSlice.js'; 
 import Warning from "@/assets/images/warning.png"
 
-const com.mansorytvproo.app = ({ onTabChange, activeTab = 'completed' }) => {
+const TabsComponent = ({ onTabChange, activeTab = 'completed' }) => {
   const dispatch = useDispatch();
   
   // Get the count of filtered expired orders
@@ -25,7 +25,7 @@ const com.mansorytvproo.app = ({ onTabChange, activeTab = 'completed' }) => {
 
   // Initialize the tab filter in Redux when component mounts
   useEffect(() => {
-    console.log('🎯 com.mansorytvproo.app mounted with activeTab:', activeTab);
+    console.log('🎯 TabsComponent mounted with activeTab:', activeTab);
     console.log('🎯 Current Redux tabFilter:', currentTabFilter);
     
     // If Redux state doesn't match the activeTab prop, update Redux
@@ -62,7 +62,7 @@ const com.mansorytvproo.app = ({ onTabChange, activeTab = 'completed' }) => {
     onTabChange(tab.filter);
   };
 
-  console.log('🎯 com.mansorytvproo.app state:', {
+  console.log('🎯 TabsComponent state:', {
     selectedTab,
     activeTab,
     currentTabFilter,
@@ -179,4 +179,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default com.mansorytvproo.app;
+export default TabsComponent;

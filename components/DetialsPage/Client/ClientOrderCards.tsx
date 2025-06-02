@@ -6,7 +6,7 @@ import { fetchOrderByQrCodeOrId,selectCurrentOrder } from '@/store/slices/Orders
 import { fetchOrders } from '@/store/slices/OrdersSlice'
 
 // Import the conversion function
-import { convertToFrontendFormat } from '@/components/ActionSheetToAddProduct/statusMappings';
+import { convertToFrontendFormat } from '@/components/ActionSheetToAddProduct/StatusMappings';
 
 const EditHistoryModal = ({ visible, onClose, orderCode, reason,newDate }) => {
 

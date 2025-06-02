@@ -11,7 +11,7 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
 // Import the conversion function
-import { convertToFrontendFormat } from '@/components/ActionSheetToAddProduct/statusMappings';
+import { convertToFrontendFormat } from '@/components/ActionSheetToAddProduct/StatusMappings';
 
 const OrderCard = ({ item }) => {
   
