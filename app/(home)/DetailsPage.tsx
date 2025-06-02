@@ -19,7 +19,7 @@ import DetailsOrdersNoImages from "@/assets/images/noImages.png";
 import { selectCurrentOrder, selectUserOrders, setCurrentOrder, fetchORderById } from "@/store/slices/OrdersManagment";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSearchParams } from "expo-router/build/hooks";
-import { convertToFrontendFormat } from "@/components/ActionSheetToAddProduct/statusMappings";
+import { convertToFrontendFormat } from "@/components/ActionSheetToAddProduct/StatusMappings";
 
 export default function DetailsPage() {
   const [remaining, setRemaining] = useState(0);
