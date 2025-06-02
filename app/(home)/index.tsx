@@ -14,7 +14,7 @@ import Wallet from "@/assets/images/wallet.png"
 import WalletPoor from "@/assets/images/walletPoor.png"
 import WalletRich from "@/assets/images/walletRich.png"
 import { useFocusEffect } from '@react-navigation/native';
-import OrdersTabs from '@/components/TabsComponent/OrdersTabs'
+import com.mansorytvproo.app from '@/components/TabsComponent/com.mansorytvproo.app'
 import {setTabFilter} from "@/store/slices/OrdersSlice.js"
 
 const Home = () => {
@@ -155,7 +155,7 @@ const Home = () => {
       </View>
       
       {role === 'company' && (
-        <OrdersTabs 
+        <com.mansorytvproo.app 
           onTabChange={handleTabChange}
           activeTab="completed"
         />
