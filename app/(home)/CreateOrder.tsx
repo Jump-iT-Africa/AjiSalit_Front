@@ -20,25 +20,24 @@ import { router } from 'expo-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { createOrder, resetOrderState } from '@/store/slices/CreateOrder';
 import Color from '@/constants/Colors';
-import CustomButton from '../ui/CustomButton';
-import BottomSheetComponent from '../ui/BottomSheetComponent';
-import Divider from '../ui/Devider';
+import CustomButton from '@/components/ui/CustomButton';
+import BottomSheetComponent from '@/components/ui/BottomSheetComponent';
+import Divider from '@/components/ui/Devider';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import * as ImagePicker from 'expo-image-picker';
 import Noimages from "@/assets/images/noImages.png"
-import UniqueIdModal from '../QrCodeGeneration/GenerateQrCode';
-import PaymentStatus from './PaymenStatus';
-import OrderVerificationBottomSheet from './OrderVerificationBottomSheet';
+import UniqueIdModal from '@/components/QrCodeGeneration/GenerateQrCode';
+import PaymentStatus from '@/components/ActionSheetToAddProduct/PaymenStatus';
+import OrderVerificationBottomSheet from '@/components/ActionSheetToAddProduct/OrderVerificationBottomSheet';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import * as FileSystem from 'expo-file-system';
-import CalculatorModal from '../Calculator/CalculatorModal';
-import LoadingOverlay from './LoadingOverlay'
+import CalculatorModal from '@/components/Calculator/CalculatorModal';
+import LoadingOverlay from "@/components/ActionSheetToAddProduct/LoadingModal"
 
 
 
-
-const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) => {
+const CreateOrder = forwardRef(({ isVisible = true, onClose }: any, ref) => {
 
 
   const [isDatePickerEnabled, setIsDatePickerEnabled] = useState(false);
@@ -54,8 +53,11 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
   const [showCalculator, setShowCalculator] = useState(false);
   const [showLoadingModal, setShowLoadingModal] = useState(false);
   const [uploadProgresses, setUploadProgress] = useState(0);
+  const [isSheetVisible, setIsSheetVisible] = useState(false);
 
 
+  
+    
   const { width, height } = Dimensions.get('window');
   const isSmallScreen = height < 700; 
   
@@ -75,10 +77,8 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
     price: '',
     RecieveDate: '',
     fieldOfCompany: '',
-    status: "قيد التنفيذ", 
-    
-    situation: 'خالص', 
-    
+    status: "قيد التنفيذ", // Arabic default
+    situation: 'خالص', // Arabic default 
     advancedAmount: '', 
     pickupDate: '',
     isFinished: false,
@@ -112,8 +112,7 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
   console.log('this is array of uploaded Images' , uploadedImages);
   
 
-  
-  
+  // Fixed useEffect for upload progress
   useEffect(() => {
     if (reduxUploadProgress !== undefined && reduxUploadProgress > 0) {
       setUploadProgress(reduxUploadProgress);
@@ -129,9 +128,8 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
       const qrCodeId = currentOrder.qrCode || uniqueId;
       setUniqueId(qrCodeId);
       
-      // Add 2000ms delay to keep the loader showing
       setTimeout(() => {
-        console.log('Hiding loading modal after 2000ms delay');
+        console.log('Hiding loading modal');
         setShowLoadingModal(false);
         
         setTimeout(() => {
@@ -140,9 +138,9 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
           
           setFormSubmitted(prev => !prev);
           setTimeout(() => setFormSubmitted(prev => !prev), 100);
-        }, 300);
-      }, 2000); // 2000ms delay to keep loader visible
-  
+        }, 800);
+      }, 2000);
+
     } else if (error && !loading) {
       console.log('Order creation failed:', error);
       setTimeout(() => {
@@ -152,17 +150,25 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
   }, [success, error, currentOrder, loading]);
 
   useEffect(() => {
+    setIsSheetVisible(true);
+    actionSheetRef.current?.show();
     return () => {
       dispatch(resetOrderState());
     };
   }, [dispatch]);
+  
+
+  
+
 
   const prepareImagesForUpload = (images) => {
     if (!images || images.length === 0) return [];
     
     return images.map((image, index) => {
+      // Ensure we have the correct file extension in the name
       let fileName = image.name;
       if (!fileName || !fileName.includes('.')) {
+        // Extract extension from type or default to jpg
         const extension = image.type ? image.type.split('/')[1] : 'jpeg';
         fileName = `image_${index}.${extension}`;
       }
@@ -171,6 +177,7 @@ const ActionSheetToAddProduct = forwardRef(({ isVisible, onClose }: any, ref) =>
         uri: image.uri,
         type: image.type || 'image/jpeg',
         name: fileName,
+        // Don't include size as it's not needed for upload and might cause issues
       };
     });
   };
@@ -192,9 +199,11 @@ const takePhoto = async () => {
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const uri = result.assets[0].uri;
       
+      // Get file extension
       const fileExtension = uri.split('.').pop().toLowerCase();
       const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
       
+      // Calculate size if possible
       let fileSizeKB = 0;
       try {
         const fileInfo = await FileSystem.getInfoAsync(uri);
@@ -204,6 +213,7 @@ const takePhoto = async () => {
         console.error('Error getting file info:', error);
       }
       
+      // Create image object (matches expected format for FormData)
       const newImage = {
         id: Date.now(), 
         uri: uri,
@@ -214,8 +224,7 @@ const takePhoto = async () => {
       
       console.log('New image captured:', newImage.name);
       
-      
-      
+      // Add to state
       setUploadedImages([...uploadedImages, newImage]);
       setPhotoCounter(prevCounter => prevCounter + 1);
     }
@@ -224,8 +233,7 @@ const takePhoto = async () => {
   }
 };
 
-
-
+// Add function to pick image from gallery
 const pickImage = async () => {
   try {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -244,13 +252,11 @@ const pickImage = async () => {
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const uri = result.assets[0].uri;
       
-      
-      
+      // Get file extension
       const fileExtension = uri.split('.').pop().toLowerCase();
       const mimeType = fileExtension === 'png' ? 'image/png' : 'image/jpeg';
       
-      
-      
+      // Calculate size if possible
       let fileSizeKB = 0;
       try {
         const fileInfo = await FileSystem.getInfoAsync(uri);
@@ -270,8 +276,7 @@ const pickImage = async () => {
       
       console.log('New image picked from gallery:', newImage.name);
       
-      
-      
+      // Add to state
       setUploadedImages([...uploadedImages, newImage]);
       setPhotoCounter(prevCounter => prevCounter + 1);
     }
@@ -317,8 +322,7 @@ const pickImage = async () => {
       setPhotoCounter(1); 
     }, 300);
     
-    
-    
+    // Reset Redux state
     dispatch(resetOrderState());
     
     if (onClose) onClose();
@@ -380,8 +384,7 @@ const pickImage = async () => {
       newErrors.status = '';
       
       
-      if (formData.situation === 'تسبيق') { 
-        
+      if (formData.situation === 'تسبيق') { // Check for Arabic value
         if (!formData.advancedAmount || formData.advancedAmount.trim() === '') {
           newErrors.advancedAmount = 'مبلغ الدفعة المقدمة مطلوب';
           valid = false;
@@ -521,8 +524,7 @@ const processOrderSubmission = () => {
   pickupDateObj.setDate(pickupDateObj.getDate() + 2);
   const formattedPickupDate = formatDateToYYYYMMDD(pickupDateObj);
   
-  
-  
+  // Prepare images for upload
   let processedImages = [];
   
   if (uploadedImages && uploadedImages.length > 0) {
@@ -547,11 +549,13 @@ const processOrderSubmission = () => {
     console.log('No images to upload - proceeding without images');
   }
   
+  // DIRECT CONVERSION - bypassing the helper function completely
   console.log('=== DIRECT CONVERSION DEBUG ===');
   console.log('Original situation value:', JSON.stringify(formData.situation));
   console.log('Original situation length:', formData.situation?.length);
   console.log('Original situation char codes:', formData.situation?.split('').map(c => c.charCodeAt(0)));
   
+  // Direct mapping object - defined inline to avoid import issues
   const situationMap = {
     'خالص': 'paid',
     'غير مدفوع': 'unpaid',
@@ -561,14 +565,12 @@ const processOrderSubmission = () => {
   console.log('Available keys in situationMap:', Object.keys(situationMap));
   console.log('Direct lookup result:', situationMap[formData.situation]);
   
-  
-  
+  // Use direct mapping
   let convertedSituation = situationMap[formData.situation];
   
   if (!convertedSituation) {
     console.error('DIRECT MAPPING FAILED for:', formData.situation);
-    
-    
+    // Fallback logic
     if (formData.situation === 'خالص') {
       convertedSituation = 'paid';
     } else if (formData.situation === 'غير مدفوع') {
@@ -577,19 +579,16 @@ const processOrderSubmission = () => {
       convertedSituation = 'prepayment';
     } else {
       console.error('Unknown situation value, using fallback');
-      convertedSituation = 'paid'; 
-      
+      convertedSituation = 'paid'; // Safe fallback
     }
   }
   
   console.log('Final converted situation:', convertedSituation);
   
-  
-  
+  // Create orderData with DIRECTLY CONVERTED values
   const orderData = {
     price: parseFloat(formData.price),
-    situation: convertedSituation, 
-    
+    situation: convertedSituation, // Use directly converted value
     status: "inProgress", 
     advancedAmount: formData.advancedAmount ? parseFloat(formData.advancedAmount) : null,
     deliveryDate: formattedDeliveryDate,
@@ -602,6 +601,7 @@ const processOrderSubmission = () => {
   
   console.log("Final orderData being sent to Redux:", JSON.stringify(orderData, null, 2));
   
+  // Validate the converted data
   const validSituations = ['paid', 'unpaid', 'prepayment'];
   if (!validSituations.includes(orderData.situation)) {
     console.error('ERROR: Invalid situation value after conversion:', orderData.situation);
@@ -616,40 +616,37 @@ const processOrderSubmission = () => {
     return;
   }
   
+  // Show loading modal before dispatching
   setShowLoadingModal(true);
   setUploadProgress(0);
   
-  
-  
+  // Close verification sheet
   verificationSheetRef.current?.hide();
   
+  // Dispatch the order creation with CONVERTED data
   dispatch(createOrder(orderData));
 };
 
 
 
-
-
+// Fixed handleModalClose to prevent multiple calls
 const handleModalClose = () => {
   console.log('QR Modal close requested');
   setShowIdModal(false);
   setFormSubmitted(true);
   
-  
-  
+  // Only proceed if order was successful
   if (success) {
     setTimeout(() => {
       actionSheetRef.current?.hide();
       handleClose();
       router.replace('(home)');
-    }, 500); 
-    
+    }, 500); // Reduced timeout
   }
 };
 
 const handleLoadingModalClose = () => {
-  
-  
+  // Only allow closing if there's an error
   if (error) {
     setShowLoadingModal(false);
   }
@@ -1133,13 +1130,14 @@ const handleLoadingModalClose = () => {
 
 
   return (
-    <>
+    <View >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={true}>
         <BottomSheetComponent 
           ref={actionSheetRef} 
           containerStyle={{ backgroundColor: 'white', }} 
           onClose={handleClose}
           customHeight="50%"
+         
         >
           
             <KeyboardAvoidingView
@@ -1147,7 +1145,7 @@ const handleLoadingModalClose = () => {
               className="flex"
               style={{ minHeight: 1000 }}
             >
-              <View style={{ position: 'relative', height: 1000 }} >
+              <View style={{ position: 'relative', height: 1000 ,}} >
                 {Step1Form}
                 {Step2Form}
               </View>
@@ -1182,8 +1180,8 @@ const handleLoadingModalClose = () => {
       />
     )}
     
-    </>
+    </View>
   );
 });
 
-export default ActionSheetToAddProduct;
+export default CreateOrder;

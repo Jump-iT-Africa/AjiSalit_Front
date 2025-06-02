@@ -2,6 +2,9 @@ import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit'
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+
+
+
 const API_URL = 'https://api.ajisalit.com';
 
 export const fetchOrders = createAsyncThunk(
@@ -94,11 +97,11 @@ const transformOrderData = (apiOrders) => {
 
 const getAmountType = (situation) => {
   switch (situation) {
-    case 'خالص':
+    case 'paid':
       return 'paid';
-    case 'غير خالص':
+    case 'unpaid':
       return 'unpaid';
-    case 'تسبيق':
+    case 'prepayment':
       return 'installment';
     default:
       return 'unknown';
@@ -238,17 +241,17 @@ export const selectFilteredOrders = createSelector(
     let result = [];
     
     switch (tabFilter) {
-      case 'all': // الطلبات القادمة - Tomorrow and beyond
+      case 'all': 
         result = items.filter(order => 
           order.isTomorrow && !(order.isFinished === true && order.isPickUp === true)
         );
         break;
-      case 'today': // طلبات اليوم - Today only
+      case 'today':
         result = items.filter(order => 
           order.isToday && !(order.isFinished === true && order.isPickUp === true)
         );
         break;
-      case 'completed': // الطلبات المتأخرة - Expired orders (yesterday and before)
+      case 'completed':
         result = items.filter(order => 
           order.isExpired && !(order.isFinished === true && order.isPickUp === true)
         );
@@ -270,13 +273,13 @@ export const selectFilteredOrders = createSelector(
       let typeToFilter;
       
       switch(statusFilter) {
-        case 'خالص':
+        case 'paid':
           typeToFilter = 'paid';
           break;
-        case 'غير خالص':
+        case 'unpaid':
           typeToFilter = 'unpaid';
           break;
-        case 'تسبيق':
+        case 'prepayment':
           typeToFilter = 'installment';
           break;
         default:
@@ -330,6 +333,144 @@ export const selectFilteredOrders = createSelector(
   }
 );
 
+export const selectFilteredExpiredOrdersCount = createSelector(
+  [getOrderItems, getSearchTerm, getStatusFilter, getDateFilter],
+  (items, searchTerm, statusFilter, dateFilter) => {
+    if (!items || !Array.isArray(items)) {
+      return 0;
+    }
+    
+    // Start with expired orders that are not finished and picked up
+    let result = items.filter(order => 
+      order.isExpired && !(order.isFinished === true && order.isPickUp === true)
+    );
+    
+    // Apply search filter
+    if (searchTerm) {
+      result = result.filter(order => 
+        order.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.customerDisplayName.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    // Apply status filter
+    if (statusFilter) {
+      let typeToFilter;
+      
+      switch(statusFilter) {
+        case 'paid':
+          typeToFilter = 'paid';
+          break;
+        case 'unpaid':
+          typeToFilter = 'unpaid';
+          break;
+        case 'prepayment':
+          typeToFilter = 'installment';
+          break;
+        default:
+          typeToFilter = null;
+      }
+      
+      if (typeToFilter) {
+        result = result.filter(order => order.type === typeToFilter);
+      }
+    }
+    
+    // Apply date filter
+    if (dateFilter) {
+      const filterDate = new Date(dateFilter);
+      
+      result = result.filter(order => {
+        if (!order.date || order.date === "غير محدد") return false;
+        
+        const [day, month, year] = order.date.split('/').map(Number);
+        const orderDate = new Date(year, month - 1, day);
+        
+        return orderDate.toDateString() === filterDate.toDateString();
+      });
+    }
+    
+    return result.length;
+  }
+);
+
+export const selectExpiredOrders = createSelector(
+  [getOrderItems],
+  (items) => {
+    if (!items || !Array.isArray(items)) {
+      return [];
+    }
+    
+    return items.filter(order => 
+      order.isExpired && !(order.isFinished === true && order.isPickUp === true)
+    );
+  }
+);
+
+export const selectClientOrders = createSelector(
+  [getOrderItems, getSearchTerm, getStatusFilter],
+  (items, searchTerm, statusFilter) => {
+    if (!items || !Array.isArray(items)) {
+      return [];
+    }
+    
+    console.log('CLIENT SELECTOR - Raw items count:', items.length);
+    
+
+    let result = items.filter(order => 
+      !(order.isFinished === true && order.isPickUp === true)
+    );
+    
+    console.log('CLIENT SELECTOR - After basic filter:', result.length);
+    
+    if (searchTerm) {
+      result = result.filter(order => 
+        order.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.customerDisplayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (order.companyId?.companyName && order.companyId.companyName.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+      console.log('CLIENT SELECTOR - After search filter:', result.length);
+    }
+    
+    if (statusFilter) {
+      let typeToFilter;
+      
+      switch(statusFilter) {
+        case 'paid':
+          typeToFilter = 'paid';
+          break;
+        case 'unpaid':
+          typeToFilter = 'unpaid';
+          break;
+        case 'prepayment':
+          typeToFilter = 'installment';
+          break;
+        default:
+          typeToFilter = null;
+      }
+      
+      if (typeToFilter) {
+        result = result.filter(order => order.type === typeToFilter);
+        console.log('CLIENT SELECTOR - After status filter:', result.length);
+      }
+    }
+    
+    result.sort((a, b) => {
+      if (a.rawDeliveryDate && b.rawDeliveryDate) {
+        return new Date(a.rawDeliveryDate) - new Date(b.rawDeliveryDate);
+      }
+      
+      if (!a.rawDeliveryDate && b.rawDeliveryDate) return 1;
+      if (a.rawDeliveryDate && !b.rawDeliveryDate) return -1;
+      
+      return 0;
+    });
+    
+    console.log('CLIENT SELECTOR - Final result count:', result.length);
+    return result;
+  }
+);
+
 export const HistoryOrders = createSelector(
   [getOrderItems, getSearchTerm, getStatusFilter, getDateFilter],
   (items, searchTerm, statusFilter, dateFilter) => {
@@ -352,13 +493,13 @@ export const HistoryOrders = createSelector(
       let typeToFilter;
       
       switch(statusFilter) {
-        case 'خالص':
+        case 'paid':
           typeToFilter = 'paid';
           break;
-        case 'غير خالص':
+        case 'unpaid':
           typeToFilter = 'unpaid';
           break;
-        case 'تسبيق':
+        case 'prepayment':
           typeToFilter = 'installment';
           break;
         default:

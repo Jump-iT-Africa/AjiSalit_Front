@@ -1,15 +1,20 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import { useSelector } from 'react-redux';
+import { selectFilteredExpiredOrdersCount } from '@/store/slices/OrdersSlice.js'; 
 import Warning from "@/assets/images/warning.png"
 
-const OrdersTabs = ({ onTabChange, activeTab = 'all' }) => {
+const OrdersTabs = ({ onTabChange, activeTab = 'completed' }) => {
   const [selectedTab, setSelectedTab] = useState(activeTab);
-
+  
+  // Get the count of filtered expired orders
+  const expiredOrdersCount = useSelector(selectFilteredExpiredOrdersCount);
+  
   const tabs = [
-    { id: 'completed', label: 'الطلبات المتأخرة', filter: 'completed', bg: "#FF4444" }, 
-    { id: 'today', label: 'طلبات اليوم', filter: 'today', bg: "#FFAE00" }, 
-    { id: 'all', label: 'الطلبات القادمة', filter: 'all', bg: "#2F752F" }
+    { id: 'all', label: 'الطلبات القادمة', filter: 'all', bg: "#2F752F" },
+    { id: 'today', label: 'طلبات اليوم', filter: 'today', bg: "#FFAE00" },
+    { id: 'completed', label: 'الطلبات المتأخرة', filter: 'completed', bg: "#FF4444" }
   ];
 
   const handleTabPress = (tab) => {
@@ -17,7 +22,10 @@ const OrdersTabs = ({ onTabChange, activeTab = 'all' }) => {
     onTabChange(tab.filter);
   };
 
-  const showWarning = selectedTab === 'completed';
+  console.log('this is expiredOrdersCount', expiredOrdersCount);
+  
+  // Show warning only if completed tab is selected AND there are expired orders
+  const showWarning = selectedTab === 'completed' && expiredOrdersCount > 0;
 
   return (
     <View style={styles.container}>
@@ -37,15 +45,13 @@ const OrdersTabs = ({ onTabChange, activeTab = 'all' }) => {
               styles.tabText,
               selectedTab === tab.id && styles.activeTabText,
               selectedTab === tab.id && { color: tab.bg }
-
-            ]}>
+             ]}>
               {tab.label}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
-      
-      {/* Warning only appears when "الطلبات المتأخرة" is selected */}
+             
       {showWarning && (
         <View style={styles.warningContainer} className='shadow'>
           <View style={styles.warningIcon}>
@@ -103,8 +109,7 @@ const styles = StyleSheet.create({
   activeTabText: {
     color: 'white',
     fontFamily: 'TajawalRegular',
-
-  },
+   },
   warningContainer: {
     backgroundColor: '#FFAE00',
     borderRadius: wp('4%'),

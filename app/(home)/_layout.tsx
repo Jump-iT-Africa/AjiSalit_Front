@@ -29,6 +29,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Stack } from "expo-router";
 import { createStackNavigator } from '@react-navigation/stack';
 import Colors from '@/constants/Colors';
+import CreateOrder from './CreateOrder';
+
 const AppStack = createStackNavigator();
 
 
@@ -183,16 +185,18 @@ function MainTabs() {
                   const currentPocket = await getLatestPocketValue();
                   
                   // Check pocket value before showing action sheet
-                  if (currentPocket <= 0) {
-                    Alert.alert(
-                      "رصيد غير كافي",
-                      "رصيدك 0 درهم، لن تتمكن من إنشاء طلبات جديدة. يرجى شحن الرصيد.",
-                      [{ text: "حسنا", style: "cancel" }]
-                    );
-                  } else {
+                  // if (currentPocket <= 0) {
+                  //   Alert.alert(
+                  //     "رصيد غير كافي",
+                  //     "رصيدك 0 درهم، لن تتمكن من إنشاء طلبات جديدة. يرجى شحن الرصيد.",
+                  //     [{ text: "حسنا", style: "cancel" }]
+                  //   );
+                  // } else {
+
                     setIsSheetVisible(true);
                     actionSheetRef.current?.show();
-                  }
+                    // router.push('CreateOrder')
+                  // }
                 } else {
                   navigate('Scanner');
                 }
@@ -250,6 +254,7 @@ export default function HomeLayouts() {
         <AppStack.Screen name="Scanner" component={ScannerPage} />
         <AppStack.Screen name="DetailsPage" component={DetailsPage} />
         <AppStack.Screen name="index" component={IndexWithBottomNav} />
+        <AppStack.Screen name="CreateOrder" component={CreateOrder} />
       </AppStack.Navigator>
 
     </Container>

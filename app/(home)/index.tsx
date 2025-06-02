@@ -148,8 +148,6 @@ const Home = () => {
                   </Text>
                 </View>
               </View> */}
-
-
               <Text className='text-end text-xl font-tajawal'>الطلبات المتوفرة</Text>
             </View>
           )}
@@ -159,7 +157,7 @@ const Home = () => {
       {role === 'company' && (
         <OrdersTabs 
           onTabChange={handleTabChange}
-          activeTab="all"
+          activeTab="completed"
         />
       )}
 

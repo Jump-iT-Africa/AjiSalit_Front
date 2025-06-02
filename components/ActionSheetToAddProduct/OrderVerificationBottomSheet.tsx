@@ -57,17 +57,17 @@ const OrderVerificationBottomSheet = forwardRef(({
   const statusOptions = [
     {
       id: 1,
-      label: 'غير خالص',
+      label: 'unpaid',
       iconYellow: NoMoneyYellow,
     },
     {
       id: 2,
-      label: 'تسبيق',
+      label: 'prepayment',
       iconYellow: AdvancedMoneyYellow,
     },
     {
       id: 3,
-      label: 'خالص',
+      label: 'paid',
       iconYellow: PaidYellow,
     },
   ];
@@ -206,7 +206,7 @@ const OrderVerificationBottomSheet = forwardRef(({
                   ))}
                 </View>
                 <Text style={{ color: '#2F752F', fontSize: 12,  fontFamily: 'Tajawal' }}>
-                  {formData.situation || 'خالص'}
+                  {formData.situation || 'paid'}
                 </Text>
               </View>
 
@@ -215,7 +215,7 @@ const OrderVerificationBottomSheet = forwardRef(({
                 <View style={{ flexDirection: 'row-reverse', alignItems: 'center', width: '100%' }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8 }}>
                     <Text style={{ color: '#000', fontSize: 12, fontFamily: 'Tajawal', marginRight: 8 }}>
-                      مبلغ التسبيق :
+                      مبلغ تسبيق :
                     </Text>
                   </View>
                   <Text style={{ color: '#2F752F', fontSize: 12,  fontFamily: 'Tajawal' }}>

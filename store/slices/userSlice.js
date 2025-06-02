@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit';
-import { saveUserToDB, loginUser, getAuthToken, getUserData, verifyNumber, updateUser, updatePasswordService,fetchUserData } from '@/services/api';
+import { saveUserToDB, loginUser, getAuthToken, getUserData, verifyNumber, updateUser, updatePasswordService,fetchUserData,updateUserWithImage } from '@/services/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {clearCurrentOrder} from "@/store/slices/OrdersManagment"
 
@@ -12,17 +12,15 @@ export const fetchCurrentUserData = createAsyncThunk(
       const response = await fetchUserData();
 
       console.log('here is the response of get users', response);
-      
-      if (response) {
-        console.log('responsessssss',response);
-        await AsyncStorage.setItem('user',JSON.stringify(response) )
-        return response;
 
+      if (response) {
+        await AsyncStorage.setItem('user',JSON.stringify(response))
+        return response;
       }
       
       return rejectWithValue('Failed to fetch user data');
     } catch (error) {
-      console.error('Error fetching current user data:', error);
+      console.log('Error fetching current user data:', error);
       return rejectWithValue(error.response?.data || error.message);
     }
   }
@@ -81,7 +79,7 @@ export const restoreAuthState = createAsyncThunk(
       }
 
       const userData = JSON.parse(userDataStr);
-      console.log('this is user from ache if userisauth', userData);
+      // console.log('this is user from ache if userisauth', userData);
 
       return {
         token,
@@ -109,7 +107,7 @@ export const verifyPhoneNumber = createAsyncThunk(
       const response = await verifyNumber(phoneData);
       console.log('Verification response:', response);
       
-      if (response.statusCode === 409 && response.isExist === false) {
+      if (response.statusCode === 409 && response.isExist === true) {
         dispatch(setUserInfo({
           name: response.UserName,
           role: response.role
@@ -140,29 +138,47 @@ export const logoutUser = createAsyncThunk(
   }
 );
 
+
+
+
 export const UpdateUser = createAsyncThunk(
   'user/UpdateUser',
   async (credentials, { rejectWithValue, getState }) => {
-
     try {
-        console.log('info to update', credentials);
+      console.log('Info to update:', credentials);
       
-        const UserId = (await AsyncStorage.getItem('userId'))?.replace(/^"|"$/g, '');
-        console.log('User ID (cleaned):', UserId);
-
-
-        if (!UserId) {
-          return rejectWithValue('User ID not found');
+      const UserId = (await AsyncStorage.getItem('userId'))?.replace(/^"|"$/g, '');
+      console.log('User ID (cleaned):', UserId);
+      
+      if (!UserId) {
+        return rejectWithValue('User ID not found');
+      }
+      
+      let updatedUserData;
+      
+      // Check if there's a profile image and what type it is
+      if (credentials.image && !credentials.image.startsWith('http')) {
+        if (credentials.image.startsWith('data:')) {
+          // Base64 image - use JSON approach
+          console.log('Updating user with base64 image via JSON...');
+          updatedUserData = await updateUser(UserId, credentials);
+        } else {
+          // Local file URI - use FormData approach
+          console.log('Updating user with local file via FormData...');
+          updatedUserData = await updateUserWithImage(UserId, credentials);
         }
-        
-        const updatedUserData = await updateUser(UserId, credentials);
-        
-        if (updatedUserData) {
-          const updatedUser = { ...updatedUserData, id: UserId };
-          await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
-        }
-
-      console.log('response of updated user:', updatedUserData);
+      } else {
+        // No new image or image is a URL - use JSON approach
+        console.log('Updating user without new image...');
+        updatedUserData = await updateUser(UserId, credentials);
+      }
+      
+      if (updatedUserData) {
+        const updatedUser = { ...updatedUserData, id: UserId };
+        await AsyncStorage.setItem('user', JSON.stringify(updatedUser));
+      }
+      
+      console.log('Response of updated user:', updatedUserData);
       return updatedUserData;
     } catch (error) {
       console.log('Update user error:', error);
@@ -184,7 +200,7 @@ const initialState = {
   ownRef: '',
   refBy: '',
   listRefs: [],
-  profileImage: null, 
+  image: null, 
   token: null,
   isAuthenticated: false,  
   password: '',
@@ -194,7 +210,6 @@ const initialState = {
   verificationSuccess: false,
   verificationData: null,
   error: null,
-
 
   passwordUpdateLoading: false,
   passwordUpdateSuccess: false,
@@ -345,7 +360,7 @@ const userSlice = createSlice({
       state.ice = user.ice || null;
       state.ownRef = user.ownRef || '';
       state.listRefs = user.listRefs || [];
-      state.profileImage = user.profileImage || null;
+      state.image = user.image || null;
       state.pocket = user?.pocket || null;
 
     });
@@ -378,7 +393,7 @@ const userSlice = createSlice({
       state.ice = user?.ice || null;
       state.ownRef = user?.ownRef || '';
       state.listRefs = user?.listRefs || [];
-      state.profileImage = user.profileImage || null;
+      state.image = user.image || null;
       state.pocket = user?.pocket || null;
 
     });
@@ -409,7 +424,7 @@ const userSlice = createSlice({
       state.ice = user.ice || null;
       state.ownRef = user.ownRef || '';
       state.listRefs = user.listRefs || [];
-      state.profileImage = user.profileImage || null;
+      state.image = user.image || null;
       state.pocket = user.pocket || null;
     });
     builder.addCase(restoreAuthState.rejected, (state) => {
@@ -454,7 +469,7 @@ const userSlice = createSlice({
         if (action.payload.Fname) state.Fname = action.payload.Fname;
         if (action.payload.companyName) state.companyName = action.payload.companyName;
         if (action.payload.Lname) state.Lname = action.payload.Lname;
-        if (action.payload.profileImage) state.profileImage = action.payload.profileImage;
+        if (action.payload.image) state.image = action.payload.image;
       }
     });
     builder.addCase(UpdateUser.rejected, (state, action) => {
@@ -486,7 +501,6 @@ const userSlice = createSlice({
       const userData = action.payload;
       
       if (userData) {
-        // Update all relevant user fields
         if (userData.id || userData._id) state.id = userData.id || userData._id;
         if (userData.Fname) state.Fname = userData.Fname;
         if (userData.Lname) state.Lname = userData.Lname;
@@ -498,7 +512,7 @@ const userSlice = createSlice({
         if (userData.ice) state.ice = userData.ice;
         if (userData.ownRef) state.ownRef = userData.ownRef;
         if (userData.listRefs) state.listRefs = userData.listRefs;
-        if (userData.profileImage) state.profileImage = userData.profileImage;
+        if (userData.image) state.image = userData.image;
         
         state.pocket = userData.pocket !== undefined ? userData.pocket : null;
       }
@@ -571,7 +585,8 @@ export const selectUserData = createSelector(
     ice: user.ice,
     ownRef: user.ownRef,
     listRefs: user.listRefs,
-    profileImage: user.profileImage,
-    pocket: user.pocket
+    image: user.image,
+    pocket: user.pocket,
+
   })
 );

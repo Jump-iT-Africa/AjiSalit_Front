@@ -23,7 +23,7 @@ const ProfileHeader = () => {
       <View className='flex-row-reverse items-center justify-between pt-2'>
         <TouchableOpacity className='flex-row-reverse items-center gap-2' onPress={() => router.push('(profile)/Profile')}>
           <View>
-            <InitialsAvatar name={userData.Fname}/>
+            <InitialsAvatar name={userData.Fname} image={userData.image}/>
           </View>
           <View className='flex items-end justify-start'>
             <Text className='text-start font-tajawal' style={{color: Colors.green}}>

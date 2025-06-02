@@ -13,15 +13,14 @@ const UniqueIdModal = ({ visible, onClose, uniqueId }) => {
   const { width, height } = Dimensions.get('window');
   const isSmallScreen = height < 700; 
   
-  const bottomSheetHeight = isSmallScreen ? '90%' : '80%';
+  const bottomSheetHeight = isSmallScreen ? '80%' : '80%';
   
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false); // Add processing state
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const copyToClipboard = async (uniqueId) => {
     try {
       await Clipboard.setStringAsync(uniqueId);
-      // Optional: Show a toast or feedback that text was copied
       console.log("Copied to clipboard:", uniqueId);
     } catch (error) {
       console.log("Error copying to clipboard:", error);
@@ -171,9 +170,9 @@ const UniqueIdModal = ({ visible, onClose, uniqueId }) => {
               </View>
 
               <View className='flex justify-center items-center w-full my-5'>
-                <Text style={{ fontSize: wp('3.5%') }} className='text-[#F52525] font-tajawalregular mb-5'>
+                {/* <Text style={{ fontSize: wp('3.5%') }} className='text-[#F52525] font-tajawalregular mb-5'>
                   تنويه:مع كل طلب سيتم خصم 1dh من رصيدك
-                </Text>
+                </Text> */}
 
                 <TouchableOpacity 
                   onPress={handlePressed}

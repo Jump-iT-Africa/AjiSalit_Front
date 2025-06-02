@@ -30,12 +30,11 @@ import CompanyFieldDropDown from '@/components/CompanyRegister/CompanyFieldDropD
 import Color from "@/constants/Colors";
 import CustomButton from '@/components/ui/CustomButton';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-
-
+import * as FileSystem from 'expo-file-system';
+// ADD THESE IMPORTS - This is what was missing!
+import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 
 const Profile = () => {
-
-
   const { width, height } = Dimensions.get('window');
   const isSmallScreen = height < 700; 
   
@@ -43,232 +42,340 @@ const Profile = () => {
       return isSmallScreen ? hp('80%') : hp('62%');
   }, [isSmallScreen]);
 
-    const dispatch = useDispatch();
-    const user = useSelector(selectUserData); 
-    const [profileImage, setProfileImage] = useState(null);
-    const [initialProfileImage, setInitialProfileImage] = useState(null);
-    const [Fname, setFname] = useState('');
-    const [initialFname, setInitialFname] = useState('');
-    const [Lname, setLname] = useState('');
-    const [phoneNumber, setPhoneNumber] = useState('');
-    const [initialLname, setInitialLname] = useState('');
-    const [companyName, setCompanyName] = useState('');
-    const [initialCompanyName, setInitialCompanyName] = useState('');
-    const [initialphoneNumber, setInitialPhoneNumber] = useState('');
-    const [field, setfield] = useState(''); 
-    const [initialField, setInitialField] = useState('');
-    const [modalVisible, setModalVisible] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const role = useSelector(selectUserRole);
-    const [selectedCity, setSelectedCity] = useState('');
-    const [initialSelectedCity, setInitialSelectedCity] = useState('');
-    const [errors, setErrors] = useState({});
-    const [isSubmitted, setIsSubmitted] = useState(false);
-    const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
-    const [isChanged, setIsChanged] = useState(false);
-        
+  const dispatch = useDispatch();
+  const user = useSelector(selectUserData); 
+  console.log('this is info of user', user);
+  
+  const [profileImage, setProfileImage] = useState(null);
+  const [initialProfileImage, setInitialProfileImage] = useState(null);
+  const [Fname, setFname] = useState('');
+  const [initialFname, setInitialFname] = useState('');
+  const [Lname, setLname] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [initialLname, setInitialLname] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [initialCompanyName, setInitialCompanyName] = useState('');
+  const [initialphoneNumber, setInitialPhoneNumber] = useState('');
+  const [field, setfield] = useState(''); 
+  const [initialField, setInitialField] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const role = useSelector(selectUserRole);
+  const [selectedCity, setSelectedCity] = useState('');
+  const [initialSelectedCity, setInitialSelectedCity] = useState('');
+  const [errors, setErrors] = useState({});
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
+  const [isChanged, setIsChanged] = useState(false);
+      
+  
+  useEffect(() => {
+    if (user) {
+      setFname(user.Fname || '');
+      setLname(user.Lname || '');
+      setPhoneNumber(user.phoneNumber || '');
+      setCompanyName(user.companyName || '');
+      setfield(user.field || ''); 
+      if (user.city) {
+        setSelectedCity(user.city);
+      }
+      if (user.image) {
+        setProfileImage(user.image);
+      }
+      
+      setInitialFname(user.Fname || '');
+      setInitialLname(user.Lname || '');
+      setInitialCompanyName(user.companyName || '');
+      setInitialPhoneNumber(user.phoneNumber || '');
+      setInitialField(user.field || '');
+      setInitialSelectedCity(user.city || '');
+      setInitialProfileImage(user.image || null);
+      }
+  }, [user]);
+
+  useEffect(() => {
+    const hasChanges = 
+      Fname !== initialFname ||
+      Lname !== initialLname || 
+      companyName !== initialCompanyName ||
+      phoneNumber !== initialphoneNumber ||
+      field !== initialField ||
+      selectedCity !== initialSelectedCity ||
+      profileImage !== initialProfileImage;
     
-    useEffect(() => {
-      if (user) {
-        
-        setFname(user.Fname || '');
-        setLname(user.Lname || '');
-        setPhoneNumber(user.phoneNumber || '');
-        setCompanyName(user.companyName || '');
-        setfield(user.field || ''); 
-        if (user.city) {
-          setSelectedCity(user.city);
-        }
-        if (user.profileImage) {
-          setProfileImage(user.profileImage);
-        }
-        
-        setInitialFname(user.Fname || '');
-        setInitialLname(user.Lname || '');
-        setInitialCompanyName(user.companyName || '');
-        setInitialPhoneNumber(user.phoneNumber || '');
-        setInitialField(user.field || '');
-        setInitialSelectedCity(user.city || '');
-        setInitialProfileImage(user.profileImage || null);
-      }
-    }, [user]);
+    setIsChanged(hasChanges);
+  }, [
+    Fname, Lname, companyName, field, selectedCity, profileImage,phoneNumber,
+    initialFname, initialLname, initialCompanyName, initialField, initialSelectedCity, initialProfileImage,initialphoneNumber
+  ]);
 
-    
-    useEffect(() => {
-      const hasChanges = 
-        Fname !== initialFname ||
-        Lname !== initialLname || 
-        companyName !== initialCompanyName ||
-        phoneNumber !== initialphoneNumber ||
-        field !== initialField ||
-        selectedCity !== initialSelectedCity ||
-        profileImage !== initialProfileImage;
+  const handleCitySelect = (city) => {
+    setSelectedCity(city.names.ar);
+    setErrors((prev) => ({ ...prev, city: "" }));
+  };
+
+  const handleFieldSelect = (fieldName) => {
+    setfield(fieldName);
+    setErrors((prev) => ({ ...prev, field: "" }));
+  };
+
+ 
+  const compressProfileImage = async (uri) => {
+    try {
+      console.log('Compressing profile image with URI type:', uri.startsWith('data:') ? 'base64' : 'file');
       
-      setIsChanged(hasChanges);
-    }, [
-      Fname, Lname, companyName, field, selectedCity, profileImage,phoneNumber,
-      initialFname, initialLname, initialCompanyName, initialField, initialSelectedCity, initialProfileImage,initialphoneNumber
-    ]);
-
-    const handleCitySelect = (city) => {
-      setSelectedCity(city.names.ar);
-      setErrors((prev) => ({ ...prev, city: "" }));
-    };
-
-    const handleFieldSelect = (fieldName) => {
-      setfield(fieldName);
-      setErrors((prev) => ({ ...prev, field: "" }));
-    };
-
-    const takePhoto = async () => {
-      try {
-        const { status } = await ImagePicker.requestCameraPermissionsAsync();
-        if (status !== 'granted') {
-          Alert.alert('Permission Denied', 'Sorry, we need camera permissions to make this work!');
-          return;
-        }
-
-        const result = await ImagePicker.launchCameraAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          allowsEditing: true,
-          aspect: [1, 1],
-          quality: 0.5,
-        });
-
-        if (!result.canceled) {
-          setProfileImage(result.assets[0].uri);
-          setModalVisible(false);
-        }
-      } catch (error) {
-        console.log('Error taking photo:', error);
-        Alert.alert('Error', 'Failed to take photo');
-      }
-    };
-
-    const pickImage = async () => {
-      try {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== 'granted') {
-          Alert.alert('Permission Denied', 'Sorry, we need gallery permissions to make this work!');
-          return;
-        }
-
-        const result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          allowsEditing: true,
-          aspect: [1, 1],
-          quality: 0.5,
-        });
-
-        if (!result.canceled) {
-          setProfileImage(result.assets[0].uri);
-          setModalVisible(false);
-        }
-      } catch (error) {
-        console.log('Error picking image:', error);
-        Alert.alert('Error', 'Failed to pick image from gallery');
-      }
-    };
-
-    const uriToBase64 = async (uri) => {
-      try {
-        const response = await fetch(uri);
-        const blob = await response.blob();
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            const base64String = reader.result.split(',')[1];
-            resolve(base64String);
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        });
-      } catch (error) {
-        console.error('Error converting image to base64:', error);
-        return null;
-      }
-    };
-
-    const validateForm = () => {
-      const newErrors = {};
-      
-      if (!Fname.trim()) {
-        newErrors.fname = "الرجاء إدخال الإسم";
-        setIsChanged(false)
+      // Clean the URI - remove Optional() wrapper if present
+      let cleanUri = uri;
+      if (typeof uri === 'string') {
+        cleanUri = uri.replace(/^Optional\("(.+)"\)$/, '$1');
+        cleanUri = cleanUri.replace(/^"|"$/g, '');
       }
       
-      if (!Lname.trim()) {
-        newErrors.lname = "الرجاء إدخال اللقب";
-        setIsChanged(false)
-
+      console.log('Cleaned URI starts with:', cleanUri.substring(0, 50));
+      
+      // If it's already a data URI (base64), return it as-is
+      if (cleanUri.startsWith('data:')) {
+        console.log('URI is already a data URI, returning as-is');
+        return cleanUri;
       }
       
-      if (!selectedCity) {
-        newErrors.city = "الرجاء اختيار المدينة";
-        setIsChanged(false)
-
+      // If it's an HTTP URL, return as-is
+      if (cleanUri.startsWith('http://') || cleanUri.startsWith('https://')) {
+        console.log('URI is a web URL, returning as-is');
+        return cleanUri;
       }
       
-      setErrors(newErrors);
-      setIsSubmitted(true);
-      
-      return Object.keys(newErrors).length === 0;
-    };
-
-    const handleUpdateUser = async () => {
-      try {
-        if (!validateForm()) {
-          return;
+      // Only compress local file URIs
+      if (!cleanUri.startsWith('file://')) {
+        if (cleanUri.startsWith('/')) {
+          cleanUri = 'file://' + cleanUri;
+        } else {
+          console.log('Unknown URI format, returning as-is');
+          return cleanUri;
         }
-        
-        setLoading(true);
-        
-        const updateData = {
-          Fname,
-          Lname,
-          companyName,
-          phoneNumber,
-          field,
-          city: selectedCity,
+      }
+      
+      // Check if file exists
+      const fileInfo = await FileSystem.getInfoAsync(cleanUri);
+      if (!fileInfo.exists) {
+        console.log('File does not exist, returning original URI');
+        return uri;
+      }
+      
+      const originalSizeKB = fileInfo.size / 1024;
+      console.log(`Original size: ${originalSizeKB.toFixed(2)} KB`);
+      
+      // Skip compression if image is already small enough
+      if (originalSizeKB < 200) {
+        console.log('Image is already small enough, skipping compression');
+        return cleanUri;
+      }
+      
+      // Compress image
+      const manipResult = await manipulateAsync(
+        cleanUri,
+        [{ resize: { width: 400 } }],
+        { 
+          compress: 0.7,
+          format: SaveFormat.JPEG 
+        }
+      );
+      
+      const compressedInfo = await FileSystem.getInfoAsync(manipResult.uri);
+      const compressedSizeKB = compressedInfo.size / 1024;
+      console.log(`Compressed size: ${compressedSizeKB.toFixed(2)} KB`);
+      
+      return manipResult.uri;
+    } catch (error) {
+      console.error('Error compressing image:', error);
+      return uri; // Return original if compression fails
+    }
+  };
+  
+  
+  
+  const takePhoto = async () => {
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Denied', 'Sorry, we need camera permissions to make this work!');
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8, // Higher quality initially, we'll compress later
+      });
+
+      if (!result.canceled) {
+        // Compress the image before setting it
+        const compressedUri = await compressProfileImage(result.assets[0].uri);
+        setProfileImage(compressedUri);
+        setModalVisible(false);
+      }
+    } catch (error) {
+      console.log('Error taking photo:', error);
+      Alert.alert('Error', 'Failed to take photo');
+    }
+  };
+
+  const pickImage = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Denied', 'Sorry, we need gallery permissions to make this work!');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled) {
+        const compressedUri = await compressProfileImage(result.assets[0].uri);
+        setProfileImage(compressedUri);
+        setModalVisible(false);
+      }
+    } catch (error) {
+      console.log('Error picking image:', error);
+      Alert.alert('Error', 'Failed to pick image from gallery');
+    }
+  };
+
+  // SIMPLIFIED BASE64 CONVERSION - Only use if image is not already processed
+  const uriToBase64 = async (uri) => {
+    try {
+      console.log('Converting image to base64...');
+      
+      // If it's already a data URI, return as-is
+      if (uri.startsWith('data:')) {
+        console.log('Image is already base64');
+        return uri.split(',')[1]; // Return just the base64 part
+      }
+      
+      // Clean URI first
+      let cleanUri = uri;
+      if (typeof uri === 'string') {
+        cleanUri = uri.replace(/^Optional\("(.+)"\)$/, '$1');
+        cleanUri = cleanUri.replace(/^"|"$/g, '');
+      }
+      
+      const response = await fetch(cleanUri);
+      const blob = await response.blob();
+      
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64String = reader.result.split(',')[1];
+          console.log(`Base64 size: ${(base64String.length * 0.75 / 1024).toFixed(2)} KB`);
+          resolve(base64String);
         };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
 
-        
-        if (profileImage && !profileImage.startsWith('http')) {
-          const base64Image = await uriToBase64(profileImage);
+    } catch (error) {
+      console.error('Error converting image to base64:', error);
+      return null;
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!Fname.trim()) {
+      newErrors.fname = "الرجاء إدخال الإسم";
+      setIsChanged(false)
+    }
+    
+    if (!Lname.trim()) {
+      newErrors.lname = "الرجاء إدخال اللقب";
+      setIsChanged(false)
+    }
+    
+    if (!selectedCity) {
+      newErrors.city = "الرجاء اختيار المدينة";
+      setIsChanged(false)
+    }
+    
+    setErrors(newErrors);
+    setIsSubmitted(true);
+    
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleUpdateUser = async () => {
+    try {
+      if (!validateForm()) {
+        return;
+      }
+      
+      setLoading(true);
+      
+      const updateData = {
+        Fname,
+        Lname,
+        companyName,
+        phoneNumber,
+        field,
+        city: selectedCity,
+      };
+  
+      // Handle profile image
+      if (profileImage && !profileImage.startsWith('http')) {
+        if (profileImage.startsWith('data:')) {
+          // Already base64 - use as-is
+          console.log('Image is already base64, using as-is');
+          updateData.profileImage = profileImage;
+        } else {
+          // Local file - compress then convert to base64
+          console.log('Image is local file, compressing and converting to base64');
+          const compressedUri = await compressProfileImage(profileImage);
+          const base64Image = await uriToBase64(compressedUri);
           if (base64Image) {
             updateData.profileImage = `data:image/jpeg;base64,${base64Image}`;
           }
         }
-        
-        const resultAction = await dispatch(UpdateUser(updateData));
-        
-        if (UpdateUser.fulfilled.match(resultAction)) {
-          
-          setIsSuccessModalVisible(true);
-          
-          
-          setInitialFname(Fname);
-          setInitialLname(Lname);
-          setInitialCompanyName(companyName);
-          setInitialPhoneNumber(phoneNumber)
-          setInitialField(field);
-          setInitialSelectedCity(selectedCity);
-          setInitialProfileImage(profileImage);
-          setIsChanged(false);
-        } else {
-          if (resultAction.payload) {
-            Alert.alert('خطأ', resultAction.payload);
-          } else {
-            Alert.alert('خطأ', 'فشل في تحديث معلومات المستخدم');
-          }
-        }
-      } catch (error) {
-        console.error('Error updating user:', error);
-        Alert.alert('خطأ', 'حدث خطأ غير متوقع');
-      } finally {
-        setLoading(false);
       }
-    };
+      
+      console.log('Updating user with data:', { 
+        ...updateData, 
+        profileImage: updateData.profileImage ? 
+          `${updateData.profileImage.substring(0, 30)}...` : 
+          'no_image' 
+      });
+      
+      const resultAction = await dispatch(UpdateUser(updateData));
+      
+      if (UpdateUser.fulfilled.match(resultAction)) {
+        setIsSuccessModalVisible(true);
+        
+        // Update initial values
+        setInitialFname(Fname);
+        setInitialLname(Lname);
+        setInitialCompanyName(companyName);
+        setInitialPhoneNumber(phoneNumber);
+        setInitialField(field);
+        setInitialSelectedCity(selectedCity);
+        setInitialProfileImage(profileImage);
+        setIsChanged(false);
+      } else {
+        const errorMessage = resultAction.payload || 'فشل في تحديث معلومات المستخدم';
+        Alert.alert('خطأ', errorMessage);
+      }
+    } catch (error) {
+      console.error('Error updating user:', error);
+      Alert.alert('خطأ', 'حدث خطأ غير متوقع');
+    } finally {
+      setLoading(false);
+    }
+  }; 
+
 
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>

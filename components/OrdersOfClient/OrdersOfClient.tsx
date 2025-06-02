@@ -4,7 +4,7 @@ import { FlashList } from '@shopify/flash-list';
 import NoOrdersExists from '../NoOrderExists/NoOrdersExists';
 import OrderCard from './OrderCard';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchOrders, selectFilteredOrders } from '@/store/slices/OrdersSlice';
+import { fetchOrders, selectClientOrders } from '@/store/slices/OrdersSlice';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useFocusEffect } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -12,7 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const OrdersOfClient = ({ SearchCode }) => {
   const dispatch = useDispatch();
   
-  const filteredOrders = useSelector(selectFilteredOrders);
+  const filteredOrders = useSelector(selectClientOrders);
   const loading = useSelector(state => state.orders.loading);
   const error = useSelector(state => state.orders.error);
   const isAuthenticated = useSelector(state => state.user?.isAuthenticated);
@@ -23,79 +23,94 @@ const OrdersOfClient = ({ SearchCode }) => {
   const [searchTerm, setSearchTerm] = useState(SearchCode);
   const [lastRefreshTime, setLastRefreshTime] = useState(Date.now());
 
-  console.log('Active Orders length:', filteredOrders?.length);
-  console.log('Search term:', searchTerm);
-  console.log('Loading state:', loading);
-  console.log('Orders loaded:', ordersLoaded);
-  console.log('Last refresh time:', new Date(lastRefreshTime).toLocaleTimeString());
-  
+  console.log('CLIENT - Active Orders length:', filteredOrders?.length);
+  console.log('CLIENT - Search term:', searchTerm);
+  console.log('CLIENT - Loading state:', loading);
+  console.log('CLIENT - Orders loaded:', ordersLoaded);
+  console.log('CLIENT - Last refresh time:', new Date(lastRefreshTime).toLocaleTimeString());
 
-
+  // Handle refresh when returning from scanner or details page
   useFocusEffect(
     useCallback(() => {
       const checkRefreshFlag = async () => {
         try {
           const shouldRefresh = await AsyncStorage.getItem('REFRESH_ORDERS_ON_RETURN');
+          console.log('CLIENT - Refresh flag value:', shouldRefresh);
+          
           if (shouldRefresh === 'true') {
-            console.log("Screen focused with refresh flag, fetching orders...");
-            fetchOrdersData();
+            console.log("CLIENT - Screen focused with refresh flag, fetching orders...");
+            await fetchOrdersData();
             await AsyncStorage.setItem('REFRESH_ORDERS_ON_RETURN', 'false');
+          } else {
+            // Even if no refresh flag, fetch orders if we don't have any loaded yet
+            if (!ordersLoaded || filteredOrders.length === 0) {
+              console.log("CLIENT - No orders loaded yet, fetching...");
+              await fetchOrdersData();
+            }
           }
         } catch (error) {
-          console.log("Error checking refresh flag:", error);
+          console.log("CLIENT - Error checking refresh flag:", error);
         }
       };
+      
       checkRefreshFlag();
+      
       return () => {
+        // Cleanup if needed
       };
-    }, [])
+    }, [ordersLoaded, filteredOrders.length])
   );
 
-
-
+  // Update search term when SearchCode prop changes
   useEffect(() => {
     setSearchTerm(SearchCode);
   }, [SearchCode]);
 
-  const fetchOrdersData = useCallback(() => {
+  const fetchOrdersData = useCallback(async () => {
     const isRefreshing = ordersLoaded;
     
     if (isRefreshing) {
       setRefreshing(true);
     }
     
-    console.log(`${isRefreshing ? 'Refreshing' : 'Initially fetching'} orders...`);
+    console.log(`CLIENT - ${isRefreshing ? 'Refreshing' : 'Initially fetching'} orders...`);
     
     const authCheck = isAuthenticated !== undefined ? (isAuthenticated && token) : true;
     
     if (authCheck) {
-      return dispatch(fetchOrders())
-        .then(response => {
-          setOrdersLoaded(true);
-          setLastRefreshTime(Date.now());
-          if (isRefreshing) setRefreshing(false);
-          return response;
-        })
-        .catch(err => {
-          console.log("Error fetching orders:", err);
-          setOrdersLoaded(true);
-          if (isRefreshing) setRefreshing(false);
-          throw err;
-        });
+      try {
+        const response = await dispatch(fetchOrders());
+        console.log('CLIENT - Orders fetch response:', response);
+        
+        setOrdersLoaded(true);
+        setLastRefreshTime(Date.now());
+        if (isRefreshing) setRefreshing(false);
+        
+        return response;
+      } catch (err) {
+        console.log("CLIENT - Error fetching orders:", err);
+        setOrdersLoaded(true);
+        if (isRefreshing) setRefreshing(false);
+        throw err;
+      }
     } else {
-      console.log("Authentication required but user not authenticated");
+      console.log("CLIENT - Authentication required but user not authenticated");
       setOrdersLoaded(true);
       if (isRefreshing) setRefreshing(false);
       return Promise.reject("User not authenticated");
     }
   }, [dispatch, isAuthenticated, token, ordersLoaded]);
 
+  // Initial fetch when component mounts
   useEffect(() => {
-    fetchOrdersData();
-  }, [fetchOrdersData]);
+    if (!ordersLoaded) {
+      console.log('CLIENT - Component mounted, fetching orders...');
+      fetchOrdersData();
+    }
+  }, []);
 
   const onRefresh = useCallback(() => {
-    console.log("Manual refresh triggered");
+    console.log("CLIENT - Manual refresh triggered");
     fetchOrdersData();
   }, [fetchOrdersData]);
 
@@ -110,27 +125,41 @@ const OrdersOfClient = ({ SearchCode }) => {
     );
   }, [searchTerm, filteredOrders]);
 
-  console.log('Final filtered orders count:', searchFilteredOrders?.length);
+  console.log('CLIENT - Final filtered orders count:', searchFilteredOrders?.length);
 
+  // Show loading only on initial load, not on refresh
   if (loading && !refreshing && !ordersLoaded) {
     return (
-      <View className=''>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" color="#2e752f" />
         <Text className="text-center p-4 font-tajawalregular">جاري تحميل الطلبات...</Text>
       </View>
     );
   }
 
-  if (error && !refreshing) {
+  // Show error state
+  if (error && !refreshing && ordersLoaded) {
     return (
-      <SafeAreaView className="flex-1 bg-gray-100 ">
-        <NoOrdersExists />
+      <SafeAreaView className="flex-1 bg-gray-100">
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <Text className="text-center text-red-500 font-tajawalregular mb-4">
+            حدث خطأ في تحميل الطلبات
+          </Text>
+          <TouchableOpacity 
+            onPress={onRefresh}
+            style={{ backgroundColor: '#2e752f', padding: 12, borderRadius: 8 }}
+          >
+            <Text style={{ color: 'white', fontFamily: 'TajawalRegular' }}>
+              إعادة المحاولة
+            </Text>
+          </TouchableOpacity>
+        </View>
       </SafeAreaView>
     );
   }
 
   if (ordersLoaded && searchFilteredOrders.length === 0) {
-    console.log("No active orders found, showing NoOrdersExists component");
+    console.log("CLIENT - No active orders found, showing NoOrdersExists component");
     return (
       <SafeAreaView className="flex-1">
         <NoOrdersExists />

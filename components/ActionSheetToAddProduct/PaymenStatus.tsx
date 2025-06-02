@@ -23,39 +23,43 @@ const PaymentStatus: React.FC<PaymentStatusProps> = ({ onStatusChange, currentPr
   const [showAdvanceInput, setShowAdvanceInput] = useState(false);
   const [advanceError, setAdvanceError] = useState('');
 
+  // Status mapping: Arabic display with English backend values
   const statusOptions = [
     {
       id: 1,
-      label: 'غير خالص',
+      label: 'غير مدفوع',        // Arabic display
+      value: 'unpaid',          // English backend value
       color: '#e84a4a',
       iconwhite: NoMoneyWhite,
       iconGreen: NoMoneyRed,
     },
     {
       id: 2,
-      label: 'تسبيق',
+      label: 'تسبيق',       // Arabic display
+      value: 'prepayment',      // English backend value
       color: '#FFA500',
       iconwhite: GivingMoneyWhite,
       iconGreen: GivingMoneyYellow,
     },
     {
       id: 3,
-      label: 'خالص',
+      label: 'خالص',            // Arabic display
+      value: 'paid',            // English backend value
       color: '#43915a',
       iconwhite: PaidWhite,
       iconGreen: PaidGreen,
     },
   ];
 
-  const handleStatusSelect = (status: string) => {
-    setSelectedStatus(status);
-    setShowAdvanceInput(status === 'تسبيق');
+  const handleStatusSelect = (optionValue: string, optionLabel: string) => {
+    setSelectedStatus(optionLabel);
+    setShowAdvanceInput(optionValue === 'prepayment'); 
     
-    if (status !== 'تسبيق') {
+    if (optionValue !== 'prepayment') {
       setAdvancedAmount('');
     }
     
-    onStatusChange(status, status === 'تسبيق' ? advancedAmount : undefined);
+    onStatusChange(optionLabel, optionValue === 'prepayment' ? advancedAmount : undefined);
   };
 
   const handleAdvanceAmountChange = (text: string) => {
@@ -67,7 +71,7 @@ const PaymentStatus: React.FC<PaymentStatusProps> = ({ onStatusChange, currentPr
     if (totalPrice === 0 || !currentPrice) {
       setAdvanceError('يرجى إدخال المبلغ الإجمالي أولاً');
     } else if (advanceValue > totalPrice) {
-      setAdvanceError('مبلغ التسبيق لا يمكن أن يتجاوز المبلغ الإجمالي');
+      setAdvanceError('  التسبيق لا يمكن أن يتجاوز المبلغ الإجمالي');
     } else {
       setAdvanceError('');
     }
@@ -75,14 +79,13 @@ const PaymentStatus: React.FC<PaymentStatusProps> = ({ onStatusChange, currentPr
     onStatusChange(selectedStatus, text);
   };
 
-  // Update the advance amount if the current price changes
   useEffect(() => {
-    if (selectedStatus === 'تسبيق' && advancedAmount) {
+    if (selectedStatus === 'تسبيق' && advancedAmount) { // Check for Arabic value
       const advanceValue = parseFloat(advancedAmount) || 0;
       const totalPrice = parseFloat(currentPrice) || 0;
       
       if (totalPrice > 0 && advanceValue > totalPrice) {
-        setAdvanceError('مبلغ التسبيق لا يمكن أن يتجاوز المبلغ الإجمالي');
+        setAdvanceError('مبلغ الدفعة المقدمة لا يمكن أن يتجاوز المبلغ الإجمالي');
       } else if (advanceValue > 0) {
         setAdvanceError('');
       }
@@ -95,7 +98,7 @@ const PaymentStatus: React.FC<PaymentStatusProps> = ({ onStatusChange, currentPr
         {statusOptions.map((option) => (
           <Pressable
             key={option.id}
-            onPress={() => handleStatusSelect(option.label)}
+            onPress={() => handleStatusSelect(option.value, option.label)}
             android_ripple={{ color: option.color }}
             style={({ pressed }) => [
               {
@@ -148,10 +151,10 @@ const PaymentStatus: React.FC<PaymentStatusProps> = ({ onStatusChange, currentPr
             marginTop: 10,
             fontSize: 14
           }}>
-            مبلغ التسبيق (بالدرهم): <Text style={{ color: 'red' }}>*</Text>
+              التسبيق (بالدرهم): <Text style={{ color: 'red' }}>*</Text>
           </Text>
           <TextInput
-            placeholder="يرجى إدخال مبلغ التسبيق"
+            placeholder="التسبيق"
             placeholderTextColor="#888"
             value={advancedAmount}
             keyboardType="numeric"
