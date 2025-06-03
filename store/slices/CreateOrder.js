@@ -4,7 +4,37 @@ import * as FileSystem from 'expo-file-system';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
 import { convertToBackendFormat } from '@/components/ActionSheetToAddProduct/StatusMappings';
 
-
+const compressImage = async (uri, quality = 0.5, maxWidth = 800) => {
+  try {
+    console.log(`Processing image: ${uri}`);
+    
+    const fileInfo = await FileSystem.getInfoAsync(uri);
+    if (!fileInfo.exists) {
+      throw new Error("File does not exist");
+    }
+    
+    console.log(`Original size: ${(fileInfo.size / 1024).toFixed(2)} KB`);
+    
+    if (fileInfo.size > 200 * 1024) {
+      const manipResult = await manipulateAsync(
+        uri,
+        [{ resize: { width: maxWidth } }],
+        { compress: quality, format: SaveFormat.JPEG }
+      );
+      
+      const compressedInfo = await FileSystem.getInfoAsync(manipResult.uri);
+      console.log(`Compressed size: ${(compressedInfo.size / 1024).toFixed(2)} KB`);
+      
+      return manipResult.uri;
+    } else {
+      console.log("Image already small enough, skipping compression");
+      return uri;
+    }
+  } catch (error) {
+    console.error("Error in compressImage:", error);
+    return uri;
+  }
+};
 
 export const createOrder = createAsyncThunk(
   'order/createOrder',
@@ -41,10 +71,52 @@ export const createOrder = createAsyncThunk(
       formData.append('qrCode', orderData.qrCode);
       
       // Convert boolean values properly
-      formData.append('isFinished', orderData.isFinished || false);
-      formData.append('isPickUp', orderData.isPickUp || false);
+      formData.append('isFinished', String(orderData.isFinished || false));
+      formData.append('isPickUp', String(orderData.isPickUp || false));
       
-      // ... rest of your image processing code stays the same ...
+      // PROCESS IMAGES - This was missing!
+      if (orderData.images && orderData.images.length > 0) {
+        console.log(`Processing ${orderData.images.length} images for upload`);
+        
+        for (let i = 0; i < orderData.images.length; i++) {
+          const image = orderData.images[i];
+          
+          if (!image || !image.uri) {
+            console.warn(`Skipping invalid image at index ${i}`);
+            continue;
+          }
+          
+          try {
+            // Compress the image
+            const compressedUri = await compressImage(image.uri, 0.3);
+            
+            // Create proper filename
+            let fileName = image.name;
+            if (!fileName) {
+              const uriParts = compressedUri.split('/');
+              fileName = uriParts[uriParts.length - 1];
+              if (!fileName.includes('.')) {
+                fileName += '.jpg';
+              }
+            }
+            
+            // Create file object for FormData
+            const imageFile = {
+              uri: compressedUri,
+              type: image.type || 'image/jpeg',
+              name: fileName
+            };
+            
+            console.log(`Adding image to FormData: ${fileName}`);
+            formData.append('images', imageFile);
+          } catch (imgError) {
+            console.error(`Error processing image ${i}:`, imgError);
+            // Continue with other images
+          }
+        }
+      } else {
+        console.log('No images to process');
+      }
       
       console.log('FormData contains the following keys:');
       if (formData._parts) {
@@ -123,38 +195,6 @@ export const createOrder = createAsyncThunk(
     }
   }
 );
-
-const compressImage = async (uri, quality = 0.5, maxWidth = 800) => {
-  try {
-    console.log(`Processing image: ${uri}`);
-    
-    const fileInfo = await FileSystem.getInfoAsync(uri);
-    if (!fileInfo.exists) {
-      throw new Error("File does not exist");
-    }
-    
-    console.log(`Original size: ${(fileInfo.size / 1024).toFixed(2)} KB`);
-    
-    if (fileInfo.size > 200 * 1024) {
-      const manipResult = await manipulateAsync(
-        uri,
-        [{ resize: { width: maxWidth } }],
-        { compress: quality, format: SaveFormat.JPEG }
-      );
-      
-      const compressedInfo = await FileSystem.getInfoAsync(manipResult.uri);
-      console.log(`Compressed size: ${(compressedInfo.size / 1024).toFixed(2)} KB`);
-      
-      return manipResult.uri;
-    } else {
-      console.log("Image already small enough, skipping compression");
-      return uri;
-    }
-  } catch (error) {
-    console.error("Error in compressImage:", error);
-    return uri;
-  }
-};
 
 const orderSlice = createSlice({
   name: 'order',

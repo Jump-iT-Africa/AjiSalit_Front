@@ -18,7 +18,7 @@ export default function FinishedButton({orderData}) {
     const isSmallScreen = height < 400; 
     
     const bottomSheetHeight = useMemo(() => {
-        return isSmallScreen ? hp('60%') : hp('74%');
+        return isSmallScreen ? hp('60%') : hp('60%');
     }, [isSmallScreen]);
 
     const actionSheetRef = useRef(null);

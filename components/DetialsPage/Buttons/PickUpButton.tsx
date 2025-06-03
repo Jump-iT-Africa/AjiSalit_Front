@@ -17,7 +17,7 @@ export default function PickUpButton({orderData}) {
     const { width, height } = Dimensions.get('window');
     const isSmallScreen = height < 700;
     const bottomSheetHeight = useMemo(() => {
-        return isSmallScreen ? hp('80%') : hp('70%');
+        return isSmallScreen ? hp('80%') : hp('60%');
     }, [isSmallScreen]);
     
     const actionSheetRef = useRef(null);
@@ -141,7 +141,7 @@ export default function PickUpButton({orderData}) {
                                         router.replace('/(home)');
                                     }}
                                     title="انتقل للصفحة الرئيسية"
-                                    textStyles="text-sm font-tajawal pt-4 py-0 text-white"
+                                    textStyles="text-sm font-tajawal pt-0 py-0 text-white"
                                     containerStyles="w-[90%] m-auto bg-[#F52525] pt-2"
                                 />
                             </View>
