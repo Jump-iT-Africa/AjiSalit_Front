@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { View, Text, Image, TouchableOpacity, Modal, Dimensions, Platform } from "react-native";
-import Logowhite from "@/assets/images/whiteLogo.png";
+import Logowhite from "@/assets/images/ajisalit_white.png";
 import BottomSheetComponent from "../../ui/BottomSheetComponent";
 import CustomButton from "../../ui/CustomButton";
 import Colors from "@/constants/Colors";
