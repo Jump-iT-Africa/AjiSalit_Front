@@ -33,7 +33,6 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
-package-lock.json
 
 #FCM credintials 
 ajisalit-notification-nv-firebase-adminsdk-fbsvc-08737fcc9b.json
