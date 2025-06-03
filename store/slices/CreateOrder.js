@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 import * as FileSystem from 'expo-file-system';
 import { manipulateAsync, SaveFormat } from 'expo-image-manipulator';
-import { convertToBackendFormat } from '@/components/ActionSheetToAddProduct/statusMappings';
+import { convertToBackendFormat } from '@/components/ActionSheetToAddProduct/StatusMappings';
 
 
 

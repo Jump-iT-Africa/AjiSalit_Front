@@ -1,15 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import { useSelector } from 'react-redux';
-import { selectFilteredExpiredOrdersCount } from '@/store/slices/OrdersSlice.js'; 
+import { useSelector, useDispatch } from 'react-redux';
+import { selectFilteredExpiredOrdersCount, setTabFilter } from '@/store/slices/OrdersSlice.js'; 
 import Warning from "@/assets/images/warning.png"
 
-const OrdersTabs = ({ onTabChange, activeTab = 'completed' }) => {
-  const [selectedTab, setSelectedTab] = useState(activeTab);
+const TabsComponent = ({ onTabChange, activeTab = 'completed' }) => {
+  const dispatch = useDispatch();
   
   // Get the count of filtered expired orders
   const expiredOrdersCount = useSelector(selectFilteredExpiredOrdersCount);
+  
+  // Get the current tab filter from Redux to stay in sync
+  const currentTabFilter = useSelector(state => state.orders.tabFilter);
+  
+  // Use Redux state as the source of truth for selected tab
+  const [selectedTab, setSelectedTab] = useState(currentTabFilter || activeTab);
   
   const tabs = [
     { id: 'all', label: 'الطلبات القادمة', filter: 'all', bg: "#2F752F" },
@@ -17,12 +23,51 @@ const OrdersTabs = ({ onTabChange, activeTab = 'completed' }) => {
     { id: 'completed', label: 'الطلبات المتأخرة', filter: 'completed', bg: "#FF4444" }
   ];
 
+  // Initialize the tab filter in Redux when component mounts
+  useEffect(() => {
+    console.log('🎯 TabsComponent mounted with activeTab:', activeTab);
+    console.log('🎯 Current Redux tabFilter:', currentTabFilter);
+    
+    // If Redux state doesn't match the activeTab prop, update Redux
+    if (currentTabFilter !== activeTab) {
+      console.log('🔄 Syncing Redux tabFilter with activeTab prop');
+      dispatch(setTabFilter(activeTab));
+      setSelectedTab(activeTab); // Also update local state
+    } else {
+      // Make sure local state matches Redux state
+      setSelectedTab(currentTabFilter);
+    }
+    
+    // Also call the callback to ensure parent is in sync
+    onTabChange(activeTab);
+  }, [activeTab, dispatch, onTabChange]);
+
+  // Keep local state in sync with Redux state
+  useEffect(() => {
+    if (currentTabFilter && currentTabFilter !== selectedTab) {
+      console.log('🔄 Syncing selectedTab with Redux tabFilter:', currentTabFilter);
+      setSelectedTab(currentTabFilter);
+    }
+  }, [currentTabFilter]);
+
   const handleTabPress = (tab) => {
+    console.log('🎯 Tab pressed:', tab.id, 'filter:', tab.filter);
+    
     setSelectedTab(tab.id);
+    
+    // Update Redux state
+    dispatch(setTabFilter(tab.filter));
+    
+    // Call parent callback
     onTabChange(tab.filter);
   };
 
-  console.log('this is expiredOrdersCount', expiredOrdersCount);
+  console.log('🎯 TabsComponent state:', {
+    selectedTab,
+    activeTab,
+    currentTabFilter,
+    expiredOrdersCount
+  });
   
   // Show warning only if completed tab is selected AND there are expired orders
   const showWarning = selectedTab === 'completed' && expiredOrdersCount > 0;
@@ -134,4 +179,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default OrdersTabs;
+export default TabsComponent;

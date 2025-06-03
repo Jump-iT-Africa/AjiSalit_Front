@@ -11,20 +11,18 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
 // Import the conversion function
-import { convertToFrontendFormat } from '@/components/ActionSheetToAddProduct/statusMappings';
+import { convertToFrontendFormat } from '@/components/ActionSheetToAddProduct/StatusMappings';
 
 const OrderCard = ({ item }) => {
   
   const [localFinished, setLocalFinished] = useState(item.isFinished);
 
-  // Helper function to convert situation to Arabic
   const getDisplayText = (value, type) => {
     if (!value) return value;
     const arabicValue = convertToFrontendFormat(value, type);
-    return arabicValue || value; // Fallback to original if no conversion found
+    return arabicValue || value; 
   };
 
-  // Get the raw status value and convert to Arabic
   const rawOrderStatus = item?.situation || item?.label;
   const orderStatus = getDisplayText(rawOrderStatus, 'situation');
 

@@ -35,7 +35,7 @@ import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { updateOrderDate } from '@/store/slices/OrdersManagment';
 import NoSearchResult from '@/assets/images/NoSearchResult.png';
-import { convertToFrontendFormat } from '@/components/ActionSheetToAddProduct/statusMappings';
+import { convertToFrontendFormat } from '@/components/ActionSheetToAddProduct/StatusMappings';
 
 const { width, height } = Dimensions.get('window');
 const isSmallScreen = height < 700;

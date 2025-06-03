@@ -238,27 +238,108 @@ export const selectFilteredOrders = createSelector(
       return [];
     }
     
+    console.log('🔍 SELECTOR DEBUG - Total items:', items.length);
+    console.log('🔍 SELECTOR DEBUG - Tab filter:', tabFilter);
+    console.log('🔍 SELECTOR DEBUG - tabFilter type:', typeof tabFilter);
+    
+    // Helper functions to recalculate dates in real-time
+    const isOrderToday = (order) => {
+      if (!order.rawDeliveryDate && !order.deliveryDate) return false;
+      const today = new Date();
+      const orderDate = new Date(order.rawDeliveryDate || order.deliveryDate);
+      
+      today.setHours(0, 0, 0, 0);
+      orderDate.setHours(0, 0, 0, 0);
+      
+      return orderDate.getTime() === today.getTime();
+    };
+    
+    const isOrderTomorrow = (order) => {
+      if (!order.rawDeliveryDate && !order.deliveryDate) return false;
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(0, 0, 0, 0);
+      
+      const orderDate = new Date(order.rawDeliveryDate || order.deliveryDate);
+      orderDate.setHours(0, 0, 0, 0);
+      
+      return orderDate.getTime() >= tomorrow.getTime();
+    };
+    
+    const isOrderExpired = (order) => {
+      if (!order.rawDeliveryDate && !order.deliveryDate) return false;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const orderDate = new Date(order.rawDeliveryDate || order.deliveryDate);
+      orderDate.setHours(0, 0, 0, 0);
+      
+      const isExpired = orderDate.getTime() < today.getTime();
+      return isExpired;
+    };
+    
     let result = [];
     
-    switch (tabFilter) {
-      case 'all': 
-        result = items.filter(order => 
-          order.isTomorrow && !(order.isFinished === true && order.isPickUp === true)
-        );
-        break;
-      case 'today':
-        result = items.filter(order => 
-          order.isToday && !(order.isFinished === true && order.isPickUp === true)
-        );
-        break;
-      case 'completed':
-        result = items.filter(order => 
-          order.isExpired && !(order.isFinished === true && order.isPickUp === true)
-        );
-        break;
-      default:
-        result = items.filter(order => !(order.isFinished === true && order.isPickUp === true));
+    // 🚨 IMPORTANT: Check what happens when tabFilter is undefined or null
+    console.log('🔍 SELECTOR DEBUG - Checking tabFilter value...');
+    
+    // Check if tabFilter is undefined/null/empty - this might be the issue!
+    if (!tabFilter || tabFilter === '' || tabFilter === null || tabFilter === undefined) {
+      console.log('🚨 TAB FILTER IS EMPTY/NULL/UNDEFINED - Using default behavior');
+      console.log('🚨 This might be why you see different results on refresh vs navigation');
+      
+      // Default behavior when no tab filter is set - show all active orders
+      result = items.filter(order => !(order.isFinished === true && order.isPickUp === true));
+      console.log('🚨 DEFAULT: Showing all active orders:', result.length);
+    } else {
+      console.log('✅ TAB FILTER IS SET:', tabFilter);
+      
+      switch (tabFilter) {
+        case 'all': 
+          result = items.filter(order => 
+            isOrderTomorrow(order) && !(order.isFinished === true && order.isPickUp === true)
+          );
+          console.log('📅 ALL TAB: Tomorrow orders:', result.length);
+          break;
+          
+        case 'today':
+          result = items.filter(order => 
+            isOrderToday(order) && !(order.isFinished === true && order.isPickUp === true)
+          );
+          console.log('📅 TODAY TAB: Today orders:', result.length);
+          break;
+          
+        case 'completed':
+        case 'late':
+        case 'overdue':
+          result = items.filter(order => 
+            isOrderExpired(order) && !(order.isFinished === true && order.isPickUp === true)
+          );
+          console.log('⏰ COMPLETED TAB: Expired orders:', result.length);
+          
+          // Extra debugging for completed tab
+          const allActiveOrders = items.filter(order => !(order.isFinished === true && order.isPickUp === true));
+          console.log('🔍 COMPLETED TAB DEBUG:', {
+            totalActiveOrders: allActiveOrders.length,
+            expiredOrders: result.length,
+            sampleActiveOrders: allActiveOrders.slice(0, 3).map(o => ({
+              orderCode: o.orderCode,
+              deliveryDate: o.rawDeliveryDate || o.deliveryDate,
+              isExpiredCached: o.isExpired,
+              isExpiredRealTime: isOrderExpired(o),
+              isToday: isOrderToday(o),
+              isTomorrow: isOrderTomorrow(o)
+            }))
+          });
+          break;
+          
+        default:
+          console.log('🚨 UNKNOWN TAB FILTER:', tabFilter);
+          result = items.filter(order => !(order.isFinished === true && order.isPickUp === true));
+      }
     }
+    
+    console.log('SELECTOR DEBUG - After tab filter (' + tabFilter + '):', result.length);
     
     // Apply search filter
     if (searchTerm) {
@@ -266,6 +347,7 @@ export const selectFilteredOrders = createSelector(
         order.orderCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
         order.customerDisplayName.toLowerCase().includes(searchTerm.toLowerCase())
       );
+      console.log('SELECTOR DEBUG - After search filter:', result.length);
     }
     
     // Apply status filter
@@ -288,6 +370,7 @@ export const selectFilteredOrders = createSelector(
       
       if (typeToFilter) {
         result = result.filter(order => order.type === typeToFilter);
+        console.log('SELECTOR DEBUG - After status filter:', result.length);
       }
     }
     
@@ -303,6 +386,7 @@ export const selectFilteredOrders = createSelector(
         
         return orderDate.toDateString() === filterDate.toDateString();
       });
+      console.log('SELECTOR DEBUG - After date filter:', result.length);
     }
 
     // Sort results
@@ -328,7 +412,24 @@ export const selectFilteredOrders = createSelector(
       });
     }
     
-    console.log(`Filtered orders for tab "${tabFilter}":`, result.length);
+    console.log(`SELECTOR DEBUG - Final filtered orders for tab "${tabFilter}":`, result.length);
+    
+    // Debug: Log details of each order in completed tab
+    if (tabFilter === 'completed') {
+      result.forEach(order => {
+        console.log('COMPLETED ORDER:', {
+          orderCode: order.orderCode,
+          deliveryDate: order.date,
+          rawDeliveryDate: order.rawDeliveryDate,
+          isExpired: order.isExpired,
+          isToday: order.isToday,
+          isTomorrow: order.isTomorrow,
+          isFinished: order.isFinished,
+          isPickUp: order.isPickUp
+        });
+      });
+    }
+    
     return result;
   }
 );
