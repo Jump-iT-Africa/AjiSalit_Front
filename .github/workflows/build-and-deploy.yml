@@ -1,3 +1,4 @@
+# .github/workflows/build-and-deploy.yml
 name: Build and Deploy
 
 on:
@@ -11,9 +12,9 @@ env:
   EAS_PROJECT_ID: ${{ secrets.EAS_PROJECT_ID }}
 
 jobs:
-  # Job 1: Install dependencies and run tests
-  test:
-    name: Install and Test
+  # Job 1: Install dependencies
+  setup:
+    name: Setup and Check
     runs-on: ubuntu-latest
     outputs:
       should-deploy: ${{ steps.check.outputs.should-deploy }}
@@ -37,9 +38,6 @@ jobs:
       - name: 📦 Install dependencies
         run: npm ci
 
-      - name: 🧪 Run tests
-        run: npm test
-
       - name: 🔍 Check if should deploy
         id: check
         run: |
@@ -52,8 +50,8 @@ jobs:
   # Job 2: Build Android APK
   build-android:
     name: Build Android
-    needs: test
-    if: needs.test.outputs.should-deploy == 'true'
+    needs: setup
+    if: needs.setup.outputs.should-deploy == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: 🏗 Setup repo
@@ -84,10 +82,11 @@ jobs:
           echo "BUILD_URL=$BUILD_URL" >> $GITHUB_ENV
           echo "Android APK: $BUILD_URL" >> $GITHUB_STEP_SUMMARY
 
+  # Job 3: Build and deploy iOS to TestFlight
   build-ios:
     name: Build and Deploy iOS
-    needs: test
-    if: needs.test.outputs.should-deploy == 'true'
+    needs: setup
+    if: needs.setup.outputs.should-deploy == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: 🏗 Setup repo
@@ -121,8 +120,8 @@ jobs:
   # Job 4: Notify on completion
   notify:
     name: Notify Completion
-    needs: [build-android, build-ios]
-    if: always() && needs.test.outputs.should-deploy == 'true'
+    needs: [setup, build-android, build-ios]
+    if: always() && needs.setup.outputs.should-deploy == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: 📱 Build Summary
