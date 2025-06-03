@@ -82,7 +82,6 @@ jobs:
           echo "BUILD_URL=$BUILD_URL" >> $GITHUB_ENV
           echo "Android APK: $BUILD_URL" >> $GITHUB_STEP_SUMMARY
 
-  # Job 3: Build and deploy iOS to TestFlight
   build-ios:
     name: Build and Deploy iOS
     needs: setup
