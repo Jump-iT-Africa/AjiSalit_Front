@@ -15,7 +15,7 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-nat
 import AppGradient from "@/components/ui/AppGradient";
 import Color from "@/constants/Colors";
 import HeaderWithBack from "@/components/ui/HeaderWithToolTipAndback";
-import Whitelogo from "@/assets/images/whiteLogo.png";
+import Whitelogo from "@/assets/images/ajisalit_white.png";
 import { Audio } from 'expo-av';
 import { Feather } from "@expo/vector-icons";
 

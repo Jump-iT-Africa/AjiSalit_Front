@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import Color from "@/constants/Colors";
 import HeaderWithBack from "@/components/ui/HeaderWithToolTipAndback";
-import Whitelogo from "@/assets/images/whiteLogo.png";
+import Whitelogo from "@/assets/images/ajisalit_white.png";
 import CustomButton from "@/components/ui/CustomButton";
 import PersonalInfoScreen from "@/components/ui/PersonalInfoScreen";
 import { useDispatch } from 'react-redux';

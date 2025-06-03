@@ -1,0 +1,143 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [dev]
+  pull_request:
+    branches: [dev]
+
+env:
+  EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+  EAS_PROJECT_ID: ${{ secrets.EAS_PROJECT_ID }}
+
+jobs:
+  # Job 1: Install dependencies and run tests
+  test:
+    name: Install and Test
+    runs-on: ubuntu-latest
+    outputs:
+      should-deploy: ${{ steps.check.outputs.should-deploy }}
+    steps:
+      - name: 🏗 Setup repo
+        uses: actions/checkout@v4
+
+      - name: 🏗 Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+          cache: npm
+
+      - name: 🏗 Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🧪 Run tests
+        run: npm test
+
+      - name: 🔍 Check if should deploy
+        id: check
+        run: |
+          if [ "${{ github.event_name }}" == "push" ] && [ "${{ github.ref }}" == "refs/heads/dev" ]; then
+            echo "should-deploy=true" >> $GITHUB_OUTPUT
+          else
+            echo "should-deploy=false" >> $GITHUB_OUTPUT
+          fi
+
+  # Job 2: Build Android APK
+  build-android:
+    name: Build Android
+    needs: test
+    if: needs.test.outputs.should-deploy == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🏗 Setup repo
+        uses: actions/checkout@v4
+
+      - name: 🏗 Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+          cache: npm
+
+      - name: 🏗 Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🏗 Create preview build
+        run: eas build --platform android --profile preview --non-interactive --wait
+
+      - name: 💾 Save build artifacts info
+        run: |
+          BUILD_URL=$(eas build:list --platform android --status finished --limit 1 --json | jq -r '.[0].artifacts.buildUrl')
+          echo "BUILD_URL=$BUILD_URL" >> $GITHUB_ENV
+          echo "Android APK: $BUILD_URL" >> $GITHUB_STEP_SUMMARY
+
+  # Job 3: Build and deploy iOS to TestFlight
+  build-ios:
+    name: Build and Deploy iOS
+    needs: test
+    if: needs.test.outputs.should-deploy == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🏗 Setup repo
+        uses: actions/checkout@v4
+
+      - name: 🏗 Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+          cache: npm
+
+      - name: 🏗 Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🍎 Build for iOS (Manual TestFlight submission)
+        run: eas build --platform ios --profile preview --non-interactive --wait
+
+      - name: 💾 Save build info
+        run: |
+          BUILD_URL=$(eas build:list --platform ios --status finished --limit 1 --json | jq -r '.[0].artifacts.buildUrl')
+          echo "iOS_BUILD_URL=$BUILD_URL" >> $GITHUB_ENV
+          echo "iOS IPA built successfully! Download: $BUILD_URL" >> $GITHUB_STEP_SUMMARY
+
+  # Job 4: Notify on completion
+  notify:
+    name: Notify Completion
+    needs: [build-android, build-ios]
+    if: always() && needs.test.outputs.should-deploy == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📱 Build Summary
+        run: |
+          echo "## 🚀 Build Complete!" >> $GITHUB_STEP_SUMMARY
+          echo "### Android" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.build-android.result }}" == "success" ]; then
+            echo "✅ APK built successfully" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ APK build failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "### iOS" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.build-ios.result }}" == "success" ]; then
+            echo "✅ IPA built successfully (manual TestFlight upload required)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ iOS build failed" >> $GITHUB_STEP_SUMMARY
+          fi
