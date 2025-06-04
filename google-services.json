@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "717611030560",
-    "project_id": "ajisalit-notification-juin",
-    "storage_bucket": "ajisalit-notification-juin.firebasestorage.app"
+    "project_number": "502300812384",
+    "project_id": "ajisalit-notification-config",
+    "storage_bucket": "ajisalit-notification-config.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:717611030560:android:79d0cd8fada75446ca8445",
+        "mobilesdk_app_id": "1:502300812384:android:410a4407964f2ce253cf05",
         "android_client_info": {
           "package_name": "app.ajisalit.com"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCN5LZOF0aXG3tozrQ6XTHJThaWhj-gshU"
+          "current_key": "AIzaSyDbILly9w-JgVZHcysu2ScrdGGxbA7JUzk"
         }
       ],
       "services": {
