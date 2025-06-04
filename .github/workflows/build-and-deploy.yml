@@ -1,31 +1,32 @@
-name: iOS Build and TestFlight Deploy
+name: 🍎 iOS Build & TestFlight Deploy
 
 on:
   push:
     branches: [dev]
   pull_request:
     branches: [dev]
+  workflow_dispatch:
 
 env:
   EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
   EAS_PROJECT_ID: ${{ secrets.EAS_PROJECT_ID }}
 
 jobs:
-  build-ios:
-    name: Build iOS & Submit to TestFlight
+  ios-build-and-deploy:
+    name: 🚀 Build iOS & Deploy to TestFlight
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev' || github.event_name == 'workflow_dispatch'
     steps:
-      - name: 🏗 Setup repo
+      - name: 🏗 Checkout repository
         uses: actions/checkout@v4
 
-      - name: 🏗 Setup Node
+      - name: 🏗 Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18.x
           cache: npm
 
-      - name: 🏗 Setup EAS
+      - name: 🏗 Setup EAS CLI
         uses: expo/expo-github-action@v8
         with:
           expo-version: latest
@@ -36,36 +37,51 @@ jobs:
         run: npm ci
 
       - name: 🍎 Build iOS & Submit to TestFlight
+        id: ios_build
         run: |
           echo "🔨 Building iOS app and submitting to TestFlight..."
+          echo "⏰ Started at: $(date)"
           eas build --platform ios --profile preview --auto-submit --non-interactive --wait
+          echo "✅ Completed at: $(date)"
 
       - name: 🎉 Success Summary
         if: success()
         run: |
-          echo "## 🎉 iOS Build & TestFlight Upload Complete!" >> $GITHUB_STEP_SUMMARY
+          echo "## 🎉 iOS Build & TestFlight Success! 🚀" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### ✅ What happened:" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔨 iOS app built successfully" >> $GITHUB_STEP_SUMMARY
-          echo "- 🚀 Automatically submitted to TestFlight" >> $GITHUB_STEP_SUMMARY
-          echo "- 📱 Testers will receive notifications" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ What Just Happened:" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔨 **iOS app built successfully** using EAS Build" >> $GITHUB_STEP_SUMMARY
+          echo "- 🚀 **Automatically uploaded to TestFlight**" >> $GITHUB_STEP_SUMMARY
+          echo "- 📱 **Testers will receive notifications** shortly" >> $GITHUB_STEP_SUMMARY
+          echo "- ⚡ **No manual intervention needed**" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📱 Next Steps:" >> $GITHUB_STEP_SUMMARY
-          echo "- Check TestFlight app for the new build" >> $GITHUB_STEP_SUMMARY
-          echo "- Your testers should receive notifications automatically" >> $GITHUB_STEP_SUMMARY
-          echo "- Build will be available for internal testing immediately" >> $GITHUB_STEP_SUMMARY
+          echo "### 📱 For Your Testers:" >> $GITHUB_STEP_SUMMARY
+          echo "- Check the **TestFlight app** for the new build" >> $GITHUB_STEP_SUMMARY
+          echo "- New build will be available for **internal testing immediately**" >> $GITHUB_STEP_SUMMARY
+          echo "- Push notifications should arrive **within 5-10 minutes**" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Build completed at:** $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "### 📊 Build Info:" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Triggered by:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build completed:** $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🎯 **Next deployment:** Push to \`dev\` branch again anytime!" >> $GITHUB_STEP_SUMMARY
 
       - name: ❌ Failure Summary
         if: failure()
         run: |
           echo "## ❌ iOS Build Failed" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🔍 Troubleshooting:" >> $GITHUB_STEP_SUMMARY
-          echo "1. Check the build logs above for specific errors" >> $GITHUB_STEP_SUMMARY
-          echo "2. Verify App Store Connect API credentials in EAS" >> $GITHUB_STEP_SUMMARY
-          echo "3. Ensure your Apple Developer account is active" >> $GITHUB_STEP_SUMMARY
-          echo "4. Check that bundle identifier matches App Store Connect" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔍 Troubleshooting Steps:" >> $GITHUB_STEP_SUMMARY
+          echo "1. **Check the build logs** above for specific error messages" >> $GITHUB_STEP_SUMMARY
+          echo "2. **Verify credentials** - run \`eas build --platform ios --profile preview --auto-submit\` locally" >> $GITHUB_STEP_SUMMARY
+          echo "3. **Check App Store Connect** - ensure your app and certificates are active" >> $GITHUB_STEP_SUMMARY
+          echo "4. **Verify bundle identifier** matches what's configured in App Store Connect" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔧 Quick Fixes:" >> $GITHUB_STEP_SUMMARY
+          echo "- If credentials issue: Run \`eas credentials -p ios\` locally" >> $GITHUB_STEP_SUMMARY
+          echo "- If build issue: Check \`app.json\` and \`eas.json\` configuration" >> $GITHUB_STEP_SUMMARY
+          echo "- If submission issue: Check App Store Connect API key status" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Failed at:** $(date)" >> $GITHUB_STEP_SUMMARY
