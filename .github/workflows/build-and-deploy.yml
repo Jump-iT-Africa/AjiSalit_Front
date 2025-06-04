@@ -1,21 +1,88 @@
-name: Build and Deploy
+name: Local EAS Build
 
 on:
-  push:
-    branches: [dev]
-  pull_request:
-    branches: [dev]
+  workflow_dispatch:
+    inputs:
+      platform:
+        type: choice
+        description: Platform to build
+        options:
+        - android
+        - ios
+        - all
+        default: android
+      profile:
+        type: choice  
+        description: Build profile
+        options:
+        - development
+        - preview
+        - production
+        default: preview
 
 env:
   EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-  EAS_PROJECT_ID: ${{ secrets.EAS_PROJECT_ID }}
 
 jobs:
-  # Job 1: Setup and Build (Everything in one job for efficiency)
-  build-and-deploy:
-    name: Build Apps
+  build-android:
+    name: Build Android Locally
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
+    if: ${{ github.event.inputs.platform == 'android' || github.event.inputs.platform == 'all' }}
+    steps:
+      - name: 🏗 Setup repo
+        uses: actions/checkout@v4
+
+      - name: 🏗 Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18.x
+          cache: npm
+
+      - name: ☕ Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: 🤖 Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: 🏗 Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          expo-version: latest
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔧 Setup Gradle wrapper
+        run: |
+          cd android
+          if [ ! -f gradlew ]; then
+            gradle wrapper
+          fi
+          chmod +x gradlew
+
+      - name: 🏗 Build Android locally
+        run: |
+          eas build --platform android \
+            --profile ${{ github.event.inputs.profile }} \
+            --local \
+            --non-interactive \
+            --output ./android-build.apk
+
+      - name: 📤 Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-${{ github.event.inputs.profile }}-${{ github.sha }}
+          path: ./android-build.apk
+
+  build-ios:
+    name: Build iOS Locally  
+    runs-on: macos-latest
+    if: ${{ github.event.inputs.platform == 'ios' || github.event.inputs.platform == 'all' }}
     steps:
       - name: 🏗 Setup repo
         uses: actions/checkout@v4
@@ -36,56 +103,16 @@ jobs:
       - name: 📦 Install dependencies
         run: npm ci
 
-      - name: 🤖 Build Android APK
+      - name: 🍎 Build iOS locally
         run: |
-          echo "🤖 Building Android APK..."
-          eas build --platform android --profile preview --non-interactive --wait
-        continue-on-error: true
-        id: android-build
+          eas build --platform ios \
+            --profile ${{ github.event.inputs.profile }} \
+            --local \
+            --non-interactive \
+            --output ./ios-build.ipa
 
-      - name: 💾 Save Android build info
-        if: steps.android-build.outcome == 'success'
-        run: |
-          BUILD_URL=$(eas build:list --platform android --status finished --limit 1 --json | jq -r '.[0].artifacts.buildUrl')
-          echo "ANDROID_BUILD_URL=$BUILD_URL" >> $GITHUB_ENV
-          echo "### 🤖 Android APK" >> $GITHUB_STEP_SUMMARY
-          echo "✅ **Download:** [$BUILD_URL]($BUILD_URL)" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-      - name: 🍎 Build iOS IPA
-        run: |
-          echo "🍎 Building iOS IPA..."
-          eas build --platform ios --profile preview --non-interactive --wait
-        continue-on-error: true
-        id: ios-build
-
-      - name: 💾 Save iOS build info
-        if: steps.ios-build.outcome == 'success'
-        run: |
-          BUILD_URL=$(eas build:list --platform ios --status finished --limit 1 --json | jq -r '.[0].artifacts.buildUrl')
-          echo "IOS_BUILD_URL=$BUILD_URL" >> $GITHUB_ENV
-          echo "### 🍎 iOS IPA" >> $GITHUB_STEP_SUMMARY
-          echo "✅ **Download:** [$BUILD_URL]($BUILD_URL)" >> $GITHUB_STEP_SUMMARY
-          echo "📱 **Next:** Upload to TestFlight manually" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-
-      - name: 📱 Final Build Summary
-        if: always()
-        run: |
-          echo "## 🚀 Build Results" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          
-          if [ "${{ steps.android-build.outcome }}" == "success" ]; then
-            echo "🤖 **Android:** ✅ Success" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "🤖 **Android:** ❌ Failed" >> $GITHUB_STEP_SUMMARY
-          fi
-          
-          if [ "${{ steps.ios-build.outcome }}" == "success" ]; then
-            echo "🍎 **iOS:** ✅ Success" >> $GITHUB_STEP_SUMMARY
-          else
-            echo "🍎 **iOS:** ❌ Failed" >> $GITHUB_STEP_SUMMARY
-          fi
-          
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Build Time:** $(date)" >> $GITHUB_STEP_SUMMARY
+      - name: 📤 Upload IPA artifact  
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-${{ github.event.inputs.profile }}-${{ github.sha }}
+          path: ./ios-build.ipa
