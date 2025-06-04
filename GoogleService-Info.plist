@@ -3,17 +3,17 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>AIzaSyCk968C0mCIeRc3mQybxG9QFH0lrj0KLWo</string>
+	<string>AIzaSyCrgBdcHV8XOsUCQnJJB40zTeYyTR0I7Jc</string>
 	<key>GCM_SENDER_ID</key>
-	<string>155046842140</string>
+	<string>502300812384</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>app.ajisalit.com</string>
 	<key>PROJECT_ID</key>
-	<string>ajisalit-notification-nv</string>
+	<string>ajisalit-notification-config</string>
 	<key>STORAGE_BUCKET</key>
-	<string>ajisalit-notification-nv.firebasestorage.app</string>
+	<string>ajisalit-notification-config.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:155046842140:ios:8f8555b368ff243ce134d9</string>
+	<string>1:502300812384:ios:531479df25ffa14753cf05</string>
 </dict>
 </plist>

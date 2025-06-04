@@ -11,15 +11,15 @@
       "distribution": "internal",
       "cache": {
         "disabled": false
+      },
+      "ios": {
+        "simulator": true
       }
     },
     "preview": {
       "distribution": "internal",
       "cache": {
         "disabled": false
-      },
-      "android": {
-        "buildType": "apk"
       },
       "ios": {
         "simulator": false
@@ -29,9 +29,6 @@
       "autoIncrement": true,
       "cache": {
         "disabled": false
-      },
-      "android": {
-        "buildType": "app-bundle"
       }
     }
   },
@@ -39,17 +36,13 @@
     "production": {
       "ios": {
         "ascAppId": "6744866152",
-        "appleTeamId": "STJUA634KR",
-        "ascApiKeyId": "${APPLE_API_KEY_ID}",
-        "ascApiKeyIssuerId": "${APPLE_API_ISSUER_ID}"
+        "appleTeamId": "STJUA634KR"
       }
     },
     "preview": {
       "ios": {
         "ascAppId": "6744866152",
-        "appleTeamId": "STJUA634KR",
-        "ascApiKeyId": "${APPLE_API_KEY_ID}",
-        "ascApiKeyIssuerId": "${APPLE_API_ISSUER_ID}"
+        "appleTeamId": "STJUA634KR"
       }
     }
   }

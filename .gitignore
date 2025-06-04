@@ -85,8 +85,6 @@ yarn-error.*
 *.tsbuildinfo
 
 
-GoogleService-Info.plist
-google-services.json
 build.log
 credentials
 
