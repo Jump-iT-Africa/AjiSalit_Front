@@ -11,12 +11,11 @@ env:
   EAS_PROJECT_ID: ${{ secrets.EAS_PROJECT_ID }}
 
 jobs:
-  # Job 1: Install dependencies
-  setup:
-    name: Setup and Check
+  # Job 1: Setup and Build (Everything in one job for efficiency)
+  build-and-deploy:
+    name: Build Apps
     runs-on: ubuntu-latest
-    outputs:
-      should-deploy: ${{ steps.check.outputs.should-deploy }}
+    if: github.event_name == 'push' && github.ref == 'refs/heads/dev'
     steps:
       - name: 🏗 Setup repo
         uses: actions/checkout@v4
@@ -37,152 +36,56 @@ jobs:
       - name: 📦 Install dependencies
         run: npm ci
 
-      - name: 🔍 Check if should deploy
-        id: check
+      - name: 🤖 Build Android APK
         run: |
-          echo "Event: ${{ github.event_name }}"
-          echo "Ref: ${{ github.ref }}"
-          if [ "${{ github.event_name }}" == "push" ] && [ "${{ github.ref }}" == "refs/heads/dev" ]; then
-            echo "should-deploy=true" >> $GITHUB_OUTPUT
-            echo "✅ Will deploy - Push to dev branch detected"
-          else
-            echo "should-deploy=false" >> $GITHUB_OUTPUT  
-            echo "❌ Will skip deploy - Not a push to dev branch"
-          fi
+          echo "🤖 Building Android APK..."
+          eas build --platform android --profile preview --non-interactive --wait
+        continue-on-error: true
+        id: android-build
 
-  # Job 2: Build Android APK
-  build-android:
-    name: Build Android
-    needs: setup
-    if: needs.setup.outputs.should-deploy == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: 🏗 Setup repo
-        uses: actions/checkout@v4
-
-      - name: 🏗 Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18.x
-          cache: npm
-
-      - name: 🏗 Setup EAS
-        uses: expo/expo-github-action@v8
-        with:
-          expo-version: latest
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
-
-      - name: 📦 Install dependencies
-        run: npm ci
-
-      - name: 🏗 Create preview build
-        run: eas build --platform android --profile preview --non-interactive --wait
-
-      - name: 💾 Save build artifacts info
+      - name: 💾 Save Android build info
+        if: steps.android-build.outcome == 'success'
         run: |
           BUILD_URL=$(eas build:list --platform android --status finished --limit 1 --json | jq -r '.[0].artifacts.buildUrl')
-          echo "BUILD_URL=$BUILD_URL" >> $GITHUB_ENV
-          echo "Android APK: $BUILD_URL" >> $GITHUB_STEP_SUMMARY
+          echo "ANDROID_BUILD_URL=$BUILD_URL" >> $GITHUB_ENV
+          echo "### 🤖 Android APK" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **Download:** [$BUILD_URL]($BUILD_URL)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
 
-  # Job 3: Build and deploy iOS to TestFlight
-  build-ios:
-    name: Build and Deploy iOS
-    needs: setup
-    if: needs.setup.outputs.should-deploy == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: 🏗 Setup repo
-        uses: actions/checkout@v4
-
-      - name: 🏗 Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18.x
-          cache: npm
-
-      - name: 🏗 Setup EAS
-        uses: expo/expo-github-action@v8
-        with:
-          expo-version: latest
-          eas-version: latest
-          token: ${{ secrets.EXPO_TOKEN }}
-
-      - name: 📦 Install dependencies
-        run: npm ci
-
-      - name: 🔐 Check iOS credentials
-        id: check-credentials
+      - name: 🍎 Build iOS IPA
         run: |
-          echo "Checking iOS credentials..."
-          # Try a dry run to check if credentials exist
-          if eas build --platform ios --profile preview --dry-run --non-interactive 2>&1 | grep -q "credentials.*found\|Using.*credentials"; then
-            echo "credentials-exist=true" >> $GITHUB_OUTPUT
-            echo "✅ iOS credentials found"
-          else
-            echo "credentials-exist=false" >> $GITHUB_OUTPUT
-            echo "❌ iOS credentials not found"
-          fi
-        continue-on-error: true
-
-      - name: 🛠️ Skip iOS build if no credentials
-        if: steps.check-credentials.outputs.credentials-exist == 'false'
-        run: |
-          echo "⚠️ Skipping iOS build - No credentials found"
-          echo "📋 To fix this:"
-          echo "1. Run locally: eas credentials"
-          echo "2. Or use the 'Setup iOS Credentials' workflow"
-          echo "3. This is a one-time setup"
-          echo "SKIP_IOS=true" >> $GITHUB_ENV
-
-      - name: 🍎 Build for iOS
-        if: env.SKIP_IOS != 'true'
-        run: |
-          echo "Building iOS app..."
+          echo "🍎 Building iOS IPA..."
           eas build --platform ios --profile preview --non-interactive --wait
+        continue-on-error: true
+        id: ios-build
 
-      - name: 💾 Save build info
-        if: success() && env.SKIP_IOS != 'true'
+      - name: 💾 Save iOS build info
+        if: steps.ios-build.outcome == 'success'
         run: |
           BUILD_URL=$(eas build:list --platform ios --status finished --limit 1 --json | jq -r '.[0].artifacts.buildUrl')
-          echo "iOS_BUILD_URL=$BUILD_URL" >> $GITHUB_ENV
-          echo "iOS IPA built successfully! Download: $BUILD_URL" >> $GITHUB_STEP_SUMMARY
+          echo "IOS_BUILD_URL=$BUILD_URL" >> $GITHUB_ENV
+          echo "### 🍎 iOS IPA" >> $GITHUB_STEP_SUMMARY
+          echo "✅ **Download:** [$BUILD_URL]($BUILD_URL)" >> $GITHUB_STEP_SUMMARY
+          echo "📱 **Next:** Upload to TestFlight manually" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
 
-      - name: 📋 iOS Skipped Notice
-        if: env.SKIP_IOS == 'true'
+      - name: 📱 Final Build Summary
+        if: always()
         run: |
-          echo "⏭️ iOS build skipped - credentials not set up" >> $GITHUB_STEP_SUMMARY
-          echo "To enable iOS builds:" >> $GITHUB_STEP_SUMMARY
-          echo "1. Run 'eas credentials' locally" >> $GITHUB_STEP_SUMMARY
-          echo "2. Or use 'Setup iOS Credentials' workflow" >> $GITHUB_STEP_SUMMARY
-
-  # Job 4: Notify on completion
-  notify:
-    name: Notify Completion
-    needs: [setup, build-android, build-ios]
-    if: always() && needs.setup.outputs.should-deploy == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: 📱 Build Summary
-        run: |
-          echo "## 🚀 Build Complete!" >> $GITHUB_STEP_SUMMARY
-          echo "### Android" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ needs.build-android.result }}" == "success" ]; then
-            echo "✅ APK built successfully" >> $GITHUB_STEP_SUMMARY
+          echo "## 🚀 Build Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ steps.android-build.outcome }}" == "success" ]; then
+            echo "🤖 **Android:** ✅ Success" >> $GITHUB_STEP_SUMMARY
           else
-            echo "❌ APK build failed" >> $GITHUB_STEP_SUMMARY
+            echo "🤖 **Android:** ❌ Failed" >> $GITHUB_STEP_SUMMARY
           fi
-          echo "### iOS" >> $GITHUB_STEP_SUMMARY
-          if [ "${{ needs.build-ios.result }}" == "success" ]; then
-            echo "✅ IPA built successfully (manual TestFlight upload required)" >> $GITHUB_STEP_SUMMARY
-          elif [ "${{ needs.build-ios.result }}" == "failure" ]; then
-            echo "❌ iOS build failed" >> $GITHUB_STEP_SUMMARY
-            echo "💡 **Fix iOS builds:**" >> $GITHUB_STEP_SUMMARY
-            echo "1. Go to Actions → Setup iOS Credentials → Run workflow" >> $GITHUB_STEP_SUMMARY
-            echo "2. Or run \`eas credentials\` locally" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ steps.ios-build.outcome }}" == "success" ]; then
+            echo "🍎 **iOS:** ✅ Success" >> $GITHUB_STEP_SUMMARY
           else
-            echo "⏭️ iOS build skipped (credentials not set up)" >> $GITHUB_STEP_SUMMARY
-            echo "💡 **Enable iOS builds:**" >> $GITHUB_STEP_SUMMARY  
-            echo "1. Run \`eas credentials\` locally" >> $GITHUB_STEP_SUMMARY
-            echo "2. Then push to dev branch again" >> $GITHUB_STEP_SUMMARY
+            echo "🍎 **iOS:** ❌ Failed" >> $GITHUB_STEP_SUMMARY
           fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Build Time:** $(date)" >> $GITHUB_STEP_SUMMARY
