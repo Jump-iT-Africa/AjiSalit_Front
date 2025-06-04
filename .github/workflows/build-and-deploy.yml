@@ -69,27 +69,3 @@ jobs:
           echo "4. Check that bundle identifier matches App Store Connect" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Failed at:** $(date)" >> $GITHUB_STEP_SUMMARY
-
-  # PR Validation (no builds, just validation)
-  validate-pr:
-    name: Validate Pull Request
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    steps:
-      - name: 🏗 Setup repo
-        uses: actions/checkout@v4
-
-      - name: 🏗 Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 18.x
-          cache: npm
-
-      - name: 📦 Install dependencies
-        run: npm ci
-
-      - name: ✅ PR Validation Complete
-        run: |
-          echo "✅ Pull Request validation complete!" >> $GITHUB_STEP_SUMMARY
-          echo "📋 iOS build will run when merged to dev branch" >> $GITHUB_STEP_SUMMARY
-          echo "🎯 Merge this PR to trigger TestFlight upload" >> $GITHUB_STEP_SUMMARY
