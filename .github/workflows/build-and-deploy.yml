@@ -43,6 +43,15 @@ jobs:
           echo "⏰ Started at: $(date)"
           eas build --platform ios --profile preview --non-interactive --wait
           echo "✅ Build completed at: $(date)"
+          
+          # Get build number from the latest build
+          BUILD_INFO=$(eas build:list --platform ios --status finished --limit 1 --json)
+          BUILD_NUMBER=$(echo "$BUILD_INFO" | jq -r '.[0].appBuildVersion // "Unknown"')
+          APP_VERSION=$(echo "$BUILD_INFO" | jq -r '.[0].appVersion // "Unknown"')
+          
+          echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
+          echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
+          echo "📱 Build Version: $APP_VERSION ($BUILD_NUMBER)"
 
       - name: 🚀 Submit to TestFlight
         id: ios_submit
@@ -62,6 +71,11 @@ jobs:
           echo "- 📱 **Testers will receive notifications** shortly" >> $GITHUB_STEP_SUMMARY
           echo "- ⚡ **No manual intervention needed**" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📱 Build Details:" >> $GITHUB_STEP_SUMMARY
+          echo "- **App Version:** $APP_VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "- **Build Number:** $BUILD_NUMBER" >> $GITHUB_STEP_SUMMARY
+          echo "- **Full Version:** $APP_VERSION ($BUILD_NUMBER)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📱 For Your Testers:" >> $GITHUB_STEP_SUMMARY
           echo "- Check the **TestFlight app** for the new build" >> $GITHUB_STEP_SUMMARY
           echo "- New build will be available for **internal testing immediately**" >> $GITHUB_STEP_SUMMARY
@@ -74,6 +88,87 @@ jobs:
           echo "- **Build completed:** $(date)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "🎯 **Next deployment:** Push to \`dev\` branch again anytime!" >> $GITHUB_STEP_SUMMARY
+
+      - name: 📢 Slack Success Notification
+        if: success()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          custom_payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "🎉 iOS TestFlight Deploy Success!"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*App:* Aji Salit"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Platform:* 🍎 iOS"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Status:* ✅ Success"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Deployed by:* ${{ github.actor }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Branch:* `${{ github.ref_name }}`"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Commit:* `${{ github.sha }}`"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "🚀 *New build uploaded to TestFlight!*\n📱 You will receive notifications shortly\n⏰ Build completed at: $(date)"
+                  }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Build Logs"
+                      },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    },
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "Open TestFlight"
+                      },
+                      "url": "https://appstoreconnect.apple.com/apps/6744866152/testflight/ios"
+                    }
+                  ]
+                }
+              ]
+            }
 
       - name: ❌ Failure Summary
         if: failure()
@@ -92,3 +187,76 @@ jobs:
           echo "- If submission issue: Check App Store Connect API key status" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Failed at:** $(date)" >> $GITHUB_STEP_SUMMARY
+
+      - name: 📢 Slack Failure Notification
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+          custom_payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "❌ iOS Build Failed"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*App:* Aji Salit"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Platform:* 🍎 iOS"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Status:* ❌ Failed"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Triggered by:* ${{ github.actor }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Branch:* `${{ github.ref_name }}`"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Commit:* `${{ github.sha }}`"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "🔍 *Build failed during deployment*\nCheck the logs for details and troubleshoot the issue."
+                  }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "View Error Logs"
+                      },
+                      "url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                    }
+                  ]
+                }
+              ]
+            }
