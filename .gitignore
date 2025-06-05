@@ -80,7 +80,6 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
-
 build.log
 credentials
 
