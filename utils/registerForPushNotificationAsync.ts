@@ -8,7 +8,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useDispatch, useSelector } from "react-redux";
 
 export async function registerForPushNotificationsAsync() {
-// const [expoPushToken, setExpoPushToken] = useState("");
+  // const [expoPushToken, setExpoPushToken] = useState("");
 
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync("default", {
@@ -37,7 +37,7 @@ export async function registerForPushNotificationsAsync() {
         "Permission not granted to get push token for push notification!"
       );
     }
-    const projectId = "58578925-3025-4070-823b-d44a161b2c53";
+    const projectId = "8cf790a2-ae23-491c-8e4d-1ed1a5d3260d";
     if (!projectId) {
       throw new Error("Project ID not found");
     }
