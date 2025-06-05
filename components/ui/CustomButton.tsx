@@ -12,7 +12,7 @@ interface CustomButtonProps{
 const CustomButton = ({onPress, title, textStyles = "", containerStyles =""}:CustomButtonProps) => {
   return (
     <TouchableOpacity 
-        activeOpacity={0.7} 
+        activeOpacity={0.7}
         className={`bg-[#F52525] rounded-full min-h-[62px] justify-center items-center text-white ${containerStyles}  `}
         onPress={onPress}
         >

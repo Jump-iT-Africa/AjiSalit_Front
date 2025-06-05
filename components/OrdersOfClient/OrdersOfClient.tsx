@@ -140,21 +140,9 @@ const OrdersOfClient = ({ SearchCode }) => {
   // Show error state
   if (error && !refreshing && ordersLoaded) {
     return (
-      <SafeAreaView className="flex-1 bg-gray-100">
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-          <Text className="text-center text-red-500 font-tajawalregular mb-4">
-            حدث خطأ في تحميل الطلبات
-          </Text>
-          <TouchableOpacity 
-            onPress={onRefresh}
-            style={{ backgroundColor: '#2e752f', padding: 12, borderRadius: 8 }}
-          >
-            <Text style={{ color: 'white', fontFamily: 'TajawalRegular' }}>
-              إعادة المحاولة
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+      <SafeAreaView className="flex-1">
+      <NoOrdersExists />
+    </SafeAreaView>
     );
   }
 

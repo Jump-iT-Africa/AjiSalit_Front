@@ -35,7 +35,6 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
-package-lock.json
 
 #FCM credintials 
 google-services.json
@@ -81,4 +80,10 @@ yarn-error.*
 # typescript
 *.tsbuildinfo
 
+
+build.log
+credentials
+
 # @end expo-cli
+
+
