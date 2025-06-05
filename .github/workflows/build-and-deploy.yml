@@ -143,7 +143,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "🚀 *New build uploaded to TestFlight!*\n📱 You will receive notifications shortly\n⏰ Build completed at: $(date)"
+                    "text": "🚀 *New build uploaded to TestFlight!*\n📱 Testers will receive notifications shortly\n⏰ Build completed at: $(date)"
                   }
                 },
                 {
@@ -190,12 +190,9 @@ jobs:
 
       - name: 📢 Slack Failure Notification
         if: failure()
-        uses: 8398a7/action-slack@v3
-        with:
-          status: custom
-          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
-          custom_payload: |
-            {
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+            --data '{
               "blocks": [
                 {
                   "type": "header",
@@ -259,4 +256,5 @@ jobs:
                   ]
                 }
               ]
-            }
+            }' \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
