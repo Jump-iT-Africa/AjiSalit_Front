@@ -12,6 +12,7 @@ env:
   EAS_PROJECT_ID: ${{ secrets.EAS_PROJECT_ID }}
 
 jobs:
+  # iOS Build and TestFlight Upload
   ios-build-and-deploy:
     name: 🚀 Build iOS & Deploy to TestFlight
     runs-on: ubuntu-latest
@@ -43,15 +44,6 @@ jobs:
           echo "⏰ Started at: $(date)"
           eas build --platform ios --profile preview --non-interactive --wait
           echo "✅ Build completed at: $(date)"
-          
-          # Get build number from the latest build
-          BUILD_INFO=$(eas build:list --platform ios --status finished --limit 1 --json)
-          BUILD_NUMBER=$(echo "$BUILD_INFO" | jq -r '.[0].appBuildVersion // "Unknown"')
-          APP_VERSION=$(echo "$BUILD_INFO" | jq -r '.[0].appVersion // "Unknown"')
-          
-          echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_ENV
-          echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
-          echo "📱 Build Version: $APP_VERSION ($BUILD_NUMBER)"
 
       - name: 🚀 Submit to TestFlight
         id: ios_submit
@@ -70,11 +62,6 @@ jobs:
           echo "- 🚀 **Automatically uploaded to TestFlight**" >> $GITHUB_STEP_SUMMARY
           echo "- 📱 **Testers will receive notifications** shortly" >> $GITHUB_STEP_SUMMARY
           echo "- ⚡ **No manual intervention needed**" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 📱 Build Details:" >> $GITHUB_STEP_SUMMARY
-          echo "- **App Version:** $APP_VERSION" >> $GITHUB_STEP_SUMMARY
-          echo "- **Build Number:** $BUILD_NUMBER" >> $GITHUB_STEP_SUMMARY
-          echo "- **Full Version:** $APP_VERSION ($BUILD_NUMBER)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📱 For Your Testers:" >> $GITHUB_STEP_SUMMARY
           echo "- Check the **TestFlight app** for the new build" >> $GITHUB_STEP_SUMMARY
