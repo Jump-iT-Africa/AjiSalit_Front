@@ -1,3 +1,4 @@
+# .github/workflows/ios-testflight.yml
 name: 🍎 iOS Build & TestFlight Deploy
 
 on:
@@ -12,6 +13,7 @@ env:
   EAS_PROJECT_ID: ${{ secrets.EAS_PROJECT_ID }}
 
 jobs:
+  # iOS Build and TestFlight Upload
   ios-build-and-deploy:
     name: 🚀 Build iOS & Deploy to TestFlight
     runs-on: ubuntu-latest
@@ -36,13 +38,20 @@ jobs:
       - name: 📦 Install dependencies
         run: npm ci
 
-      - name: 🍎 Build iOS & Submit to TestFlight
+      - name: 🍎 Build iOS for TestFlight
         id: ios_build
         run: |
-          echo "🔨 Building iOS app and submitting to TestFlight..."
+          echo "🔨 Building iOS app for TestFlight submission..."
           echo "⏰ Started at: $(date)"
-          eas build --platform ios --profile preview --auto-submit --non-interactive --wait
-          echo "✅ Completed at: $(date)"
+          eas build --platform ios --profile preview --non-interactive --wait
+          echo "✅ Build completed at: $(date)"
+
+      - name: 🚀 Submit to TestFlight
+        id: ios_submit
+        run: |
+          echo "🚀 Submitting to TestFlight..."
+          eas submit --platform ios --profile preview --latest --non-interactive
+          echo "✅ Submitted at: $(date)"
 
       - name: 🎉 Success Summary
         if: success()
